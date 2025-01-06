@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "HarioOdyssey/AreaObject/Attribute/Health.h"
+#include "HarioOdyssey/ResourceManager/Hario_Struct.h"
 #include "AreaObject.generated.h"
 
 UCLASS()
@@ -20,6 +21,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// 초기화 로직
+	virtual void PostInitProperties() override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -27,6 +31,15 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+UPROPERTY(Blueprintable)
+	int m_AreaObjectID;
 
+private:
+	
+UPROPERTY()
 	UHealth* m_Health;
+
+	// 스마트 포인터 사용?
+	FAreaObjectData* dt_AreaObject;
+
 };

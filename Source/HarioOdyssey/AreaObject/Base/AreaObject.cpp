@@ -3,6 +3,8 @@
 
 #include "AreaObject.h"
 
+#include "HarioOdyssey/Contents/HarioGameInstance.h"
+
 // Sets default values
 AAreaObject::AAreaObject()
 {
@@ -11,17 +13,29 @@ AAreaObject::AAreaObject()
 
 	// Health Component 초기화
 	m_Health = CreateDefaultSubobject<UHealth>(TEXT("Health"));
-//ToDo
-	m_Health->InitHealth(1.0f);
-	check(m_Health != nullptr);
-	
 }
+
 
 // Called when the game starts or when spawned
 void AAreaObject::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AAreaObject::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	dt_AreaObject = Cast<UHarioGameInstance>(GetGameInstance())->GetDataAreaObject(m_AreaObjectID);
+
+	float HPMax = 1.0f;
+	if (dt_AreaObject != nullptr)
+	{
+		HPMax = dt_AreaObject->HPMax;
+	}
+	
+	m_Health->InitHealth(HPMax);
 }
 
 // Called every frame

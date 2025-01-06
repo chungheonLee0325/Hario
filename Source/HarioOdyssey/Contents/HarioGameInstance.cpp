@@ -20,8 +20,18 @@ void UHarioGameInstance::Init()
 			FAreaObjectData* Row = AreaObjectTable->FindRow<FAreaObjectData>(RowName, TEXT("") );
 			if (Row)
 			{
-				d_AreaObject.Add(Row->AreaObjectID, *Row);
+				dt_AreaObject.Add(Row->AreaObjectID, *Row);
 			}
 		}
 	}
+}
+
+FAreaObjectData* UHarioGameInstance::GetDataAreaObject(const int AreaObjectID)
+{
+	if (FAreaObjectData* data = dt_AreaObject.Find(AreaObjectID))
+	{
+			return data;
+	}
+
+	return nullptr;
 }

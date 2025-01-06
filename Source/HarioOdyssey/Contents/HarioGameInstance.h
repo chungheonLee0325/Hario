@@ -16,8 +16,10 @@ class HARIOODYSSEY_API UHarioGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 protected:
-	virtual void Init() override;
+	void Init() override;
 
 public:
-	TMap<int32, FAreaObjectData> d_AreaObject;
+	FAreaObjectData* GetDataAreaObject(int AreaObjectID);
+	
+	TMap<int32, FAreaObjectData> dt_AreaObject;
 };

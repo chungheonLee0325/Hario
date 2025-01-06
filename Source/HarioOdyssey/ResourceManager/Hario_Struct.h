@@ -8,20 +8,19 @@ USTRUCT(BlueprintType)
 struct FAreaObjectData:public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
-
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
-	int AreaObjectID;
+	int AreaObjectID = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
-	FName Name;
+	FName Name = "";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
-	EAreaObjectType AreaObjectType;
+	EAreaObjectType AreaObjectType = EAreaObjectType::None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
-	EEnemyType EnemyType;
+	EEnemyType EnemyType = EEnemyType::None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
-	float HPMax;
+	float HPMax = 1.0f;
 };

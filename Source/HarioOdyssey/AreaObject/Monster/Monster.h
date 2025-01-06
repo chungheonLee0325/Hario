@@ -1,29 +1,28 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "AreaObject.generated.h"
+#include "HarioOdyssey/AreaObject/Base/AreaObject.h"
+#include "Monster.generated.h"
 
 UCLASS()
-class HARIOODYSSEY_API AAreaObject : public ACharacter
+class HARIOODYSSEY_API AMonster : public AAreaObject
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AAreaObject();
+	AMonster();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 };

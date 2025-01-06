@@ -9,6 +9,12 @@ AAreaObject::AAreaObject()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Health Component 초기화
+	m_Health = CreateDefaultSubobject<UHealth>(TEXT("Health"));
+//ToDo
+	m_Health->InitHealth(1.0f);
+	check(m_Health != nullptr);
+	
 }
 
 // Called when the game starts or when spawned

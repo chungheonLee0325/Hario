@@ -18,3 +18,13 @@ enum class EEnemyType : uint8 {
 	NamedMonster     UMETA(DisplayName = "NamedMonster"),
 	Boss     UMETA(DisplayName = "Boss"),
 };
+
+UENUM(BlueprintType)
+enum class EAiStateType : uint8 {
+	None        UMETA(DisplayName = "None"),       
+	Idle     UMETA(DisplayName = "Idle"),
+	Wait     UMETA(DisplayName = "Wait"),
+	Attack     UMETA(DisplayName = "Attack"),
+	SelectSkill UMETA(DisplayName = "SelectSkill"),
+	Chase     UMETA(DisplayName = "Chase"),
+};

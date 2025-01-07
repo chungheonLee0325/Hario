@@ -11,14 +11,14 @@ void UHarioGameInstance::Init()
 	Super::Init();
 
 	UDataTable* AreaObjectTable = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/_BluePrints/Common/Data/db_AreaObject.db_AreaObject'"));
-	if (AreaObjectTable)
+	if (nullptr != AreaObjectTable)
 	{
 		TArray<FName> RowNames = AreaObjectTable->GetRowNames();
 
 		for (const FName& RowName : RowNames)
 		{
 			FAreaObjectData* Row = AreaObjectTable->FindRow<FAreaObjectData>(RowName, TEXT("") );
-			if (Row)
+			if (nullptr != Row)
 			{
 				dt_AreaObject.Add(Row->AreaObjectID, *Row);
 			}

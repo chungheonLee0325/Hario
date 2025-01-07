@@ -22,7 +22,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	// 초기화 로직
-	virtual void PostInitProperties() override;
+	virtual void PostInitializeComponents() override;
 
 public:	
 	// Called every frame
@@ -30,6 +30,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	//virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 UPROPERTY(Blueprintable)
 	int m_AreaObjectID;

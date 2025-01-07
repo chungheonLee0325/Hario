@@ -10,9 +10,10 @@ AAreaObject::AAreaObject()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	// Health Component 초기화
+	
+	// Health Component 생성
 	m_Health = CreateDefaultSubobject<UHealth>(TEXT("Health"));
+
 }
 
 
@@ -20,15 +21,16 @@ AAreaObject::AAreaObject()
 void AAreaObject::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-void AAreaObject::PostInitProperties()
+void AAreaObject::PostInitializeComponents()
 {
-	Super::PostInitProperties();
+	Super::PostInitializeComponents();
 
+	// 데이터 초기화
 	dt_AreaObject = Cast<UHarioGameInstance>(GetGameInstance())->GetDataAreaObject(m_AreaObjectID);
 
+	// Health 초기화 By Data
 	float HPMax = 1.0f;
 	if (dt_AreaObject != nullptr)
 	{
@@ -36,6 +38,7 @@ void AAreaObject::PostInitProperties()
 	}
 	
 	m_Health->InitHealth(HPMax);
+	
 }
 
 // Called every frame

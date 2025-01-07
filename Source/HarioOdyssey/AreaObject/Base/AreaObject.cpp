@@ -21,11 +21,6 @@ AAreaObject::AAreaObject()
 void AAreaObject::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-void AAreaObject::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
 
 	// 데이터 초기화
 	dt_AreaObject = Cast<UHarioGameInstance>(GetGameInstance())->GetDataAreaObject(m_AreaObjectID);
@@ -38,7 +33,11 @@ void AAreaObject::PostInitializeComponents()
 	}
 	
 	m_Health->InitHealth(HPMax);
-	
+}
+
+void AAreaObject::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 }
 
 // Called every frame

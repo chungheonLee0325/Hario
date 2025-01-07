@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "HarioOdyssey/AreaObject/Attribute/Health.h"
+#include "HarioOdyssey/ResourceManager/Hario_Struct.h"
 #include "AreaObject.generated.h"
 
 UCLASS()
@@ -27,6 +28,22 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void OnTakeDamaged(float DamageAmount);
 
 	UHealth* m_Health;
+	virtual void OnSkill();	// Param은 추후 생각...
+
+	virtual void TakeDamage(float DamageAmount) ;
+
+	
+
+UPROPERTY()
+	UHealth* m_Health;	// 가비지 컬렉팅 방지!!
+
+UPROPERTY()
+	FAreaObjectData m_AreaObjectData;
+
+private:
+	bool m_IsDead = false;
+	
 };

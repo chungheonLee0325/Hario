@@ -30,3 +30,11 @@ void APlayer_Mario::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void APlayer_Mario::OnMoveRight(float InAxisValue)
+{
+	FRotator rotation = FRotator(0, GetControlRotation().Yaw, 0);
+	FVector direction = FQuat(rotation).GetRightVector();
+
+	AddMovementInput(direction, InAxisValue);
+}
+

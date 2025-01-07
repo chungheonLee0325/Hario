@@ -21,6 +21,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// 초기화 로직
+	virtual void PostInitProperties() override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -28,22 +31,15 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void OnTakeDamaged(float DamageAmount);
-
-	UHealth* m_Health;
-	virtual void OnSkill();	// Param은 추후 생각...
-
-	virtual void TakeDamage(float DamageAmount) ;
-
-	
-
-UPROPERTY()
-	UHealth* m_Health;	// 가비지 컬렉팅 방지!!
-
-UPROPERTY()
-	FAreaObjectData m_AreaObjectData;
+UPROPERTY(Blueprintable)
+	int m_AreaObjectID;
 
 private:
-	bool m_IsDead = false;
 	
+UPROPERTY()
+	UHealth* m_Health;
+
+	// 스마트 포인터 사용?
+	FAreaObjectData* dt_AreaObject;
+
 };

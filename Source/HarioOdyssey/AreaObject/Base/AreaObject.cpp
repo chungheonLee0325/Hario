@@ -14,6 +14,8 @@ AAreaObject::AAreaObject()
 	// Health Component 생성
 	m_Health = CreateDefaultSubobject<UHealth>(TEXT("Health"));
 
+	
+	
 }
 
 
@@ -52,5 +54,6 @@ void AAreaObject::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-}
 
+	
+}

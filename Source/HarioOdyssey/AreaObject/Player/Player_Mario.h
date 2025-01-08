@@ -13,19 +13,40 @@ class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
 
 public:
 	// Sets default values for this character's properties
+	//생성자
 	APlayer_Mario();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//입력구성
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	//이동 함수
+	void OnMoveForward(float Value);
+	void OnMoveRight(float Value);
+	
+	//카메라 회전 함수
+	void OnTurn(float Value);
+	void OnLookUp(float Value);
+	
+	//점프입력
+	void OnStartJump();
+	void OnStopJump();
+
+
+
+	
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-
-	void OnMoveRight(float InAxisValue);
+	
+private:
+	//카메라 컴포넌트
+	UPROPERTY(VisibleAnywhere)
+	class USpringArmComponent* CameraBoom;
+	UPROPERTY(VisibleAnywhere)
+	class UCameraComponent* FollowCamera;
 };

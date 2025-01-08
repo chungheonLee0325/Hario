@@ -2,7 +2,8 @@
 
 
 #include "AreaObject.h"
-
+#include "HarioOdyssey/AreaObject/Attribute/Health.h"
+#include "HarioOdyssey/ResourceManager/Hario_Struct.h"
 #include "HarioOdyssey/Contents/HarioGameInstance.h"
 
 // Sets default values

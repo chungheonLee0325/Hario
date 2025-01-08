@@ -3,11 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AiState.h"
 #include "Components/ActorComponent.h"
 #include "HarioOdyssey/ResourceManager/Hario_Enum.h"
+#include "AiState.h"
 #include "AiFSM.generated.h"
-
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HARIOODYSSEY_API UAiFSM : public UActorComponent
@@ -35,7 +34,4 @@ UPROPERTY()
 	UAiState* m_CurrentState;
 UPROPERTY()
 	UAiState* m_PreviousState;
-	
-
-	
 };

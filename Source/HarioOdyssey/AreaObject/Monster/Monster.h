@@ -14,7 +14,7 @@ class HARIOODYSSEY_API AMonster : public AAreaObject
 public:
 	// Sets default values for this character's properties
 	AMonster();
-
+ 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

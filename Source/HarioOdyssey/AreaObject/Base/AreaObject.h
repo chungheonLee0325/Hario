@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "HarioOdyssey/AreaObject/Attribute/Health.h"
-#include "HarioOdyssey/ResourceManager/Hario_Struct.h"
+
 #include "AreaObject.generated.h"
 
 UCLASS()
@@ -39,9 +38,9 @@ UPROPERTY(Blueprintable)
 private:
 	
 UPROPERTY()
-	UHealth* m_Health;
+	class UHealth* m_Health;
 
 	// 스마트 포인터 사용?
-	FAreaObjectData* dt_AreaObject;
+	struct FAreaObjectData* dt_AreaObject;
 
 };

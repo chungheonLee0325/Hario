@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "HarioOdyssey/ResourceManager/Hario_Struct.h"
+#include "HarioOdyssey/ResourceManager/HarioGameType.h"
 #include "HarioGameInstance.generated.h"
 
 /**

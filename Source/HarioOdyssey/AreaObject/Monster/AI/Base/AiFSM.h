@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "HarioOdyssey/ResourceManager/Hario_Enum.h"
-#include "AiState.h"
+#include "HarioOdyssey/ResourceManager/HarioGameType.h"
 #include "AiFSM.generated.h"
+
+class UAiState;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HARIOODYSSEY_API UAiFSM : public UActorComponent
@@ -26,12 +27,24 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
+	void AddState(EAiStateType StateType,UAiState* State);
+	
+	void ChangeState(EAiStateType StateType);
+
+	bool IsExistState(EAiStateType StateType) const;
+
+	virtual void UpdateState(float dt);
+	
+
+	
 	
 protected:
-	TMap<EAiStateType,UAiState> m_AiStates;
 	
 UPROPERTY()
-	UAiState* m_CurrentState;
+	TMap<EAiStateType, UAiState*> m_AiStates;
+	
 UPROPERTY()
-	UAiState* m_PreviousState;
+	UAiState* m_CurrentState = nullptr;
+UPROPERTY()
+	UAiState* m_PreviousState = nullptr;
 };

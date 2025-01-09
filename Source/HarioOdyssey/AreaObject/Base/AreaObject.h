@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-
+#include "HarioOdyssey/ResourceManager/HarioGameType.h"
 #include "AreaObject.generated.h"
 
 UCLASS()

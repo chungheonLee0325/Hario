@@ -61,6 +61,11 @@ void APlayer_Mario::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// 점프 입력
 	PlayerInputComponent->BindAction("OnStartJump", IE_Pressed, this, &APlayer_Mario::OnStartJump);
 	PlayerInputComponent->BindAction("OnStopJump", IE_Released, this, &APlayer_Mario::OnStopJump);
+
+	//모자 던지기
+	PlayerInputComponent->BindAction("ThrowHat", IE_Pressed, this, &APlayer_Mario::ThrowHat);
+	PlayerInputComponent->BindAction("ReturnHat", IE_Pressed, this, &APlayer_Mario::ReturnHat);
+	
 }
 
 
@@ -115,3 +120,40 @@ void APlayer_Mario::OnStopJump()
 {
 	bPressedJump = false;
 }
+
+//모자 던지기
+void APlayer_Mario::ThrowHat()
+{
+	if (bIsHatThrown || !HatProjectileClass) return;
+
+	// 모자 생성 및 던지기
+	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
+	FRotator SpawnRotation = GetActorRotation();
+	CurrentHat = GetWorld()->SpawnActor<AActor>(HatProjectileClass, SpawnLocation, SpawnRotation);
+
+	if (CurrentHat)
+	{
+		UPrimitiveComponent* HatRoot = Cast<UPrimitiveComponent>(CurrentHat->GetRootComponent());
+		if (HatRoot)
+		{
+			FVector LaunchVelocity = GetActorForwardVector() * HatThrowForce;
+			HatRoot->AddImpulse(LaunchVelocity, NAME_None, true);
+		}
+
+		bIsHatThrown = true;
+	}
+}
+
+//모자 받기
+void APlayer_Mario::ReturnHat()
+{
+	if (!bIsHatThrown || !CurrentHat) return;
+
+	// 모자 반환 상태 설정
+	// AHatProjectile* Hat = Cast<AHatProjectile>(CurrentHat);
+	// if (Hat)
+	// {
+	// 	Hat->SetReturning(true);
+	// }
+}
+

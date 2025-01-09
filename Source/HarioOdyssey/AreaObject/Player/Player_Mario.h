@@ -35,6 +35,10 @@ protected:
 	void OnStartJump();
 	void OnStopJump();
 
+	//모자던지기,받기
+	void ThrowHat();
+	void ReturnHat();
+	
 
 
 	
@@ -49,4 +53,14 @@ private:
 	class USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* FollowCamera;
+
+	//모자던지기,받기
+	bool bIsHatThrown = false;
+	AActor* CurrentHat = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Hat")
+	TSubclassOf<AActor> HatProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Hat")
+	float HatThrowForce = 1000.0f;
 };

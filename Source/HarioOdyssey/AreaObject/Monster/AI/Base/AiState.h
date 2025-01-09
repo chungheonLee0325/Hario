@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "HarioOdyssey/ResourceManager/Hario_Enum.h"
-
+#include "HarioOdyssey/ResourceManager/HarioGameType.h"
 #include "AiState.generated.h"
 
 class UAiFSM;

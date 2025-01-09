@@ -2,7 +2,7 @@
 #include "AiFSM.h"
 
 #include "AiState.h"
-
+#include "HarioOdyssey/ResourceManager/HarioGameType.h"
 
 
 // Sets default values for this component's properties
@@ -31,6 +31,65 @@ void UAiFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponent
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	UpdateState(DeltaTime);
 }
+
+void UAiFSM::AddState(EAiStateType StateType, UAiState* State)
+{
+	if (true == m_AiStates.Contains(StateType))
+	{
+		return;
+	}
+	State->SetAiKind(StateType);
+	State->SetAiFSM(this);
+	
+	m_AiStates.Add(StateType, State);
+}
+
+void UAiFSM::ChangeState(EAiStateType StateType)
+{
+	if (EAiStateType::None == StateType)
+	{
+		return;
+	}
+	UAiState** ChangeState = m_AiStates.Find(StateType);
+	if (nullptr == ChangeState)
+	{
+		return;
+	}
+	// FSM 구동후 첫 상태
+	if (nullptr == m_CurrentState)
+	{
+		m_CurrentState = *ChangeState;
+		m_CurrentState->Enter();
+		return;
+	}
+	// 같은 상태로는 전환하지않음 -> 고민중...
+	if (*ChangeState == m_CurrentState)
+	{
+		return;
+	}
+
+	m_CurrentState->Exit();
+
+	m_PreviousState = m_CurrentState;
+
+	m_CurrentState = *ChangeState;
+	m_CurrentState->Enter();
+}
+
+bool UAiFSM::IsExistState(EAiStateType StateType) const
+{
+	return m_AiStates.Contains(StateType);
+}
+
+void UAiFSM::UpdateState(float dt)
+{
+	if (nullptr == m_CurrentState)
+	{
+		return;
+	}
+	m_CurrentState->Execute(dt);
+}
+
 

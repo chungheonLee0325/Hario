@@ -2,6 +2,7 @@
 #include "AiFSM.h"
 
 #include "AiState.h"
+#include "HarioOdyssey/AreaObject/Monster/Monster.h"
 #include "HarioOdyssey/ResourceManager/HarioGameType.h"
 
 

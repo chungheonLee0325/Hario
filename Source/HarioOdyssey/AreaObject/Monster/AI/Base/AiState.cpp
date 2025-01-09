@@ -2,6 +2,7 @@
 
 #include "AiState.h"
 
+#include "HarioOdyssey/AreaObject/Monster/Monster.h"
 #include "AiFSM.h"
 
 
@@ -18,4 +19,14 @@ void UAiState::SetAiKind(EAiStateType StateType)
 EAiStateType UAiState::AiStateType() const
 {
 	return m_AiStateType;
+}
+
+void UAiState::SetOwner(AMonster* Owner)
+{
+	m_Owner = Owner;
+}
+
+void UAiState::SetNextState(EAiStateType NextState)
+{
+	m_NextState = NextState;
 }

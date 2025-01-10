@@ -3,10 +3,11 @@
 
 #include "Player_Mario.h"
 
-#include "GameFramework/InputSettings.h"
+
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HarioOdyssey/Projectile/HatProjectile.h"
 
 
 // Sets default values
@@ -62,9 +63,9 @@ void APlayer_Mario::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("OnStartJump", IE_Pressed, this, &APlayer_Mario::OnStartJump);
 	PlayerInputComponent->BindAction("OnStopJump", IE_Released, this, &APlayer_Mario::OnStopJump);
 
-	//모자 던지기
-	PlayerInputComponent->BindAction("ThrowHat", IE_Pressed, this, &APlayer_Mario::ThrowHat);
-	PlayerInputComponent->BindAction("ReturnHat", IE_Pressed, this, &APlayer_Mario::ReturnHat);
+	//모자 던지기,받기 입력
+	PlayerInputComponent->BindAction("OnThrowHat", IE_Pressed, this, &APlayer_Mario::OnThrowHat);
+	PlayerInputComponent->BindAction("OnReturnHat", IE_Pressed, this, &APlayer_Mario::OnReturnHat);
 	
 }
 
@@ -122,38 +123,41 @@ void APlayer_Mario::OnStopJump()
 }
 
 //모자 던지기
-void APlayer_Mario::ThrowHat()
+void APlayer_Mario::OnThrowHat()
 {
-	if (bIsHatThrown || !HatProjectileClass) return;
-
-	// 모자 생성 및 던지기
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
-	FRotator SpawnRotation = GetActorRotation();
-	CurrentHat = GetWorld()->SpawnActor<AActor>(HatProjectileClass, SpawnLocation, SpawnRotation);
-
-	if (CurrentHat)
-	{
-		UPrimitiveComponent* HatRoot = Cast<UPrimitiveComponent>(CurrentHat->GetRootComponent());
-		if (HatRoot)
-		{
-			FVector LaunchVelocity = GetActorForwardVector() * HatThrowForce;
-			HatRoot->AddImpulse(LaunchVelocity, NAME_None, true);
-		}
-
-		bIsHatThrown = true;
+	//UE_LOG(LogTemp, Warning, TEXT("Q"));
+	 if (bIsHatThrown || !HatProjectileClass) return;
+	
+	 // 모자 생성 및 던지기
+	 FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
+	 FRotator SpawnRotation = GetActorRotation();
+	 CurrentHat = GetWorld()->SpawnActor<AHatProjectile>(HatProjectileClass, SpawnLocation, SpawnRotation);
+	 CurrentHat->InitHatProjectile(this);
+	
+	 if (CurrentHat)
+	 {
+	 	UPrimitiveComponent* HatRoot = Cast<UPrimitiveComponent>(CurrentHat->GetRootComponent());
+	 	if (HatRoot)
+	 	{
+	 		FVector LaunchVelocity = GetActorForwardVector() * HatThrowForce;
+	 		HatRoot->AddImpulse(LaunchVelocity, NAME_None, true);
+	 	}
+	
+	 	bIsHatThrown = true;
 	}
 }
 
 //모자 받기
-void APlayer_Mario::ReturnHat()
+void APlayer_Mario::OnReturnHat()
 {
+	//UE_LOG(LogTemp, Warning, TEXT("E"));
 	if (!bIsHatThrown || !CurrentHat) return;
-
-	// 모자 반환 상태 설정
-	// AHatProjectile* Hat = Cast<AHatProjectile>(CurrentHat);
-	// if (Hat)
-	// {
-	// 	Hat->SetReturning(true);
-	// }
+	
+	//모자 반환 상태 설정
+	AHatProjectile* Hat = Cast<AHatProjectile>(CurrentHat);
+	if (Hat)
+	{
+		Hat->SetReturning(true);
+	}
 }
 

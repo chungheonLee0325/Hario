@@ -6,6 +6,8 @@
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "Player_Mario.generated.h"
 
+class AHatProjectile;
+
 UCLASS()
 class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
 {
@@ -36,9 +38,11 @@ protected:
 	void OnStopJump();
 
 	//모자던지기,받기
-	void ThrowHat();
-	void ReturnHat();
+	void OnThrowHat();
+	void OnReturnHat();
 	
+	bool bIsHatThrown = false;
+	AHatProjectile* CurrentHat = nullptr;
 
 
 	
@@ -55,9 +59,7 @@ private:
 	class UCameraComponent* FollowCamera;
 
 	//모자던지기,받기
-	bool bIsHatThrown = false;
-	AActor* CurrentHat = nullptr;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Hat")
 	TSubclassOf<AActor> HatProjectileClass;
 

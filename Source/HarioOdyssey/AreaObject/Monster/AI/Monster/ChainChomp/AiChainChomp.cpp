@@ -48,3 +48,31 @@ void UAiChainChomp::InitStatePool()
 	m_AiStates.Add(EAiStateType::Idle, AggroWait);
 }
 
+bool UAiChainChomp::CanBeCaptured_Implementation()
+{
+	return true; //ICapturable::CanBeCaptured_Implementation();
+}
+
+void UAiChainChomp::OnCaptureStart_Implementation()
+{
+	//ICapturable::OnCaptureStart_Implementation();
+
+	// 마리오에게 Capture 하라고 알려주기
+	// Ai Stop
+	// Move Stop
+	// Rotate Stop
+}
+
+void UAiChainChomp::OnCaptureEnd_Implementation()
+{
+	//ICapturable::OnCaptureEnd_Implementation();
+
+	// Mario Generate
+	// Ai Start
+}
+
+void UAiChainChomp::WhileCaptured_Implementation(ACharacter* CaptureOwner)
+{
+	ICapturable::WhileCaptured_Implementation(CaptureOwner);
+}
+

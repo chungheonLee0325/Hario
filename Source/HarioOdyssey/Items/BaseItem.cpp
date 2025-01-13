@@ -86,6 +86,8 @@ void ABaseItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 			OnCollected(Player);
 		}
 	}
+
+	// ToDo 모자랑 충돌처리
 }
 
 

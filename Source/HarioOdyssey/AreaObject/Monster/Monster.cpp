@@ -3,6 +3,8 @@
 
 #include "Monster.h"
 
+#include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
+
 
 // Sets default values
 AMonster::AMonster()
@@ -28,5 +30,14 @@ void AMonster::Tick(float DeltaTime)
 void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+UBaseSkill* AMonster::GetSkillByAiState(EAiStateType StateType)
+{
+	if (UBaseSkill** data = m_SkillByState.Find(StateType))
+	{
+		return *data;
+	}
+	return nullptr;
 }
 

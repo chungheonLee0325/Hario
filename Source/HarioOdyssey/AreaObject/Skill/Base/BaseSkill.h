@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HarioOdyssey/AreaObject/Monster/AI/Base/AiState.h"
-#include "BackHome.generated.h"
+#include "UObject/Object.h"
+#include "BaseSkill.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HARIOODYSSEY_API UBackHome : public UAiState
+class HARIOODYSSEY_API UBaseSkill : public UObject
 {
 	GENERATED_BODY()
 };

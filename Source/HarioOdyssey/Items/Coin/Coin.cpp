@@ -48,8 +48,7 @@ void ACoin::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ItemMesh->AddRelativeRotation(FRotator(0, 60.f * DeltaTime, 0));
-
 	// 코인 회전(애니메이션 있을시 x)
+	ItemMesh->AddRelativeRotation(CoinRotator * DeltaTime);
 }
 

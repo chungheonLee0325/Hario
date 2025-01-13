@@ -6,6 +6,8 @@
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "Monster.generated.h"
 
+class UBaseSkill;
+
 UCLASS()
 class HARIOODYSSEY_API AMonster : public AAreaObject
 {
@@ -25,4 +27,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual UBaseSkill* GetSkillByAiState(EAiStateType StateType);
+
+
+private:
+	TMap<EAiStateType, UBaseSkill*> m_SkillByState;
 };

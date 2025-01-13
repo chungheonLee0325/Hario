@@ -15,6 +15,8 @@ class HARIOODYSSEY_API ACoin : public ABaseItem
 public:
 	// Sets default values for this actor's properties
 	ACoin();
+	
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,7 +27,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Coin")
 	int32 m_CoinValue;
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+	FRotator CoinRotator = FRotator(0, 60.f , 0);
 };

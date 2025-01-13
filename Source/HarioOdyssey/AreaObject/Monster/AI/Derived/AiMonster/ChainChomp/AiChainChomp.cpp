@@ -4,7 +4,7 @@
 #include "AiChainChomp.h"
 
 #include "HarioOdyssey/AreaObject/Monster/AI/Base/AiState.h"
-#include "HarioOdyssey/AreaObject/Monster/AI/Derived/State//AggroWait.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Derived/CommonState//AggroWait.h"
 
 
 // Sets default values for this component's properties
@@ -43,7 +43,7 @@ void UAiChainChomp::InitStatePool()
 	//템플릿을 사용한 Factory 패턴으로 타입 안정성 보장)
 	auto AggroWait = CreateState<UAggroWait>(this, m_Owner,EAiStateType::Attack);
 	// Builder 패턴을 이용한 상태 설정 기능
-	AggroWait->SetDetectRange(500.0f);
-	AggroWait->SetWaitTime(3.0f);
+	AggroWait->SetM_DetectRange(500.0f);
+	AggroWait->SetM_WaitTime(3.0f);
 	m_AiStates.Add(EAiStateType::Idle, AggroWait);
 }

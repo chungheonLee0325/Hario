@@ -16,7 +16,6 @@ AAreaObject::AAreaObject()
 	m_Health = CreateDefaultSubobject<UHealth>(TEXT("Health"));
 
 	
-	
 }
 
 

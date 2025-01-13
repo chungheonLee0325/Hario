@@ -27,10 +27,10 @@ void UAggroWait::Exit()
 }
 void UAggroWait::SetDetectRange(float Range)
 {
-	m_Range = Range;
+	m_DetectRange = Range;
 }
 
 void UAggroWait::SetWaitTime(float Time)
 {
-	m_Time = Time;
+	m_WaitTime = Time;
 }

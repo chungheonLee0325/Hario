@@ -57,3 +57,23 @@ void AChainChomp::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+bool AChainChomp::CanBeCaptured_Implementation()
+{
+	return ICapturable::CanBeCaptured_Implementation();
+}
+
+void AChainChomp::OnCaptureStart_Implementation()
+{
+	ICapturable::OnCaptureStart_Implementation();
+}
+
+void AChainChomp::OnCaptureEnd_Implementation()
+{
+	ICapturable::OnCaptureEnd_Implementation();
+}
+
+void AChainChomp::WhileCaptured_Implementation(ACharacter* CaptureOwner)
+{
+	ICapturable::WhileCaptured_Implementation(CaptureOwner);
+}
+

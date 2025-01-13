@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "HarioOdyssey/AreaObject/Monster/Monster.h"
+#include "HarioOdyssey/Combat/Capturable.h"
 #include "ChainChomp.generated.h"
 
 class USphereComponent;
 
 UCLASS()
-class HARIOODYSSEY_API AChainChomp : public AMonster
+class HARIOODYSSEY_API AChainChomp : public AMonster, public ICapturable
 {
 	GENERATED_BODY()
 
@@ -37,4 +38,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	USphereComponent* ChainChompSphere;
+
+	virtual bool CanBeCaptured_Implementation() override;
+	virtual void OnCaptureStart_Implementation() override;
+	virtual void OnCaptureEnd_Implementation() override;
+	virtual void WhileCaptured_Implementation(ACharacter* CaptureOwner) override;
 };

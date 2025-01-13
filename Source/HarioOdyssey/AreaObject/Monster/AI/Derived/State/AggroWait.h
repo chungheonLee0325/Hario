@@ -24,6 +24,6 @@ public:
 	virtual void Exit() override;
 
 private:
-	float m_Time = 0.f;
-	float m_Range = 0.f;
+	float m_WaitTime = 0.f;
+	float m_DetectRange = 0.f;
 };

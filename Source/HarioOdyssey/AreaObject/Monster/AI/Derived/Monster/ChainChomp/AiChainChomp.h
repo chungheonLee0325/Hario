@@ -4,12 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Base/AiFSM.h"
-#include "HarioOdyssey/Combat/Capturable.h"
 #include "AiChainChomp.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class HARIOODYSSEY_API UAiChainChomp : public UAiFSM, public ICapturable
+class HARIOODYSSEY_API UAiChainChomp : public UAiFSM
 {
 	GENERATED_BODY()
 
@@ -28,8 +27,5 @@ public:
 
 	virtual void InitStatePool() override;
 
-	virtual bool CanBeCaptured_Implementation() override;
-	virtual void OnCaptureStart_Implementation() override;
-	virtual void OnCaptureEnd_Implementation() override;
-	virtual void WhileCaptured_Implementation(ACharacter* CaptureOwner) override;
+
 };

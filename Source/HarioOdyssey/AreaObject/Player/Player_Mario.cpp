@@ -46,6 +46,14 @@ void APlayer_Mario::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void APlayer_Mario::AddCoin(int32 CoinValue)
+{
+	CoinCount += CoinValue;
+
+	// UI 업데이트 + 추가 로직
+	//OnCoinsUpdate.Broadcast(CoinCount);
+}
+
 // Called to bind functionality to input
 void APlayer_Mario::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {

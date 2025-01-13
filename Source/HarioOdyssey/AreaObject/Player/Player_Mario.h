@@ -50,6 +50,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void AddCoin(int32 CoinValue);
+
 	
 private:
 	//카메라 컴포넌트
@@ -65,4 +67,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Hat")
 	float HatThrowForce = 1000.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Stats")
+	int32 CoinCount = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Stats")
+	int32 PowerMoons = 0;
 };

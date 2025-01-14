@@ -1,48 +1,87 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "HatProjectile.generated.h"
 
-class APlayer_Mario;
+class AMonster;  // AMonster 클래스의 포워드 선언
+class APlayer_Mario;  // 플레이어 클래스 포워드 선언
 
+// 클래스 선언
 UCLASS()
 class HARIOODYSSEY_API AHatProjectile : public AActor
 {
 	GENERATED_BODY()
-
-public:
-	// Sets default values for this actor's properties
+    
+public:    
 	AHatProjectile();
-	
-	void SetReturning(bool bReturning);
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
-	// Called every frame
+public:    
 	virtual void Tick(float DeltaTime) override;
-
-	void InitHatProjectile(APlayer_Mario* OwnerCharacter_);
-private:
-	// bool bIsHatThrown = false;
- //    AActor* CurrentHat = nullptr;
- //
- //    UPROPERTY(EditDefaultsOnly, Category = "Hat")
- //    TSubclassOf<AActor> HatProjectileClass;
- //
- //    UPROPERTY(EditDefaultsOnly, Category = "Hat")
- //    float HatThrowForce = 1000.0f;
+	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
 	
-	bool bIsReturning = false;
+	
+	// 던져지는 속도
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Projectile")
+	FVector ThrowVelocity;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Hat")
-	float ReturnSpeed = 500.0f;
+	// 모자가 달라붙을 몬스터의 범위
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Projectile")
+	float AttachDistance = 300.f;
 
-	APlayer_Mario* OwnerCharacter=nullptr;
+	// 모자가 붙을 때 몬스터 위쪽 위치를 조정할 오프셋
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Projectile")
+	FVector AttachOffset = FVector(0.f, 0.f, 50.f);
+
+	// 모자가 붙을 수 있는 몬스터 객체 (타겟)
+	UPROPERTY()
+	AActor* TargetMonster;
+
+	// 모자 속성 (물리적 효과 등)
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* HatMesh;
+
+	// 타겟을 찾고 가까운지 확인하는 함수
+	void CheckAndAttachToMonster();
+    
+	// 몬스터와의 거리 계산
+	bool IsNearMonster();
+
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* CollisionComponent;
+
+	UPROPERTY(EditAnywhere)
+	class UProjectileMovementComponent* ProjectileMovement;
+
+	UFUNCTION()
+	void OnHit(class UPrimitiveComponent* HitComp, AActor* OtherActor, 
+			   class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
+			   bool bFromSweep, const FHitResult& SweepResult);
+
+	// 몬스터와 붙을 때 호출될 함수
+	void AttachToMonster(AMonster* Monster);
+
+	// 플레이어를 일시적으로 숨기기
+	void HidePlayerTemporarily();
+
+	// 일시적으로 숨겨진 플레이어가 다시 보이도록 하기
+	void ShowPlayerAgain();
+
+	// 숨김을 해제할 시간 (초 단위)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Visibility")
+	float HiddenDuration = 5.0f;  // 5초 동안 숨김
+
+	// 플레이어 참조
+	APlayer_Mario* Player;
+
+private:
+	// 숨김 타이머
+	FTimerHandle UnhideTimerHandle;
+
+	
+
 };

@@ -7,6 +7,7 @@
 #include "HarioOdyssey/Combat/Capturable.h"
 #include "ChainChomp.generated.h"
 
+class UPathMover;
 class USphereComponent;
 
 UCLASS()
@@ -30,14 +31,17 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* ChainChompRoot;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* ChainChompMesh;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	USphereComponent* ChainChompSphere;
+
+	UPROPERTY(EditAnywhere)
+	UPathMover* ChainChompPathMover;
 
 	virtual bool CanBeCaptured_Implementation() override;
 	virtual void OnCaptureStart_Implementation() override;

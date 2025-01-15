@@ -82,7 +82,7 @@ private:
     // Internal Functions
     void UpdateMovement(float DeltaTime);
     void UpdateRotation(float DeltaTime);
-    float CalculateInterpolationAlpha(float RawAlpha, EMovementInterpolationType InterpType) const;
+    static float CalculateInterpolationAlpha(float RawAlpha, EMovementInterpolationType InterpType);
     void StartNewMovement(USceneComponent* ComponentToMove, const FVector& Target, 
                          float Duration, EMovementInterpolationType InterpType);
 }; 

@@ -206,7 +206,7 @@ void UPathMover::ReturnComponentToOriginal(USceneComponent* ComponentToReturn,
     }
 }
 
-float UPathMover::CalculateInterpolationAlpha(float RawAlpha, EMovementInterpolationType InterpType) const
+float UPathMover::CalculateInterpolationAlpha(float RawAlpha, EMovementInterpolationType InterpType)
 {
     switch (InterpType)
     {

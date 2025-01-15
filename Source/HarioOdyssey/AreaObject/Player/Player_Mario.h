@@ -1,12 +1,11 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Character.h"
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "Player_Mario.generated.h"
 
-class AHatProjectile;
+class AHatProjectile; 
 
 UCLASS()
 class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
@@ -14,63 +13,72 @@ class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	//생성자
+	// 기본 생성자
 	APlayer_Mario();
 
 protected:
-	// Called when the game starts or when spawned
+	// 게임이 시작하거나 스폰될 때 호출됩니다.
 	virtual void BeginPlay() override;
 
-	//입력구성
+public:	
+	// 매 프레임마다 호출됩니다.
+	virtual void Tick(float DeltaTime) override;
+
+	// 동전 획득 함수
+	void AddCoin(int32 CoinValue);
+
+	// 플레이어 입력 설정 함수
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//이동 함수
+	// 이동 함수
 	void OnMoveForward(float Value);
 	void OnMoveRight(float Value);
-	
-	//카메라 회전 함수
+
+	// 카메라 회전 함수
 	void OnTurn(float Value);
 	void OnLookUp(float Value);
-	
-	//점프입력
-	void OnStartJump();
-	void OnStopJump();
+	void OnResetView() ; //카메라 시점 초기화 
 
-	//모자던지기,받기
+	// 점프 함수
+	void OnStartJump();
+	
+	// 모자 던지기와 받기 함수
 	void OnThrowHat();
 	void OnReturnHat();
 	
-	bool bIsHatThrown = false;
-	AHatProjectile* CurrentHat = nullptr;
 
-
-	
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	void AddCoin(int32 CoinValue);
-
-	
 private:
-	//카메라 컴포넌트
+	// 카메라 붐 (Spring Arm)과 카메라 컴포넌트
 	UPROPERTY(VisibleAnywhere)
 	class USpringArmComponent* CameraBoom;
+
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* FollowCamera;
 
-	//모자던지기,받기
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Hat")
-	TSubclassOf<AActor> HatProjectileClass;
+	//카메라 시점 초기화
+	UPROPERTY(VisibleAnywhere)
+	FRotator DefaultCameraRotation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Hat")
-	float HatThrowForce = 1000.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Stats")
+	// 동전 카운트
 	int32 CoinCount = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Stats")
-	int32 PowerMoons = 0;
+	
+	
+	// 모자 던지기 관련 변수
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	TSubclassOf<AActor> HatProjectileClass; // 모자 프리팹 클래스
+
+	UPROPERTY()
+	AHatProjectile* CurrentHat; // 현재 던져진 모자
+
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	float HatThrowDistance = 1000.0f; // 모자 던지는 거리
+
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	float HatThrowTime = 1.0f; // 모자 던지는 시간
+
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	float HatReturnDelay = 1.5f; // 모자 돌아오는 시간
+
+	bool bIsHatThrown = false; // 모자 던져졌는지 여부
 };

@@ -2,6 +2,7 @@
 
 
 #include "PathMover.h"
+#include "DrawDebugHelpers.h"
 
 UPathMover::UPathMover()
 {
@@ -17,17 +18,75 @@ void UPathMover::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    if (MovementState.bIsActive)
+    const float CurrentTime = GetWorld()->GetTimeSeconds();
+    if (CurrentTime - LastUpdateTime < MinUpdateInterval)
     {
-        UpdateMovement(DeltaTime);
+        return;
+    }
+    LastUpdateTime = CurrentTime;
+
+    // Update Movement
+    if (MovementState.IsActive())
+    {
+        MovementState.Update(DeltaTime);
+        const float Alpha = MovementState.GetProgress();
+        const float InterpolatedAlpha = CalculateInterpolationAlpha(Alpha, MovementState.InterpType);
+        
+        // 실제 이동 적용
+        const FVector NewPosition = FMath::Lerp(MovementState.StartPos, MovementState.TargetPos, InterpolatedAlpha);
+        if (CurrentMovingComponent.IsValid())
+        {
+            CurrentMovingComponent->SetWorldLocation(NewPosition);
+        }
+        else if (AActor* Owner = GetOwner())
+        {
+            Owner->SetActorLocation(NewPosition);
+        }
+
+        OnMovementProgress.Broadcast(Alpha);
+        
+        if (Alpha >= 1.0f)
+        {
+            MovementState.Stop();
+            OnMovementCompleted.Broadcast();
+        }
     }
 
-    if (RotationState.bIsActive)
+    // Update Rotation
+    if (RotationState.IsActive())
     {
-        UpdateRotation(DeltaTime);
+        RotationState.Update(DeltaTime);
+        const float Alpha = RotationState.GetProgress();
+        const float InterpolatedAlpha = CalculateInterpolationAlpha(Alpha, RotationState.InterpType);
+        
+        // 실제 회전 적용
+        const FRotator NewRotation = FMath::Lerp(RotationState.StartRotation, RotationState.TargetRotation, InterpolatedAlpha);
+        if (CurrentRotatingComponent.IsValid())
+        {
+            CurrentRotatingComponent->SetWorldRotation(NewRotation);
+        }
+        else if (AActor* Owner = GetOwner())
+        {
+            Owner->SetActorRotation(NewRotation);
+        }
+
+        OnRotationProgress.Broadcast(Alpha);
+        
+        if (Alpha >= 1.0f)
+        {
+            RotationState.Stop();
+            OnRotationCompleted.Broadcast();
+        }
+    }
+
+    // Debug Visualization
+    if (bShowDebugPath || bShowRotationDebug)
+    {
+        DrawDebugVisuals();
     }
 }
 
+// Movement Interface Implementation
 void UPathMover::MoveComponentTo(USceneComponent* ComponentToMove, const FVector& TargetPosition, 
                                 float Duration, EMovementInterpolationType InterpType)
 {
@@ -38,45 +97,143 @@ void UPathMover::MoveComponentTo(USceneComponent* ComponentToMove, const FVector
         OriginalPositions.Add(ComponentToMove, ComponentToMove->GetRelativeLocation());
     }
 
-    StartNewMovement(ComponentToMove, TargetPosition, Duration, InterpType);
+    StartNewMovement(ComponentToMove, TargetPosition, EPMMovementMode::Duration, Duration, InterpType);
+}
+
+void UPathMover::MoveComponentToWithSpeed(USceneComponent* ComponentToMove, const FVector& TargetPosition, 
+                                        float Speed, EMovementInterpolationType InterpType)
+{
+    if (!ComponentToMove || Speed <= 0.0f) return;
+
+    if (!OriginalPositions.Contains(ComponentToMove))
+    {
+        OriginalPositions.Add(ComponentToMove, ComponentToMove->GetRelativeLocation());
+    }
+
+    StartNewMovement(ComponentToMove, TargetPosition, EPMMovementMode::Speed, Speed, InterpType);
 }
 
 void UPathMover::MoveActorTo(const FVector& TargetPosition, float Duration, 
-                             EMovementInterpolationType InterpType)
+                            EMovementInterpolationType InterpType)
 {
     if (!GetOwner() || Duration <= 0.0f) return;
-    StartNewMovement(nullptr, TargetPosition, Duration, InterpType);
+    StartNewMovement(nullptr, TargetPosition, EPMMovementMode::Duration, Duration, InterpType);
 }
 
-void UPathMover::StartNewMovement(USceneComponent* ComponentToMove, const FVector& Target, 
-                                 float Duration, EMovementInterpolationType InterpType)
+void UPathMover::MoveActorToWithSpeed(const FVector& TargetPosition, float Speed, 
+                                     EMovementInterpolationType InterpType)
 {
-    StopMovement(); // 이전 이동 중지
-
-    CurrentMovingComponent = ComponentToMove;
-    MovementState.StartPos = ComponentToMove ? 
-        ComponentToMove->GetComponentLocation() : 
-        GetOwner()->GetActorLocation();
-    MovementState.TargetPos = Target;
-    MovementState.Duration = Duration;
-    MovementState.InterpType = InterpType;
-    MovementState.CurrentTime = 0.0f;
-    MovementState.bIsActive = true;
+    if (!GetOwner() || Speed <= 0.0f) return;
+    StartNewMovement(nullptr, TargetPosition, EPMMovementMode::Speed, Speed, InterpType);
 }
 
+void UPathMover::ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration, 
+                                         EMovementInterpolationType InterpType)
+{
+    if (!ComponentToReturn) return;
+
+    const FVector* OriginalPos = OriginalPositions.Find(ComponentToReturn);
+    if (!OriginalPos) return;
+
+    if (USceneComponent* Parent = ComponentToReturn->GetAttachParent())
+    {
+        const FVector WorldPos = Parent->GetComponentTransform().TransformPosition(*OriginalPos);
+        MoveComponentTo(ComponentToReturn, WorldPos, Duration, InterpType);
+    }
+    else
+    {
+        MoveComponentTo(ComponentToReturn, *OriginalPos, Duration, InterpType);
+    }
+}
+
+// Rotation Interface Implementation
+void UPathMover::RotateComponentTo(USceneComponent* ComponentToRotate, const FRotator& TargetRotation, 
+                                  float Duration, EMovementInterpolationType InterpType)
+{
+    if (!ComponentToRotate || Duration <= 0.0f) return;
+    StartNewRotation(ComponentToRotate, TargetRotation, EPMRotationMode::Duration, Duration, InterpType);
+}
+
+void UPathMover::RotateComponentToWithSpeed(USceneComponent* ComponentToRotate, const FRotator& TargetRotation, 
+                                          float Speed, EMovementInterpolationType InterpType)
+{
+    if (!ComponentToRotate || Speed <= 0.0f) return;
+    StartNewRotation(ComponentToRotate, TargetRotation, EPMRotationMode::Speed, Speed, InterpType);
+}
+
+void UPathMover::RotateActorTo(const FRotator& TargetRotation, float Duration, 
+                               EMovementInterpolationType InterpType)
+{
+    if (!GetOwner() || Duration <= 0.0f) return;
+    StartNewRotation(nullptr, TargetRotation, EPMRotationMode::Duration, Duration, InterpType);
+}
+
+void UPathMover::RotateActorToWithSpeed(const FRotator& TargetRotation, float Speed, 
+                                       EMovementInterpolationType InterpType)
+{
+    if (!GetOwner() || Speed <= 0.0f) return;
+    StartNewRotation(nullptr, TargetRotation, EPMRotationMode::Speed, Speed, InterpType);
+}
+void UPathMover::LookAtLocationWithComponent(USceneComponent* ComponentToRotate, const FVector& TargetLocation, 
+                                           float Duration, EMovementInterpolationType InterpType)
+{
+    if (!ComponentToRotate || Duration <= 0.0f) return;
+
+    const FVector ComponentLocation = ComponentToRotate->GetComponentLocation();
+    const FVector Direction = (TargetLocation - ComponentLocation).GetSafeNormal();
+    const FRotator TargetRotation = Direction.Rotation();
+    
+    RotateComponentTo(ComponentToRotate, TargetRotation, Duration, InterpType);
+}
+
+void UPathMover::LookAtLocationWithComponentSpeed(USceneComponent* ComponentToRotate, const FVector& TargetLocation, 
+                                                float Speed, EMovementInterpolationType InterpType)
+{
+    if (!ComponentToRotate || Speed <= 0.0f) return;
+
+    const FVector ComponentLocation = ComponentToRotate->GetComponentLocation();
+    const FVector Direction = (TargetLocation - ComponentLocation).GetSafeNormal();
+    const FRotator TargetRotation = Direction.Rotation();
+    
+    RotateComponentToWithSpeed(ComponentToRotate, TargetRotation, Speed, InterpType);
+}
+
+void UPathMover::LookAtLocationWithActor(const FVector& TargetLocation, float Duration, 
+                                        EMovementInterpolationType InterpType)
+{
+    if (!GetOwner() || Duration <= 0.0f) return;
+
+    const FVector ActorLocation = GetOwner()->GetActorLocation();
+    const FVector Direction = (TargetLocation - ActorLocation).GetSafeNormal();
+    const FRotator TargetRotation = Direction.Rotation();
+    
+    RotateActorTo(TargetRotation, Duration, InterpType);
+}
+
+void UPathMover::LookAtLocationWithActorSpeed(const FVector& TargetLocation, float Speed, 
+                                             EMovementInterpolationType InterpType)
+{
+    if (!GetOwner() || Speed <= 0.0f) return;
+
+    const FVector ActorLocation = GetOwner()->GetActorLocation();
+    const FVector Direction = (TargetLocation - ActorLocation).GetSafeNormal();
+    const FRotator TargetRotation = Direction.Rotation();
+    
+    RotateActorToWithSpeed(TargetRotation, Speed, InterpType);
+}
+// State Control Implementation
 void UPathMover::StopMovement()
 {
-    if (!MovementState.bIsActive) return;
+    if (!MovementState.IsActive()) return;
 
-    // 현재 위치에서 정지
     if (CurrentMovingComponent.IsValid())
     {
-        FVector CurrentPos = CurrentMovingComponent->GetComponentLocation();
+        const FVector CurrentPos = CurrentMovingComponent->GetComponentLocation();
         CurrentMovingComponent->SetWorldLocation(CurrentPos);
     }
     else if (AActor* Owner = GetOwner())
     {
-        FVector CurrentPos = Owner->GetActorLocation();
+        const FVector CurrentPos = Owner->GetActorLocation();
         Owner->SetActorLocation(CurrentPos);
     }
 
@@ -87,16 +244,16 @@ void UPathMover::StopMovement()
 
 void UPathMover::StopRotation()
 {
-    if (!RotationState.bIsActive) return;
+    if (!RotationState.IsActive()) return;
 
-    if (CurrentMovingComponent.IsValid())
+    if (CurrentRotatingComponent.IsValid())
     {
-        FRotator CurrentRot = CurrentMovingComponent->GetComponentRotation();
-        CurrentMovingComponent->SetWorldRotation(CurrentRot);
+        const FRotator CurrentRot = CurrentRotatingComponent->GetComponentRotation();
+        CurrentRotatingComponent->SetWorldRotation(CurrentRot);
     }
     else if (AActor* Owner = GetOwner())
     {
-        FRotator CurrentRot = Owner->GetActorRotation();
+        const FRotator CurrentRot = Owner->GetActorRotation();
         Owner->SetActorRotation(CurrentRot);
     }
 
@@ -105,148 +262,81 @@ void UPathMover::StopRotation()
     OnRotationCompleted.Broadcast();
 }
 
+// Internal Implementation
+void UPathMover::StartNewMovement(USceneComponent* ComponentToMove, const FVector& Target, 
+                                EPMMovementMode Mode, float SpeedOrDuration, 
+                                EMovementInterpolationType InterpType)
+{
+    StopMovement();
+
+    CurrentMovingComponent = ComponentToMove;
+    MovementState.StartPos = ComponentToMove ? 
+        ComponentToMove->GetComponentLocation() : 
+        GetOwner()->GetActorLocation();
+    MovementState.TargetPos = Target;
+    MovementState.MovementMode = Mode;
+    MovementState.InterpType = InterpType;
+    
+    if (Mode == EPMMovementMode::Duration)
+    {
+        MovementState.Duration = SpeedOrDuration;
+        MovementState.Speed = 0.0f;
+    }
+    else
+    {
+        MovementState.Speed = SpeedOrDuration;
+        MovementState.Duration = (Target - MovementState.StartPos).Size() / SpeedOrDuration;
+    }
+
+    MovementState.CurrentTime = 0.0f;
+    MovementState.bIsActive = true;
+}
+
+void UPathMover::StartNewRotation(USceneComponent* ComponentToRotate, const FRotator& TargetRot, 
+                                EPMRotationMode Mode, float SpeedOrDuration, 
+                                EMovementInterpolationType InterpType)
+{
+    StopRotation();
+
+    CurrentRotatingComponent = ComponentToRotate;
+    RotationState.StartRotation = ComponentToRotate ? 
+        ComponentToRotate->GetComponentRotation() : 
+        GetOwner()->GetActorRotation();
+    RotationState.TargetRotation = TargetRot;
+    RotationState.RotationMode = Mode;
+    RotationState.InterpType = InterpType;
+    
+    if (Mode == EPMRotationMode::Duration)
+    {
+        RotationState.Duration = SpeedOrDuration;
+        RotationState.Speed = 0.0f;
+    }
+    else
+    {
+        RotationState.Speed = SpeedOrDuration;
+        const float MaxRotationDelta = FMath::Max(
+            FMath::Abs(FMath::FindDeltaAngleDegrees(RotationState.StartRotation.Yaw, TargetRot.Yaw)),
+            FMath::Max(
+                FMath::Abs(FMath::FindDeltaAngleDegrees(RotationState.StartRotation.Pitch, TargetRot.Pitch)),
+                FMath::Abs(FMath::FindDeltaAngleDegrees(RotationState.StartRotation.Roll, TargetRot.Roll))
+            )
+        );
+        RotationState.Duration = MaxRotationDelta / SpeedOrDuration;
+    }
+
+    RotationState.CurrentTime = 0.0f;
+    RotationState.bIsActive = true;
+}
+
 void UPathMover::ResetComponentReference()
 {
-    if (!MovementState.bIsActive && !RotationState.bIsActive)
+    if (!MovementState.IsActive())
     {
         CurrentMovingComponent.Reset();
     }
-}
-
-void UPathMover::UpdateMovement(float DeltaTime)
-{
-    MovementState.CurrentTime += DeltaTime;
-    float Alpha = FMath::Clamp(MovementState.CurrentTime / MovementState.Duration, 0.0f, 1.0f);
-    Alpha = CalculateInterpolationAlpha(Alpha, MovementState.InterpType);
-
-    FVector NewPosition = FMath::Lerp(MovementState.StartPos, MovementState.TargetPos, Alpha);
-
-    if (CurrentMovingComponent.IsValid())
+    if (!RotationState.IsActive())
     {
-        if (USceneComponent* Parent = CurrentMovingComponent->GetAttachParent())
-        {
-            FVector RelativePos = Parent->GetComponentTransform().InverseTransformPosition(NewPosition);
-            CurrentMovingComponent->SetRelativeLocation(RelativePos);
-        }
-        else
-        {
-            CurrentMovingComponent->SetWorldLocation(NewPosition);
-        }
-    }
-    else if (AActor* Owner = GetOwner())
-    {
-        Owner->SetActorLocation(NewPosition);
-    }
-
-    if (Alpha >= 1.0f)
-    {
-        MovementState.bIsActive = false;
-        OnMovementCompleted.Broadcast();
-    }
-}
-
-void UPathMover::RotateComponentToward(USceneComponent* ComponentToRotate, 
-                                      const FVector& TargetPos, float InterpSpeed)
-{
-    if (!ComponentToRotate) return;
-
-    CurrentMovingComponent = ComponentToRotate;
-    RotationState.TargetPos = TargetPos;
-    RotationState.Speed = InterpSpeed;
-    RotationState.bIsActive = true;
-}
-
-void UPathMover::RotateActorToward(const FVector& TargetPos, float InterpSpeed)
-{
-    if (!GetOwner()) return;
-
-    CurrentMovingComponent = nullptr;
-    RotationState.TargetPos = TargetPos;
-    RotationState.Speed = InterpSpeed;
-    RotationState.bIsActive = true;
-}
-
-void UPathMover::UpdateRotation(float DeltaTime)
-{
-    if (!RotationState.bIsActive) return;
-
-    FVector CurrentLocation;
-    FRotator CurrentRotation;
-    
-    // 현재 위치와 회전값 가져오기
-    if (CurrentMovingComponent.IsValid())
-    {
-        CurrentLocation = CurrentMovingComponent->GetComponentLocation();
-        CurrentRotation = CurrentMovingComponent->GetComponentRotation();
-    }
-    else if (AActor* Owner = GetOwner())
-    {
-        CurrentLocation = Owner->GetActorLocation();
-        CurrentRotation = Owner->GetActorRotation();
-    }
-    else
-    {
-        RotationState.bIsActive = false;
-        return;
-    }
-
-    // 목표를 향하는 방향 계산
-    FVector DirectionToTarget = (RotationState.TargetPos - CurrentLocation).GetSafeNormal();
-    FRotator TargetRotation = DirectionToTarget.Rotation();
-
-    // 현재 회전과 목표 회전 사이의 차이 계산
-    float DeltaYaw = FMath::FindDeltaAngleDegrees(CurrentRotation.Yaw, TargetRotation.Yaw);
-    
-    // 회전이 거의 완료되었는지 확인 (5도 이내)
-    if (FMath::Abs(DeltaYaw) < 5.0f)
-    {
-        // 정확한 목표 회전값으로 설정
-        if (CurrentMovingComponent.IsValid())
-        {
-            CurrentMovingComponent->SetWorldRotation(FRotator(0.0f, TargetRotation.Yaw, 0.0f));
-        }
-        else if (AActor* Owner = GetOwner())
-        {
-            Owner->SetActorRotation(FRotator(0.0f, TargetRotation.Yaw, 0.0f));
-        }
-        
-        RotationState.bIsActive = false;
-        OnRotationCompleted.Broadcast();
-        return;
-    }
-
-    // 부드러운 회전 적용
-    FRotator NewRotation = FRotator(0.0f, 
-        FMath::FInterpTo(CurrentRotation.Yaw, TargetRotation.Yaw, DeltaTime, RotationState.Speed), 
-        0.0f);
-
-    // 회전 적용
-    if (CurrentMovingComponent.IsValid())
-    {
-        CurrentMovingComponent->SetWorldRotation(NewRotation);
-    }
-    else if (AActor* Owner = GetOwner())
-    {
-        Owner->SetActorRotation(NewRotation);
-    }
-}
-
-void UPathMover::ReturnComponentToOriginal(USceneComponent* ComponentToReturn, 
-                                          float Duration, EMovementInterpolationType InterpType)
-{
-    if (!ComponentToReturn || Duration <= 0.0f) return;
-
-    FVector* OriginalPos = OriginalPositions.Find(ComponentToReturn);
-    if (!OriginalPos) return;
-
-    if (USceneComponent* Parent = ComponentToReturn->GetAttachParent())
-    {
-        FVector WorldPos = Parent->GetComponentTransform().TransformPosition(*OriginalPos);
-        MoveComponentTo(ComponentToReturn, WorldPos, Duration, InterpType);
-    }
-    else
-    {
-        MoveComponentTo(ComponentToReturn, *OriginalPos, Duration, InterpType);
+        CurrentRotatingComponent.Reset();
     }
 }
 
@@ -267,4 +357,80 @@ float UPathMover::CalculateInterpolationAlpha(float RawAlpha, EMovementInterpola
         default:
             return RawAlpha;
     }
+}
+
+void UPathMover::DrawDebugVisuals()
+{
+    if (!GetWorld()) return;
+
+    if (bShowDebugPath && MovementState.IsActive())
+    {
+        DrawDebugLine(GetWorld(), MovementState.StartPos, MovementState.TargetPos, 
+                     FColor::Green, false, -1.0f, 0, 2.0f);
+        DrawDebugPoint(GetWorld(), MovementState.TargetPos, 10.0f, FColor::Red, false, -1.0f);
+    }
+
+    if (bShowRotationDebug && RotationState.IsActive())
+    {
+        const FVector CurrentLocation = CurrentRotatingComponent.IsValid() ? 
+            CurrentRotatingComponent->GetComponentLocation() : 
+            GetOwner()->GetActorLocation();
+            
+        DrawDebugLine(GetWorld(), CurrentLocation, RotationState.TargetRotation.Vector() * 100.0f + CurrentLocation, 
+                     FColor::Blue, false, -1.0f, 0, 2.0f);
+    }
+}
+
+// State Class Implementations
+void FMovementState::Update(float DeltaTime)
+{
+    if (!bIsActive) return;
+    
+    CurrentTime += DeltaTime;
+    if (MovementMode == EPMMovementMode::Speed)
+    {
+        Duration = (TargetPos - StartPos).Size() / Speed;
+    }
+}
+
+void FMovementState::Stop()
+{
+    bIsActive = false;
+    CurrentTime = 0.0f;
+    Duration = 0.0f;
+    Speed = 0.0f;
+    StartPos = FVector::ZeroVector;
+    TargetPos = FVector::ZeroVector;
+    MovementMode = EPMMovementMode::Duration;
+    InterpType = EMovementInterpolationType::Linear;
+}
+
+void FRotationState::Update(float DeltaTime)
+{
+    if (!bIsActive) return;
+    
+    CurrentTime += DeltaTime;
+    if (RotationMode == EPMRotationMode::Speed)
+    {
+        const float MaxRotationDelta = FMath::Max(
+            FMath::Abs(FMath::FindDeltaAngleDegrees(StartRotation.Yaw, TargetRotation.Yaw)),
+            FMath::Max(
+                FMath::Abs(FMath::FindDeltaAngleDegrees(StartRotation.Pitch, TargetRotation.Pitch)),
+                FMath::Abs(FMath::FindDeltaAngleDegrees(StartRotation.Roll, TargetRotation.Roll))
+            )
+        );
+        Duration = MaxRotationDelta / Speed;
+    }
+}
+
+void FRotationState::Stop()
+{
+    bIsActive = false;
+    CurrentTime = 0.0f;
+    Duration = 0.0f;
+    Speed = 0.0f;
+    StartRotation = FRotator::ZeroRotator;
+    TargetRotation = FRotator::ZeroRotator;
+    RotationMode = EPMRotationMode::Duration;
+    InterpType = EMovementInterpolationType::Linear;
 } 

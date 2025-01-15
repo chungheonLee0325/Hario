@@ -70,7 +70,7 @@ void ABaseMonster::LookAtLocation(const FVector& Target, float Speed)
     
 	if (m_PathMover)
 	{
-		m_PathMover->RotateActorToward(Target, Speed);
+		//m_PathMover->RotateActorToward(Target, Speed);
 	}
 }
 
@@ -87,7 +87,7 @@ void ABaseMonster::ComponentLookAtLocation(USceneComponent* Component, const FVe
 
 	if (m_PathMover)
 	{
-		m_PathMover->RotateComponentToward(Component, Target, Speed);
+		//m_PathMover->RotateComponentToward(Component, Target, Speed);
 	}
 }
 

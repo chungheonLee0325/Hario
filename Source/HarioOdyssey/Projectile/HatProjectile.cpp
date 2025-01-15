@@ -5,7 +5,7 @@
 #include "TimerManager.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "HarioOdyssey/AreaObject/Monster/Monster.h"
+#include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
 #include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 
 // Sets default values
@@ -42,7 +42,7 @@ void AHatProjectile::BeginPlay()
   
 	// 던져지기 전에 몬스터를 찾기 (예: 게임 시작 시, 타겟 몬스터 지정)
 	TArray<AActor*> FoundMonsters;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMonster::StaticClass(), FoundMonsters);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseMonster::StaticClass(), FoundMonsters);
   
 	if (FoundMonsters.Num() > 0)
 	{
@@ -81,9 +81,9 @@ void AHatProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 						   bool bFromSweep, const FHitResult& SweepResult)
 {
 	// 몬스터와 충돌했을 경우
-	if (OtherActor && OtherActor->IsA(AMonster::StaticClass()))
+	if (OtherActor && OtherActor->IsA(ABaseMonster::StaticClass()))
 	{
-		AMonster* HitMonster = Cast<AMonster>(OtherActor);
+		ABaseMonster* HitMonster = Cast<ABaseMonster>(OtherActor);
         
 		if (HitMonster)
 		{
@@ -96,7 +96,7 @@ void AHatProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	}
 }
 
-void AHatProjectile::AttachToMonster(AMonster* Monster)
+void AHatProjectile::AttachToMonster(ABaseMonster* Monster)
 {
 	
 }

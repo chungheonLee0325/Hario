@@ -6,8 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "PathMover.generated.h"
 
-class UCurveFloat;
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementCompleted);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRotationCompleted);
 
@@ -37,23 +35,38 @@ public:
     void MoveActorTo(const FVector& TargetPosition, float Duration, 
                      EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
 
-    // Rotation Interface
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void RotateComponentToward(USceneComponent* ComponentToRotate, const FVector& TargetPos, float InterpSpeed);
-
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void RotateActorToward(const FVector& TargetPos, float InterpSpeed);
-
-    // Return to Original Position
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration, 
                                  EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
 
+    UFUNCTION(BlueprintCallable, Category = "Movement")
+    void StopMovement();
+
+    UFUNCTION(BlueprintCallable, Category = "Movement")
+    bool IsMoving() const { return MovementState.bIsActive; }
+
+    // Rotation Interface
+    UFUNCTION(BlueprintCallable, Category = "Rotation")
+    void RotateComponentToward(USceneComponent* ComponentToRotate, const FVector& TargetPos, float InterpSpeed);
+
+    UFUNCTION(BlueprintCallable, Category = "Rotation")
+    void RotateActorToward(const FVector& TargetPos, float InterpSpeed);
+
+    UFUNCTION(BlueprintCallable, Category = "Rotation")
+    void StopRotation();
+
+    UFUNCTION(BlueprintCallable, Category = "Rotation")
+    bool IsRotating() const { return RotationState.bIsActive; }
+
+    // Combined Control
+    UFUNCTION(BlueprintCallable, Category = "Control")
+    void StopAll() { StopMovement(); StopRotation(); }
+
     // Events
-    UPROPERTY(BlueprintAssignable, Category = "Movement")
+    UPROPERTY(BlueprintAssignable, Category = "Events")
     FOnMovementCompleted OnMovementCompleted;
 
-    UPROPERTY(BlueprintAssignable, Category = "Movement")
+    UPROPERTY(BlueprintAssignable, Category = "Events")
     FOnRotationCompleted OnRotationCompleted;
 
 protected:
@@ -63,20 +76,26 @@ protected:
 
 private:
     // Movement State
-    bool bIsMoving;
-    float CurrentLerpTime;
-    float MovementDuration;
-    FVector StartPosition;
-    FVector TargetPosition;
-    EMovementInterpolationType CurrentInterpType;
-    TWeakObjectPtr<USceneComponent> CurrentMovingComponent;
+    struct FMovementState
+    {
+        bool bIsActive = false;
+        float CurrentTime = 0.0f;
+        float Duration = 0.0f;
+        FVector StartPos = FVector::ZeroVector;
+        FVector TargetPos = FVector::ZeroVector;
+        EMovementInterpolationType InterpType = EMovementInterpolationType::Linear;
+    } MovementState;
 
     // Rotation State
-    bool bIsRotating;
-    FVector RotationTarget;
-    float RotationSpeed;
+    struct FRotationState
+    {
+        bool bIsActive = false;
+        FVector TargetPos = FVector::ZeroVector;
+        float Speed = 5.0f;
+    } RotationState;
 
-    // Original Positions Storage
+    // Component Reference
+    TWeakObjectPtr<USceneComponent> CurrentMovingComponent;
     TMap<TWeakObjectPtr<USceneComponent>, FVector> OriginalPositions;
 
     // Internal Functions
@@ -85,4 +104,5 @@ private:
     static float CalculateInterpolationAlpha(float RawAlpha, EMovementInterpolationType InterpType);
     void StartNewMovement(USceneComponent* ComponentToMove, const FVector& Target, 
                          float Duration, EMovementInterpolationType InterpType);
+    void ResetComponentReference();
 }; 

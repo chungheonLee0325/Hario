@@ -6,11 +6,6 @@
 UPathMover::UPathMover()
 {
     PrimaryComponentTick.bCanEverTick = true;
-    bIsMoving = false;
-    bIsRotating = false;
-    CurrentLerpTime = 0.0f;
-    MovementDuration = 0.0f;
-    RotationSpeed = 5.0f;
 }
 
 void UPathMover::BeginPlay()
@@ -22,60 +17,109 @@ void UPathMover::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    if (bIsMoving)
+    if (MovementState.bIsActive)
     {
         UpdateMovement(DeltaTime);
     }
 
-    if (bIsRotating)
+    if (RotationState.bIsActive)
     {
         UpdateRotation(DeltaTime);
     }
 }
 
-void UPathMover::MoveComponentTo(USceneComponent* ComponentToMove, const FVector& _TargetPosition, 
+void UPathMover::MoveComponentTo(USceneComponent* ComponentToMove, const FVector& TargetPosition, 
                                 float Duration, EMovementInterpolationType InterpType)
 {
     if (!ComponentToMove || Duration <= 0.0f) return;
 
-    // 원래 위치 저장 (처음 이동하는 경우에만)
     if (!OriginalPositions.Contains(ComponentToMove))
     {
         OriginalPositions.Add(ComponentToMove, ComponentToMove->GetRelativeLocation());
     }
 
-    StartNewMovement(ComponentToMove, _TargetPosition, Duration, InterpType);
+    StartNewMovement(ComponentToMove, TargetPosition, Duration, InterpType);
 }
 
-void UPathMover::MoveActorTo(const FVector& _TargetPosition, float Duration, 
+void UPathMover::MoveActorTo(const FVector& TargetPosition, float Duration, 
                              EMovementInterpolationType InterpType)
 {
     if (!GetOwner() || Duration <= 0.0f) return;
-
-    StartNewMovement(nullptr, _TargetPosition, Duration, InterpType);
+    StartNewMovement(nullptr, TargetPosition, Duration, InterpType);
 }
 
 void UPathMover::StartNewMovement(USceneComponent* ComponentToMove, const FVector& Target, 
                                  float Duration, EMovementInterpolationType InterpType)
 {
+    StopMovement(); // 이전 이동 중지
+
     CurrentMovingComponent = ComponentToMove;
-    StartPosition = ComponentToMove ? 
+    MovementState.StartPos = ComponentToMove ? 
         ComponentToMove->GetComponentLocation() : 
         GetOwner()->GetActorLocation();
-    TargetPosition = Target;
-    MovementDuration = Duration;
-    CurrentInterpType = InterpType;
-    CurrentLerpTime = 0.0f;
-    bIsMoving = true;
+    MovementState.TargetPos = Target;
+    MovementState.Duration = Duration;
+    MovementState.InterpType = InterpType;
+    MovementState.CurrentTime = 0.0f;
+    MovementState.bIsActive = true;
+}
+
+void UPathMover::StopMovement()
+{
+    if (!MovementState.bIsActive) return;
+
+    // 현재 위치에서 정지
+    if (CurrentMovingComponent.IsValid())
+    {
+        FVector CurrentPos = CurrentMovingComponent->GetComponentLocation();
+        CurrentMovingComponent->SetWorldLocation(CurrentPos);
+    }
+    else if (AActor* Owner = GetOwner())
+    {
+        FVector CurrentPos = Owner->GetActorLocation();
+        Owner->SetActorLocation(CurrentPos);
+    }
+
+    MovementState = FMovementState();
+    ResetComponentReference();
+    OnMovementCompleted.Broadcast();
+}
+
+void UPathMover::StopRotation()
+{
+    if (!RotationState.bIsActive) return;
+
+    if (CurrentMovingComponent.IsValid())
+    {
+        FRotator CurrentRot = CurrentMovingComponent->GetComponentRotation();
+        CurrentMovingComponent->SetWorldRotation(CurrentRot);
+    }
+    else if (AActor* Owner = GetOwner())
+    {
+        FRotator CurrentRot = Owner->GetActorRotation();
+        Owner->SetActorRotation(CurrentRot);
+    }
+
+    RotationState = FRotationState();
+    ResetComponentReference();
+    OnRotationCompleted.Broadcast();
+}
+
+void UPathMover::ResetComponentReference()
+{
+    if (!MovementState.bIsActive && !RotationState.bIsActive)
+    {
+        CurrentMovingComponent.Reset();
+    }
 }
 
 void UPathMover::UpdateMovement(float DeltaTime)
 {
-    CurrentLerpTime += DeltaTime;
-    float Alpha = FMath::Clamp(CurrentLerpTime / MovementDuration, 0.0f, 1.0f);
-    Alpha = CalculateInterpolationAlpha(Alpha, CurrentInterpType);
+    MovementState.CurrentTime += DeltaTime;
+    float Alpha = FMath::Clamp(MovementState.CurrentTime / MovementState.Duration, 0.0f, 1.0f);
+    Alpha = CalculateInterpolationAlpha(Alpha, MovementState.InterpType);
 
-    FVector NewPosition = FMath::Lerp(StartPosition, TargetPosition, Alpha);
+    FVector NewPosition = FMath::Lerp(MovementState.StartPos, MovementState.TargetPos, Alpha);
 
     if (CurrentMovingComponent.IsValid())
     {
@@ -96,7 +140,7 @@ void UPathMover::UpdateMovement(float DeltaTime)
 
     if (Alpha >= 1.0f)
     {
-        bIsMoving = false;
+        MovementState.bIsActive = false;
         OnMovementCompleted.Broadcast();
     }
 }
@@ -107,9 +151,9 @@ void UPathMover::RotateComponentToward(USceneComponent* ComponentToRotate,
     if (!ComponentToRotate) return;
 
     CurrentMovingComponent = ComponentToRotate;
-    RotationTarget = TargetPos;
-    RotationSpeed = InterpSpeed;
-    bIsRotating = true;
+    RotationState.TargetPos = TargetPos;
+    RotationState.Speed = InterpSpeed;
+    RotationState.bIsActive = true;
 }
 
 void UPathMover::RotateActorToward(const FVector& TargetPos, float InterpSpeed)
@@ -117,14 +161,14 @@ void UPathMover::RotateActorToward(const FVector& TargetPos, float InterpSpeed)
     if (!GetOwner()) return;
 
     CurrentMovingComponent = nullptr;
-    RotationTarget = TargetPos;
-    RotationSpeed = InterpSpeed;
-    bIsRotating = true;
+    RotationState.TargetPos = TargetPos;
+    RotationState.Speed = InterpSpeed;
+    RotationState.bIsActive = true;
 }
 
 void UPathMover::UpdateRotation(float DeltaTime)
 {
-    if (!bIsRotating) return;
+    if (!RotationState.bIsActive) return;
 
     FVector CurrentLocation;
     FRotator CurrentRotation;
@@ -142,12 +186,12 @@ void UPathMover::UpdateRotation(float DeltaTime)
     }
     else
     {
-        bIsRotating = false;
+        RotationState.bIsActive = false;
         return;
     }
 
     // 목표를 향하는 방향 계산
-    FVector DirectionToTarget = (RotationTarget - CurrentLocation).GetSafeNormal();
+    FVector DirectionToTarget = (RotationState.TargetPos - CurrentLocation).GetSafeNormal();
     FRotator TargetRotation = DirectionToTarget.Rotation();
 
     // 현재 회전과 목표 회전 사이의 차이 계산
@@ -166,14 +210,14 @@ void UPathMover::UpdateRotation(float DeltaTime)
             Owner->SetActorRotation(FRotator(0.0f, TargetRotation.Yaw, 0.0f));
         }
         
-        bIsRotating = false;
+        RotationState.bIsActive = false;
         OnRotationCompleted.Broadcast();
         return;
     }
 
     // 부드러운 회전 적용
     FRotator NewRotation = FRotator(0.0f, 
-        FMath::FInterpTo(CurrentRotation.Yaw, TargetRotation.Yaw, DeltaTime, RotationSpeed), 
+        FMath::FInterpTo(CurrentRotation.Yaw, TargetRotation.Yaw, DeltaTime, RotationState.Speed), 
         0.0f);
 
     // 회전 적용

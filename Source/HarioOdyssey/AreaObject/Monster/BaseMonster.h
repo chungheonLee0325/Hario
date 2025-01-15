@@ -28,7 +28,31 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// Skill
 	virtual UBaseSkill* GetSkillByAiState(EAiStateType StateType);
+
+	// Rotation Methods
+	//UFUNCTION(BlueprintCallable, Category = "Rotation")
+	//void LookAtLocation(const FVector& Target, float Speed);
+	//UFUNCTION(BlueprintCallable, Category = "Rotation")
+	//void LookAtActor(AActor* Target, float Speed);
+	//
+	//// Component Rotation Methods
+	//UFUNCTION(BlueprintCallable, Category = "Rotation")
+	//void ComponentLookAtLocation(USceneComponent* Component, const FVector& Target, float Speed);
+	//UFUNCTION(BlueprintCallable, Category = "Rotation")
+	//void ComponentLookAtActor(USceneComponent* Component, AActor* Target, float Speed);
+	//
+	//// Movement Methods
+	//UFUNCTION(BlueprintCallable, Category = "Movement")
+	//void StopMoving();
+
+	
+	
+	
+
+UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	class UPathMover* m_PathMover;
 
 
 private:

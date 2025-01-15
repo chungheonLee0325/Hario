@@ -27,6 +27,7 @@ AChainChomp::AChainChomp()
 	ChainChompMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ChainChomp");
 	ChainChompMesh->SetupAttachment(ChainChompRoot);
 	ChainChompMesh->SetRelativeScale3D(FVector(0.3f));
+	ChainChompMesh->SetRelativeRotation(FRotator(0.0f,-90.0f,0.0f));
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempCCBody(TEXT("/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/ChainChomp2/ChainChomp2.ChainChomp2'"));
 	if (tempCCBody.Succeeded())
 	{

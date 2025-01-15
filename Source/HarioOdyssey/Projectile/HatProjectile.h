@@ -4,7 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "HatProjectile.generated.h"
 
-class AMonster;  // AMonster 클래스의 포워드 선언
+class ABaseMonster;  // AMonster 클래스의 포워드 선언
 class APlayer_Mario;  // 플레이어 클래스 포워드 선언
 
 // 클래스 선언
@@ -63,7 +63,7 @@ public:
 			   bool bFromSweep, const FHitResult& SweepResult);
 
 	// 몬스터와 붙을 때 호출될 함수
-	void AttachToMonster(AMonster* Monster);
+	void AttachToMonster(ABaseMonster* Monster);
 
 	// 플레이어를 일시적으로 숨기기
 	void HidePlayerTemporarily();

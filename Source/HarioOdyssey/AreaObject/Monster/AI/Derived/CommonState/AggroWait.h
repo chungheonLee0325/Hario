@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HarioOdyssey/AreaObject/Monster/AI/Base/AiState.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiState.h"
 #include "AggroWait.generated.h"
 
 class AAreaObject;
@@ -11,7 +11,7 @@ class AAreaObject;
  * 
  */
 UCLASS()
-class HARIOODYSSEY_API UAggroWait : public UAiState
+class HARIOODYSSEY_API UAggroWait : public UBaseAiState
 {
 	GENERATED_BODY()
 

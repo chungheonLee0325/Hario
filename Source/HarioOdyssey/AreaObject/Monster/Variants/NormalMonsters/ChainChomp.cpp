@@ -18,7 +18,7 @@ AChainChomp::AChainChomp()
 		GetMesh()->SetSkeletalMesh(tempRoot.Object);
 	}
 	GetMesh()->SetRelativeScale3D(FVector(0.3f));
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f,0.0f,-60.0f), FRotator(0.0f,0.0f,-90.0f));
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f,0.0f,-65.0f), FRotator(0.0f,0.0f,-90.0f));
 	
 	ChainChompRoot = CreateDefaultSubobject<USceneComponent>("ChainChompRoot");
 	ChainChompRoot->SetRelativeLocation(FVector(0.0f,0.0f,80.0f));

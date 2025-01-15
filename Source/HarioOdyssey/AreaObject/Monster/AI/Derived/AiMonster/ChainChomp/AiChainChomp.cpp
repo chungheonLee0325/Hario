@@ -3,7 +3,7 @@
 
 #include "AiChainChomp.h"
 
-#include "HarioOdyssey/AreaObject/Monster/AI/Base/AiState.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiState.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Derived/CommonState//AggroWait.h"
 
 

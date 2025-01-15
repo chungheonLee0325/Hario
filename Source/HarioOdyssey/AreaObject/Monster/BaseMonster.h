@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
-#include "Monster.generated.h"
+#include "BaseMonster.generated.h"
 
 class UBaseSkill;
 
 UCLASS()
-class HARIOODYSSEY_API AMonster : public AAreaObject
+class HARIOODYSSEY_API ABaseMonster : public AAreaObject
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AMonster();
+	ABaseMonster();
  
 protected:
 	// Called when the game starts or when spawned

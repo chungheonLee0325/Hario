@@ -5,19 +5,19 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "HarioOdyssey/ResourceManager/HarioGameType.h"
-#include "AiFSM.generated.h"
+#include "BaseAiFSM.generated.h"
 
-class AMonster;
-class UAiState;
+class ABaseMonster;
+class UBaseAiState;
 
 UCLASS(Abstract,ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class HARIOODYSSEY_API UAiFSM : public UActorComponent
+class HARIOODYSSEY_API UBaseAiFSM : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UAiFSM();
+	UBaseAiFSM();
 
 protected:
 	// Called when the game starts
@@ -28,7 +28,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
-	void AddState(EAiStateType StateType,UAiState* State);
+	void AddState(EAiStateType StateType,UBaseAiState* State);
 	
 	void ChangeState(EAiStateType StateType);
 
@@ -40,9 +40,9 @@ public:
 
 public:
 	template<typename T>
-	static T* CreateState(UObject* Outer, AMonster* Owner, EAiStateType NextState)
+	static T* CreateState(UObject* Outer, ABaseMonster* Owner, EAiStateType NextState)
 	{
-		static_assert(std::is_base_of_v<UAiState, T>, "T must derive from UAiState");
+		static_assert(std::is_base_of_v<UBaseAiState, T>, "T must derive from UAiState");
 
 		T* State = NewObject<T>(Outer, T::StaticClass());
 		State->InitState();
@@ -56,12 +56,12 @@ public:
 protected:
 	
 UPROPERTY()
-	TMap<EAiStateType, UAiState*> m_AiStates;
+	TMap<EAiStateType, UBaseAiState*> m_AiStates;
 	
 UPROPERTY()
-	UAiState* m_CurrentState = nullptr;
+	UBaseAiState* m_CurrentState = nullptr;
 UPROPERTY()
-	UAiState* m_PreviousState = nullptr;
+	UBaseAiState* m_PreviousState = nullptr;
 UPROPERTY()
-	AMonster* m_Owner = nullptr;
+	ABaseMonster* m_Owner = nullptr;
 };

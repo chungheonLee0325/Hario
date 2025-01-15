@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HarioOdyssey/AreaObject/Monster/AI/Base/AiState.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiState.h"
 #include "CommonAttack.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HARIOODYSSEY_API UCommonAttack : public UAiState
+class HARIOODYSSEY_API UCommonAttack : public UBaseAiState
 {
 	GENERATED_BODY()
 

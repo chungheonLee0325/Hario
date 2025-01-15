@@ -3,7 +3,7 @@
 
 #include "BackHome.h"
 
-#include "HarioOdyssey/AreaObject/Monster/AI/Base/AiFSM.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiFSM.h"
 
 void UBackHome::InitState()
 {

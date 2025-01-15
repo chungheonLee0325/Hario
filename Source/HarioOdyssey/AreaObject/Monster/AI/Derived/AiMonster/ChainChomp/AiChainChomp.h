@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HarioOdyssey/AreaObject/Monster/AI/Base/AiFSM.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiFSM.h"
 #include "AiChainChomp.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class HARIOODYSSEY_API UAiChainChomp : public UAiFSM
+class HARIOODYSSEY_API UAiChainChomp : public UBaseAiFSM
 {
 	GENERATED_BODY()
 

@@ -5,25 +5,25 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "HarioOdyssey/ResourceManager/HarioGameType.h"
-#include "AiState.generated.h"
+#include "BaseAiState.generated.h"
 
-class AMonster;
-class UAiFSM;
+class ABaseMonster;
+class UBaseAiFSM;
 
 /**
  * 
  */
 UCLASS(Abstract)
-class HARIOODYSSEY_API UAiState : public UObject
+class HARIOODYSSEY_API UBaseAiState : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	void SetAiFSM(UAiFSM* AiFSM);
+	void SetAiFSM(UBaseAiFSM* AiFSM);
 	void SetAiKind(EAiStateType StateType);
 	EAiStateType AiStateType() const;
 	virtual void InitState() PURE_VIRTUAL(UBaseAiState::InitState);
-	void SetOwner(AMonster* Owner);
+	void SetOwner(ABaseMonster* Owner);
 	void SetNextState(EAiStateType NextState);
 	virtual void Enter() PURE_VIRTUAL(UAiState::Enter,);
 	virtual void Execute(float dt) PURE_VIRTUAL(UAiState::Excute,);
@@ -33,10 +33,10 @@ protected:
 	EAiStateType m_AiStateType;
 
 	UPROPERTY()
-	UAiFSM* m_AiFSM;	
+	UBaseAiFSM* m_AiFSM;	
 
 	UPROPERTY()
-	AMonster* m_Owner;
+	ABaseMonster* m_Owner;
 
 	UPROPERTY()
 	EAiStateType m_NextState;

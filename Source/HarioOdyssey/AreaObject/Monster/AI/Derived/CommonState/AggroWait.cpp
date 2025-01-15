@@ -5,8 +5,8 @@
 
 #include "GameFramework/Character.h"
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
-#include "HarioOdyssey/AreaObject/Monster/Monster.h"
-#include "HarioOdyssey/AreaObject/Monster/AI/Base/AiFSM.h"
+#include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiFSM.h"
 #include "Kismet/GameplayStatics.h"
 
 

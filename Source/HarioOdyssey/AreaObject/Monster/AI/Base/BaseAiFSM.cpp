@@ -1,13 +1,13 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "AiFSM.h"
+#include "BaseAiFSM.h"
 
-#include "AiState.h"
-#include "HarioOdyssey/AreaObject/Monster/Monster.h"
+#include "BaseAiState.h"
+#include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
 #include "HarioOdyssey/ResourceManager/HarioGameType.h"
 
 
 // Sets default values for this component's properties
-UAiFSM::UAiFSM()
+UBaseAiFSM::UBaseAiFSM()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -18,7 +18,7 @@ UAiFSM::UAiFSM()
 
 
 // Called when the game starts
-void UAiFSM::BeginPlay()
+void UBaseAiFSM::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -28,14 +28,14 @@ void UAiFSM::BeginPlay()
 
 
 // Called every frame
-void UAiFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UBaseAiFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	UpdateState(DeltaTime);
 }
 
-void UAiFSM::AddState(EAiStateType StateType, UAiState* State)
+void UBaseAiFSM::AddState(EAiStateType StateType, UBaseAiState* State)
 {
 	if (true == m_AiStates.Contains(StateType))
 	{
@@ -47,13 +47,13 @@ void UAiFSM::AddState(EAiStateType StateType, UAiState* State)
 	m_AiStates.Add(StateType, State);
 }
 
-void UAiFSM::ChangeState(EAiStateType StateType)
+void UBaseAiFSM::ChangeState(EAiStateType StateType)
 {
 	if (EAiStateType::None == StateType)
 	{
 		return;
 	}
-	UAiState** ChangeState = m_AiStates.Find(StateType);
+	UBaseAiState** ChangeState = m_AiStates.Find(StateType);
 	if (nullptr == ChangeState)
 	{
 		return;
@@ -79,12 +79,12 @@ void UAiFSM::ChangeState(EAiStateType StateType)
 	m_CurrentState->Enter();
 }
 
-bool UAiFSM::IsExistState(EAiStateType StateType) const
+bool UBaseAiFSM::IsExistState(EAiStateType StateType) const
 {
 	return m_AiStates.Contains(StateType);
 }
 
-void UAiFSM::UpdateState(float dt)
+void UBaseAiFSM::UpdateState(float dt)
 {
 	if (nullptr == m_CurrentState)
 	{

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HarioOdyssey/AreaObject/Monster/Monster.h"
+#include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
 #include "HarioOdyssey/Combat/Capturable.h"
 #include "ChainChomp.generated.h"
 
@@ -11,7 +11,7 @@ class UPathMover;
 class USphereComponent;
 
 UCLASS()
-class HARIOODYSSEY_API AChainChomp : public AMonster, public ICapturable
+class HARIOODYSSEY_API AChainChomp : public ABaseMonster, public ICapturable
 {
 	GENERATED_BODY()
 

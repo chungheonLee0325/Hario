@@ -104,3 +104,17 @@ void AAreaObject::OnKill()
 void AAreaObject::OnRevival()
 {
 }
+
+bool AAreaObject::AddCondition(EConditionType Condition) const
+{
+	return m_Condition->AddCondition(Condition);
+}
+bool AAreaObject::RemoveCondition(EConditionType Condition) const
+{
+	return m_Condition->RemoveCondition(Condition);
+}
+bool AAreaObject::HasCondition(EConditionType Condition) const
+{
+	return m_Condition->HasCondition(Condition);
+}
+

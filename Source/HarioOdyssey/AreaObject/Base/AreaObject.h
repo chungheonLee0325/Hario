@@ -45,6 +45,11 @@ public:
 
 	bool IsDie() const { return m_Condition->IsDead(); }
 
+	bool AddCondition(EConditionType Condition) const;
+	bool RemoveCondition(EConditionType Condition) const;
+	bool HasCondition(EConditionType Condition) const;
+	
+
 	UPROPERTY(Blueprintable)
 	int m_AreaObjectID;
 

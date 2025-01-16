@@ -46,6 +46,16 @@ public:
 	// 모자 던지기와 받기 함수
 	void OnThrowHat();
 	
+	//무적상태
+	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
+		AActor* DamageCauser) override;
+	
+	// 깜빡이는 효과 처리 및 정리
+	void HandleBlinkingEffect(bool bStart);
+	void StartBlinkingEffect();
+	
+	
+	virtual void OnDie() override; //죽을 때 함수
 
 private:
 	// 카메라 붐 (Spring Arm)과 카메라 컴포넌트
@@ -64,10 +74,22 @@ private:
 
 	//UI 생성
 	TObjectPtr<UCoinCounterWidget> CoinCounterWidget;
+
+	// 깜빡이는 상태 변수
+	bool bIsInvincible = false;
+
+	// 깜빡이는 타이머 변수
+	FTimerHandle BlinkHandle;
+	float BlinkDuration; // 총 지속 시간
+	float BlinkInterval; // 깜빡이는 간격
+	float BlinkTimer;    // 현재까지 경과 시간
 	
 
+	
 protected:
 	// 모자 던지기 관련 변수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hat")
 	TSubclassOf<class AHatProjectile> HatClass;
+
+	
 };

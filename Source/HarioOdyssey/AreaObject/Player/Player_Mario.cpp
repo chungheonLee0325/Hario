@@ -35,12 +35,7 @@ APlayer_Mario::APlayer_Mario()
     
     GetCharacterMovement()->bOrientRotationToMovement = true; // 이동 방향으로 회전
 
-    struct ConstructorHelpers::FClassFinder<UUserWidget> WBP_Widget
-    (TEXT("/Game/_BluePrints/Common/UI/BP_CoinCounterWidget.BP_CoinCounterWidget_C"));
-    if (WBP_Widget.Succeeded())
-    {
-        CoinCounterWidgetClass = WBP_Widget.Class;
-    }
+   
 }
 
 // Called when the game starts or when spawned
@@ -61,7 +56,21 @@ void APlayer_Mario::BeginPlay()
 void APlayer_Mario::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    //무적일때 깜빡이기
+    // if (!bIsInvincible) //????????데미지 받으면
+    // {
+    //     float TimeInSenconds = GetWorld()->GetTimeSeconds();
+    //     bool bShouldBlink=FMath::Fmod(TimeInSenconds*5.0f,1.0f) > 0.5f;
+    //     SetActorHiddenInGame(bShouldBlink);
+    // }
+    // else
+    // {
+    //     SetActorHiddenInGame(false);
+    // }
 }
+
+
 
 void APlayer_Mario::AddCoin(int32 CoinValue)
 {
@@ -173,7 +182,6 @@ void APlayer_Mario::OnThrowHat()
         FRotator SpawnRotation = GetActorRotation();
 
         // HatProjectile 생성
-        //????????????생성하지 않고 있는거 던지는 방법 찾아보기
         AHatProjectile* Hat = GetWorld()->SpawnActor<AHatProjectile>(HatClass, SpawnLocation, SpawnRotation, SpawnParams);
         if (Hat)
         {
@@ -183,6 +191,86 @@ void APlayer_Mario::OnThrowHat()
     }
 }
 
+float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
+    AActor* DamageCauser)
+{
+    // 데미지 호출
+    float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+    if (ActualDamage > 0.0f && !bIsInvincible)
+    {
+        HandleBlinkingEffect(true); // 깜빡이는 효과 시작
+    }
+
+    return ActualDamage;
+}
 
 
+// 깜빡이는 효과 처리 및 정리
+void APlayer_Mario::StartBlinkingEffect()
+{
+    HandleBlinkingEffect(true); // 래퍼 함수
+}
+void APlayer_Mario::HandleBlinkingEffect(bool bStart)
+{
+    if (bStart)
+    {
+        // 무적 상태 활성화
+        bIsInvincible = true;
+
+        // 초기 타이머 설정
+        BlinkTimer = 0.0f;
+        BlinkDuration = 2.0f;   // 총 지속 시간
+        BlinkInterval = 0.2f;   // 깜빡이는 간격
+
+        // 타이머 시작
+        GetWorldTimerManager().SetTimer(BlinkHandle, this, &APlayer_Mario::StartBlinkingEffect, BlinkInterval, true);
+
+    }
+    else
+    {
+        // 타이머 실행 중일 때 깜빡임 처리
+        if (USkeletalMeshComponent* LocalMesh  = GetMesh())
+        {
+            // Mesh의 보이기 상태를 반전
+            bool bNewVisibility = !LocalMesh ->IsVisible();
+            LocalMesh ->SetVisibility(bNewVisibility);
+        }
+
+        // 타이머 업데이트
+        BlinkTimer += BlinkInterval;
+
+        // 깜빡이는 효과 종료 조건
+        if (BlinkTimer >= BlinkDuration)
+        {
+            // 타이머 정지 및 초기화
+            GetWorldTimerManager().ClearTimer(BlinkHandle);
+
+            if (USkeletalMeshComponent* LocalMesh  = GetMesh())
+            {
+                // Mesh를 항상 보이도록 설정
+                LocalMesh ->SetVisibility(true);
+            }
+
+            // 무적 상태 비활성화
+            bIsInvincible = false;
+        }
+    }
+
+  
+
+
+    
+    // ToDoKHA : 깜빡이기 + 무적
+    //m_Condition->AddCondition(EConditionType::Invincible);
+
+    // ToDoKHA : 애니메이션(동작 불가 n초)
+    //return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
+
+void APlayer_Mario::OnDie()
+{
+    Super::OnDie();
+}
 

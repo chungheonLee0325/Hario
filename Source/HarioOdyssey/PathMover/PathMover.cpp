@@ -438,7 +438,7 @@ float UPathMover::CalculateInterpolationAlpha(float RawAlpha, EMovementInterpola
     }
 }
 
-void UPathMover::DrawDebugVisuals()
+void UPathMover::DrawDebugVisuals() const
 {
     if (!GetWorld()) return;
 

@@ -225,6 +225,6 @@ private:
                          EPMRotationMode Mode, float SpeedOrDuration, 
                          EMovementInterpolationType InterpType);
     void ResetComponentReference();
-    void DrawDebugVisuals();
+    void DrawDebugVisuals() const;
     static float CalculateInterpolationAlpha(float RawAlpha, EMovementInterpolationType InterpType);
 }; 

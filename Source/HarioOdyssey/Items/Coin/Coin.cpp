@@ -3,8 +3,8 @@
 
 #include "Coin.h"
 
-#include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 
+#include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 
 // Sets default values
 ACoin::ACoin()
@@ -12,7 +12,7 @@ ACoin::ACoin()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 멤버 변수 초기화
+	// 코인 누적 초기화
 	m_CoinValue = 1;
 
 	// 코인 메시 설정
@@ -36,11 +36,13 @@ void ACoin::BeginPlay()
 
 void ACoin::ApplyEffect(class APlayer_Mario* Player)
 {
-	// 케릭터의 코인 수 증가
+	
 	if (Player)
 	{
+		// 케릭터의 코인 수 증가
 		Player->AddCoin(m_CoinValue);
 	}
+	
 }
 
 // Called every frame

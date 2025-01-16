@@ -5,6 +5,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HarioOdyssey/Projectile/HatProjectile.h"
 #include "GameFramework/PlayerController.h"
+#include "HarioOdyssey/UI/CoinCounterWidget.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Blueprint/UserWidget.h"
+
 
 // Sets default values
 APlayer_Mario::APlayer_Mario()
@@ -25,13 +29,33 @@ APlayer_Mario::APlayer_Mario()
 
     // 캐릭터 회전 설정
     bUseControllerRotationYaw = false;
+    
     GetCharacterMovement()->bOrientRotationToMovement = true; // 이동 방향으로 회전
+
+    struct ConstructorHelpers::FClassFinder<UUserWidget> WBP_Widget
+    (TEXT("/Game/_BluePrints/Common/UI/BP_CoinCounterWidget.BP_CoinCounterWidget_C"));
+    if (WBP_Widget.Succeeded())
+    {
+        CoinCounterWidgetClass = WBP_Widget.Class;
+    }
 }
 
 // Called when the game starts or when spawned
 void APlayer_Mario::BeginPlay()
 {
     Super::BeginPlay();
+    //UI 생성
+    // CoinCounterWidgetClass = LoadClass<UCoinCounterWidget>(nullptr, TEXT("/Game/_BluePrints/Common/UI/BP_CoinCounterWidget.BP_CoinCounterWidget"));
+    CoinCounterWidget = CreateWidget<UCoinCounterWidget>(GetWorld(), CoinCounterWidgetClass);
+    if (CoinCounterWidget)
+    {
+        CoinCounterWidget->AddToViewport();
+        CoinCounterWidget->UpdateCoinCounter(CoinCount);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("CoinCounterWidget is NULL"));
+    }
 }
 
 // Called every frame
@@ -43,7 +67,11 @@ void APlayer_Mario::Tick(float DeltaTime)
 void APlayer_Mario::AddCoin(int32 CoinValue)
 {
     CoinCount += CoinValue;
-    // UI 업데이트 + 추가 로직
+    // UI 업데이트 
+    if (CoinCounterWidget)
+    {
+        CoinCounterWidget->UpdateCoinCounter(CoinCount);
+    }
     // OnCoinsUpdate.Broadcast(CoinCount);
 }
 

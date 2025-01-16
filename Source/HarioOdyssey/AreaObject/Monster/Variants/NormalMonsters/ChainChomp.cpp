@@ -4,6 +4,7 @@
 #include "ChainChomp.h"
 
 #include "Components/SphereComponent.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Derived/AiMonster/ChainChomp/AiChainChomp.h"
 
 
 // Sets default values
@@ -21,13 +22,13 @@ AChainChomp::AChainChomp()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f,0.0f,-65.0f), FRotator(0.0f,0.0f,-90.0f));
 	
 	ChainChompRoot = CreateDefaultSubobject<USceneComponent>("ChainChompRoot");
-	ChainChompRoot->SetRelativeLocation(FVector(0.0f,0.0f,80.0f));
+	ChainChompRoot->SetRelativeLocation(FVector(0.0f,0.0f,-60.0f));
 	ChainChompRoot->SetupAttachment(RootComponent);
 	
 	ChainChompMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ChainChomp");
 	ChainChompMesh->SetupAttachment(ChainChompRoot);
 	ChainChompMesh->SetRelativeScale3D(FVector(0.3f));
-	ChainChompMesh->SetRelativeRotation(FRotator(0.0f,-90.0f,0.0f));
+	ChainChompMesh->SetRelativeLocationAndRotation(FVector(0.0f,0.0f,130.0f),FRotator(0.0f,-90.0f,0.0f));
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempCCBody(TEXT("/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/ChainChomp2/ChainChomp2.ChainChomp2'"));
 	if (tempCCBody.Succeeded())
 	{
@@ -36,7 +37,11 @@ AChainChomp::AChainChomp()
 	
 	ChainChompSphere = CreateDefaultSubobject<USphereComponent>("ChainChompSphere");
 	ChainChompSphere->SetupAttachment(ChainChompRoot);
-	
+	ChainChompSphere->SetRelativeLocation(FVector(0.0f,0.0f,130.0f));
+	ChainChompSphere->SetRelativeScale3D(FVector(4.0f));
+
+	// Monster로 옮겨야 할듯...
+	m_AiFSM = CreateDefaultSubobject<UAiChainChomp>("FSM");
 }
 
 // Called when the game starts or when spawned
@@ -44,6 +49,7 @@ void AChainChomp::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	m_AiFSM->InitStatePool();
 }
 
 // Called every frame

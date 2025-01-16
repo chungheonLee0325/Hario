@@ -88,61 +88,140 @@ void UPathMover::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 
 // Movement Interface Implementation
 void UPathMover::MoveComponentTo(USceneComponent* ComponentToMove, const FVector& TargetPosition, 
-                                float Duration, EMovementInterpolationType InterpType)
+                                 float Duration, EMovementInterpolationType InterpType, bool bStickToGround)
 {
     if (!ComponentToMove || Duration <= 0.0f) return;
 
-    if (!OriginalPositions.Contains(ComponentToMove))
+    FVector AdjustedTargetPosition = TargetPosition;
+
+    if (bStickToGround)
     {
-        OriginalPositions.Add(ComponentToMove, ComponentToMove->GetRelativeLocation());
+        FHitResult HitResult;
+        FVector TraceStart = TargetPosition + FVector(0.0f, 0.0f, 1000.0f);
+        FVector TraceEnd = TargetPosition - FVector(0.0f, 0.0f, 1000.0f);
+
+        FCollisionQueryParams QueryParams;
+        QueryParams.AddIgnoredActor(GetOwner());
+
+        if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+        {
+            AdjustedTargetPosition.Z = HitResult.Location.Z;
+        }
     }
 
-    StartNewMovement(ComponentToMove, TargetPosition, EPMMovementMode::Duration, Duration, InterpType);
+    StartNewMovement(ComponentToMove, AdjustedTargetPosition, EPMMovementMode::Duration, Duration, InterpType);
 }
 
 void UPathMover::MoveComponentToWithSpeed(USceneComponent* ComponentToMove, const FVector& TargetPosition, 
-                                        float Speed, EMovementInterpolationType InterpType)
+                                          float Speed, EMovementInterpolationType InterpType, bool bStickToGround)
 {
     if (!ComponentToMove || Speed <= 0.0f) return;
 
-    if (!OriginalPositions.Contains(ComponentToMove))
+    FVector AdjustedTargetPosition = TargetPosition;
+
+    if (bStickToGround)
     {
-        OriginalPositions.Add(ComponentToMove, ComponentToMove->GetRelativeLocation());
+        FHitResult HitResult;
+        FVector TraceStart = TargetPosition + FVector(0.0f, 0.0f, 1000.0f);
+        FVector TraceEnd = TargetPosition - FVector(0.0f, 0.0f, 1000.0f);
+
+        FCollisionQueryParams QueryParams;
+        QueryParams.AddIgnoredActor(GetOwner());
+
+        if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+        {
+            AdjustedTargetPosition.Z = HitResult.Location.Z;
+        }
     }
 
-    StartNewMovement(ComponentToMove, TargetPosition, EPMMovementMode::Speed, Speed, InterpType);
+    StartNewMovement(ComponentToMove, AdjustedTargetPosition, EPMMovementMode::Speed, Speed, InterpType);
 }
 
 void UPathMover::MoveActorTo(const FVector& TargetPosition, float Duration, 
-                            EMovementInterpolationType InterpType)
+                             EMovementInterpolationType InterpType, bool bStickToGround)
 {
-    if (!GetOwner() || Duration <= 0.0f) return;
-    StartNewMovement(nullptr, TargetPosition, EPMMovementMode::Duration, Duration, InterpType);
+    if (!GetOwner()) return;
+
+    FVector AdjustedTargetPosition = TargetPosition;
+
+    if (bStickToGround)
+    {
+        // 라인 트레이스를 통해 지형의 높이를 감지
+        FHitResult HitResult;
+        FVector TraceStart = TargetPosition + FVector(0.0f, 0.0f, 1000.0f); // 위에서 시작
+        FVector TraceEnd = TargetPosition - FVector(0.0f, 0.0f, 1000.0f);   // 아래로 트레이스
+
+        FCollisionQueryParams QueryParams;
+        QueryParams.AddIgnoredActor(GetOwner());
+
+        if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+        {
+            AdjustedTargetPosition.Z = HitResult.Location.Z;
+        }
+    }
+
+    StartNewMovement(nullptr, AdjustedTargetPosition, EPMMovementMode::Duration, Duration, InterpType);
 }
 
 void UPathMover::MoveActorToWithSpeed(const FVector& TargetPosition, float Speed, 
-                                     EMovementInterpolationType InterpType)
+                                      EMovementInterpolationType InterpType, bool bStickToGround)
 {
-    if (!GetOwner() || Speed <= 0.0f) return;
-    StartNewMovement(nullptr, TargetPosition, EPMMovementMode::Speed, Speed, InterpType);
+    if (!GetOwner()) return;
+
+    FVector AdjustedTargetPosition = TargetPosition;
+
+    if (bStickToGround)
+    {
+        // 라인 트레이스를 통해 지형의 높이를 감지
+        FHitResult HitResult;
+        FVector TraceStart = TargetPosition + FVector(0.0f, 0.0f, 1000.0f); // 위에서 시작
+        FVector TraceEnd = TargetPosition - FVector(0.0f, 0.0f, 1000.0f);   // 아래로 트레이스
+
+        FCollisionQueryParams QueryParams;
+        QueryParams.AddIgnoredActor(GetOwner());
+
+        if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+        {
+            AdjustedTargetPosition.Z = HitResult.Location.Z;
+        }
+    }
+
+    StartNewMovement(nullptr, AdjustedTargetPosition, EPMMovementMode::Speed, Speed, InterpType);
 }
 
 void UPathMover::ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration, 
-                                         EMovementInterpolationType InterpType)
+                                           EMovementInterpolationType InterpType, bool bStickToGround)
 {
     if (!ComponentToReturn) return;
 
     const FVector* OriginalPos = OriginalPositions.Find(ComponentToReturn);
     if (!OriginalPos) return;
 
+    FVector AdjustedOriginalPosition = *OriginalPos;
+
+    if (bStickToGround)
+    {
+        FHitResult HitResult;
+        FVector TraceStart = AdjustedOriginalPosition + FVector(0.0f, 0.0f, 1000.0f);
+        FVector TraceEnd = AdjustedOriginalPosition - FVector(0.0f, 0.0f, 1000.0f);
+
+        FCollisionQueryParams QueryParams;
+        QueryParams.AddIgnoredActor(GetOwner());
+
+        if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+        {
+            AdjustedOriginalPosition.Z = HitResult.Location.Z;
+        }
+    }
+
     if (USceneComponent* Parent = ComponentToReturn->GetAttachParent())
     {
-        const FVector WorldPos = Parent->GetComponentTransform().TransformPosition(*OriginalPos);
-        MoveComponentTo(ComponentToReturn, WorldPos, Duration, InterpType);
+        const FVector WorldPos = Parent->GetComponentTransform().TransformPosition(AdjustedOriginalPosition);
+        MoveComponentTo(ComponentToReturn, WorldPos, Duration, InterpType, bStickToGround);
     }
     else
     {
-        MoveComponentTo(ComponentToReturn, *OriginalPos, Duration, InterpType);
+        MoveComponentTo(ComponentToReturn, AdjustedOriginalPosition, Duration, InterpType, bStickToGround);
     }
 }
 

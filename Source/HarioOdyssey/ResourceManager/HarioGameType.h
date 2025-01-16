@@ -31,6 +31,7 @@ enum class EAiStateType : uint8 {
 	Attack     UMETA(DisplayName = "Attack"),
 	SelectSkill UMETA(DisplayName = "SelectSkill"),
 	Chase     UMETA(DisplayName = "Chase"),
+	Return    UMETA(DisplayName = "Return"),
 };
 
 // Struct

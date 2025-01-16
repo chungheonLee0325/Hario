@@ -54,6 +54,10 @@ public:
 	
 	
 protected:
+	UPROPERTY()
+	ABaseMonster* m_Owner = nullptr;
+
+private:
 	
 UPROPERTY()
 	TMap<EAiStateType, UBaseAiState*> m_AiStates;
@@ -62,6 +66,4 @@ UPROPERTY()
 	UBaseAiState* m_CurrentState = nullptr;
 UPROPERTY()
 	UBaseAiState* m_PreviousState = nullptr;
-UPROPERTY()
-	ABaseMonster* m_Owner = nullptr;
 };

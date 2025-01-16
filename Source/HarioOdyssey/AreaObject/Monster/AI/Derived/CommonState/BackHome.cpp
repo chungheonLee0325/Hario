@@ -4,34 +4,24 @@
 #include "BackHome.h"
 
 #include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiFSM.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
 
 void UBackHome::InitState()
 {
-	Super::InitState();
 }
 
 void UBackHome::Enter()
 {
-	Super::Enter();
 }
 
 void UBackHome::Execute(float dt)
 {
-	Super::Execute(dt);
-	auto prevLoc = m_RootObject->GetComponentLocation();
-	auto dir = (m_HomePosition - prevLoc);
-	if (dir.Length() < 0.1f)
-	{
-		m_AiFSM->ChangeState(m_NextState);
-	}
-	dir.Normalize();
+	m_Owner->ReturnComponentToOriginal(Cast<AChainChomp>(m_Owner)->ChainChompRoot,2.0f,EMovementInterpolationType::EaseIn,true);
 	
-	m_RootObject -> SetWorldLocation(prevLoc + dir * m_MovementSpeed * dt);
 }
 
 void UBackHome::Exit()
 {
-	Super::Exit();
 }
 
 void UBackHome::SetM_HomePosition(const FVector& M_HomePosition)

@@ -1,4 +1,38 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿/*
+BaseMonster System
+├── Core Features
+│   ├── Monster Data
+│   │   ├── Base Stats (TODO: DataTable)
+│   │   ├── Current Stats
+│   │   └── Combat Stats (TODO: DataTable)
+│   ├── Movement System
+│   │   ├── Movement
+│   │   ├── Rotation
+│   │   └── Component Movement
+│   └── Combat System
+│       ├── Skill Management
+│       ├── Target Management
+│       └── State Management
+├── AI Features
+│   ├── State Machine
+│   │   ├── Idle
+│   │   ├── Chase
+│   │   ├── Attack
+│   │   └── BackHome
+│   └── Aggro System
+│       ├── Target Selection
+│       ├── Range Check
+│       └── Aggro Table
+└── Utility Features
+    ├── Movement Interface
+    │   ├── Actor Movement
+    │   ├── Component Movement
+    │   └── Rotation Control
+    └── Combat Interface
+        ├── Skill Usage
+        ├── Target Selection
+        └── State Changes
+*/
 
 #pragma once
 
@@ -8,6 +42,25 @@
 #include "BaseMonster.generated.h"
 
 class UBaseSkill;
+class UPathMover;
+
+USTRUCT(BlueprintType)
+struct FMonsterData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, meta=(Comment="TODO: Move to DataTable"))
+	float MaxHealth = 1.0f;
+
+	UPROPERTY(EditAnywhere, meta=(Comment="TODO: Move to DataTable"))
+	float DetectionRange = 1000.0f;
+
+	UPROPERTY(EditAnywhere, meta=(Comment="TODO: Move to DataTable"))
+	float MovementSpeed = 300.0f;
+
+	UPROPERTY(EditAnywhere, meta=(Comment="TODO: Move to DataTable"))
+	float RotationSpeed = 360.0f;
+};
 
 UCLASS()
 class HARIOODYSSEY_API ABaseMonster : public AAreaObject
@@ -15,84 +68,142 @@ class HARIOODYSSEY_API ABaseMonster : public AAreaObject
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ABaseMonster();
- 
-protected:
-	// Called when the game starts or when spawned
+
+	// Core Functions
 	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	// Skill
-	virtual UBaseSkill* GetSkillByAiState(EAiStateType StateType);
-
-	// Rotation Methods
-	UFUNCTION(BlueprintCallable, Category = "Rotation")
-	void StopRotating();
-	
-	UFUNCTION(BlueprintCallable, Category = "Rotation")
-	void LookAtLocation(const FVector& Target, float Speed);
-
-	UFUNCTION(BlueprintCallable, Category = "Rotation")
-	void LookAtActor(AActor* Target, float Speed);
-	
-	// Component Rotation Methods
-	UFUNCTION(BlueprintCallable, Category = "Rotation")
-	void ComponentLookAtLocation(USceneComponent* Component, const FVector& Target, float Speed);
-
-	UFUNCTION(BlueprintCallable, Category = "Rotation")
-	void ComponentLookAtActor(USceneComponent* Component, AActor* Target, float Speed);
-	
-	// Movement Methods
-	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void StopMoving();
-
+	// Movement Interface
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void MoveToLocation(const FVector& Target, float Duration, 
 					   EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
-    
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void MoveToLocationWithSpeed(const FVector& Target, float Speed,
+								 EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void MoveToActor(AActor* Target, float Duration, 
 					EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
-    
-	// Component Movement
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void MoveToActorWithSpeed(const AActor* Target, float Speed,
+							 EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
+	// Rotation Interface
+	UFUNCTION(BlueprintCallable, Category = "Rotation")
+	void RotateToDirection(const FRotator& Target, float Duration,
+						  EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
+	UFUNCTION(BlueprintCallable, Category = "Rotation")
+	void RotateToDirectionWithSpeed(const FRotator& Target, float Speed,
+								  EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
+	UFUNCTION(BlueprintCallable, Category = "Rotation")
+	void LookAtLocation(const FVector& Target, float Duration,
+						EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
+	UFUNCTION(BlueprintCallable, Category = "Rotation")
+	void LookAtLocationWithSpeed(const FVector& Target, float Speed,
+								EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
+	// Component Movement Interface
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void MoveComponentToLocation(USceneComponent* ComponentToMove, const FVector& Target, 
 							   float Duration, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void MoveComponentToActor(USceneComponent* ComponentToMove, AActor* Target, float Duration, 
-						EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+	void MoveComponentToLocationWithSpeed(USceneComponent* ComponentToMove, const FVector& Target,
+										float Speed, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration, 
+								 EMovementInterpolationType InterpType = EMovementInterpolationType::Linear, 
+								 bool bStickToGround = false);
+
+	// Combat Interface
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual UBaseSkill* GetCurrentSkill();
 	
-	// Events
-	UFUNCTION()
-	virtual void OnMovementFinished();
-    
-	UFUNCTION()
-	virtual void OnRotationFinished();
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual AActor* GetAggroTarget() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual bool CanCastSkill(UBaseSkill* Skill, const AActor* Target) const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void CastSkill(UBaseSkill* Skill, const AActor* Target);
 
 	// State Checks
 	UFUNCTION(BlueprintPure, Category = "State")
 	bool IsMoving() const;
-    
+	
 	UFUNCTION(BlueprintPure, Category = "State")
 	bool IsRotating() const;
-	
-	
-	
 
-UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	class UPathMover* m_PathMover;
+	// Control Interface
+	UFUNCTION(BlueprintCallable, Category = "Control")
+	void StopMoving();
 
+	UFUNCTION(BlueprintCallable, Category = "Control")
+	void StopRotating();
+
+	UFUNCTION(BlueprintCallable, Category = "Control")
+	void StopAll();
+
+	// Combat System
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	UBaseSkill* GetSkillByState(EAiStateType StateType) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void SetAggroTarget(AActor* NewTarget) { m_AggroTarget = NewTarget; }
+
+	// Data Access
+	const FMonsterData& GetMonsterData() const { return MonsterData; }
+
+	// Monster Data
+	UPROPERTY(EditAnywhere, Category = "Monster Settings")
+	FMonsterData MonsterData;
+	
+protected:
+
+
+	// Skill System
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TArray<TSubclassOf<UBaseSkill>> SkillClasses;
+	
+	UPROPERTY()
+	TArray<UBaseSkill*> Skills;
+		
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TMap<EAiStateType, TSubclassOf<UBaseSkill>> StateSkillMap;
+	
+	UPROPERTY()
+	TMap<EAiStateType, UBaseSkill*> m_StateSkillInstances;
+	
+	// Movement System
+	UPROPERTY(BlueprintReadWrite)
+	UPathMover* m_PathMover;
+
+	// Event Handlers
+	UFUNCTION()
+	virtual void OnMovementFinished();
+	
+	UFUNCTION()
+	virtual void OnRotationFinished();
+
+	// Combat System
+	UPROPERTY()
+	AActor* m_AggroTarget;
+
+	UPROPERTY()
+	FVector m_SpawnLocation;
 
 private:
 	bool IsValidForMovement() const;
-	
-	TMap<EAiStateType, UBaseSkill*> m_SkillByState;
+
+	UPROPERTY()
+	AActor* m_CurrentTarget;
 };

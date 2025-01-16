@@ -7,6 +7,7 @@
 #include "HarioOdyssey/Combat/Capturable.h"
 #include "ChainChomp.generated.h"
 
+class UAiChainChomp;
 class UPathMover;
 class USphereComponent;
 
@@ -47,4 +48,24 @@ public:
 	virtual void OnCaptureStart_Implementation() override;
 	virtual void OnCaptureEnd_Implementation() override;
 	virtual void WhileCaptured_Implementation(ACharacter* CaptureOwner) override;
+
+	// 몬스터의 기본 속성들
+	UPROPERTY(EditAnywhere, Category = "Monster Settings")
+	float AttackSpeed = 800.0f;
+	
+	UPROPERTY(EditAnywhere, Category = "Monster Settings")
+	float ReturnSpeed = 300.0f;
+	
+	UPROPERTY(EditAnywhere, Category = "Monster Settings")
+	float ChainLength = 400.0f;
+
+	// Getter 함수들
+	float GetAttackSpeed() const { return AttackSpeed; }
+	float GetReturnSpeed() const { return ReturnSpeed; }
+	float GetChainLength() const { return ChainLength; }
+
+
+	// 몬스터로 옮겨야할듯
+	UPROPERTY()
+	UAiChainChomp * m_AiFSM;
 };

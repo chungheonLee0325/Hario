@@ -96,23 +96,28 @@ public:
     // Movement Interface
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void MoveComponentTo(USceneComponent* ComponentToMove, const FVector& TargetPosition, 
-                        float Duration, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+                        float Duration, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear, 
+                        bool bStickToGround = false);
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void MoveComponentToWithSpeed(USceneComponent* ComponentToMove, const FVector& TargetPosition, 
-                                float Speed, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+                                float Speed, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear, 
+                                bool bStickToGround = false);
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void MoveActorTo(const FVector& TargetPosition, float Duration, 
-                     EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+                     EMovementInterpolationType InterpType = EMovementInterpolationType::Linear, 
+                     bool bStickToGround = false);
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void MoveActorToWithSpeed(const FVector& TargetPosition, float Speed, 
-                             EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+                             EMovementInterpolationType InterpType = EMovementInterpolationType::Linear, 
+                             bool bStickToGround = false);
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration, 
-                                 EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+                                 EMovementInterpolationType InterpType = EMovementInterpolationType::Linear, 
+                                 bool bStickToGround = false);
 
     // Rotation Interface
     UFUNCTION(BlueprintCallable, Category = "Rotation")

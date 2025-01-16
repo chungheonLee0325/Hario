@@ -45,7 +45,6 @@ public:
 	
 	// 모자 던지기와 받기 함수
 	void OnThrowHat();
-	void OnReturnHat();
 	
 
 private:
@@ -64,25 +63,11 @@ private:
 	int32 CoinCount = 0;
 
 	//UI 생성
-	TSubclassOf<UCoinCounterWidget> CoinCounterWidgetClass;
 	TObjectPtr<UCoinCounterWidget> CoinCounterWidget;
 	
-	
+
+protected:
 	// 모자 던지기 관련 변수
-	UPROPERTY(EditAnywhere, Category = "Hat")
-	TSubclassOf<AActor> HatProjectileClass; // 모자 프리팹 클래스
-
-	UPROPERTY()
-	AHatProjectile* CurrentHat; // 현재 던져진 모자
-
-	UPROPERTY(EditAnywhere, Category = "Hat")
-	float HatThrowDistance = 1000.0f; // 모자 던지는 거리
-
-	UPROPERTY(EditAnywhere, Category = "Hat")
-	float HatThrowTime = 1.0f; // 모자 던지는 시간
-
-	UPROPERTY(EditAnywhere, Category = "Hat")
-	float HatReturnDelay = 1.5f; // 모자 돌아오는 시간
-
-	bool bIsHatThrown = false; // 모자 던져졌는지 여부
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hat")
+	TSubclassOf<class AHatProjectile> HatClass;
 };

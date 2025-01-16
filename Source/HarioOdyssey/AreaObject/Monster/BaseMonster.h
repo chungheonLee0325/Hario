@@ -99,6 +99,24 @@ public:
 	void MoveToActorWithSpeed(const AActor* Target, float Speed,
 							 EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
 
+	// Component Movement Interface
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void MoveComponentToLocation(USceneComponent* ComponentToMove, const FVector& Target, 
+							   float Duration, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void MoveComponentToLocationWithSpeed(USceneComponent* ComponentToMove, const FVector& Target,
+										float Speed, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration, 
+								 EMovementInterpolationType InterpType = EMovementInterpolationType::Linear, 
+								 bool bStickToGround = false);
+	
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void ReturnComponentToOriginalWithSpeed(USceneComponent* ComponentToReturn, float Speed,
+	EMovementInterpolationType InterpType, bool bStickToGround);
+	
 	// Rotation Interface
 	UFUNCTION(BlueprintCallable, Category = "Rotation")
 	void RotateToDirection(const FRotator& Target, float Duration,
@@ -116,19 +134,15 @@ public:
 	void LookAtLocationWithSpeed(const FVector& Target, float Speed,
 								EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
 
-	// Component Movement Interface
+	// Component Rotation Interface
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void MoveComponentToLocation(USceneComponent* ComponentToMove, const FVector& Target, 
-							   float Duration, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+	void LookAtComponentToLocation(USceneComponent* ComponentToRotate, const FVector& TargetLocation, 
+										   float Duration, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void MoveComponentToLocationWithSpeed(USceneComponent* ComponentToMove, const FVector& Target,
-										float Speed, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
+	void LookAtComponentToLocationWithSpeed(USceneComponent* ComponentToRotate, const FVector& TargetLocation, 
+												float Speed, EMovementInterpolationType InterpType = EMovementInterpolationType::Linear);
 
-	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration, 
-								 EMovementInterpolationType InterpType = EMovementInterpolationType::Linear, 
-								 bool bStickToGround = false);
 
 	// Combat Interface
 	UFUNCTION(BlueprintCallable, Category = "Combat")

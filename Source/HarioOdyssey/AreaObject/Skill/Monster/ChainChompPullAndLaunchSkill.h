@@ -4,6 +4,8 @@
 #include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
 #include "ChainChompPullAndLaunchSkill.generated.h"
 
+class AChainChomp;
+
 UCLASS()
 class HARIOODYSSEY_API UChainChompPullAndLaunchSkill : public UBaseSkill
 {
@@ -14,8 +16,8 @@ public:
 
     virtual bool CanCast(ABaseMonster* Caster, const AActor* Target) const override;
     virtual void OnCastStart(ABaseMonster* Caster, const AActor* Target) override;
-    virtual void OnCastTick(ABaseMonster* Caster, const AActor* Target, float DeltaTime) override;
-    virtual void OnCastEnd(ABaseMonster* Caster, const AActor* Target) override;
+    virtual void OnCastTick(float DeltaTime) override;
+    virtual void OnCastEnd() override;
 
 protected:
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
@@ -33,4 +35,7 @@ protected:
 private:
     FVector m_PullBackPosition;
     FVector m_OriginalPosition;
+
+UPROPERTY(EditAnywhere)
+    AChainChomp * m_ChainChomp;
 }; 

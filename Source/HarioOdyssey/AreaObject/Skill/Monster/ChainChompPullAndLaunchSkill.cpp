@@ -1,5 +1,6 @@
 #include "ChainChompPullAndLaunchSkill.h"
 #include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
 
 UChainChompPullAndLaunchSkill::UChainChompPullAndLaunchSkill()
 {
@@ -20,62 +21,73 @@ bool UChainChompPullAndLaunchSkill::CanCast(ABaseMonster* Caster, const AActor* 
 
 void UChainChompPullAndLaunchSkill::OnCastStart(ABaseMonster* Caster, const AActor* Target)
 {
-    //Super::OnCastStart(Caster, Target);
-
-    if (!Caster || !Target) return;
+    //Super::OnCastStart(Caster, Target); 별도 로직이므로 x
+    
+    m_Target = Target;
+    m_ChainChomp = Cast<AChainChomp>(Caster);
+    if (!m_ChainChomp || !m_Target) return;
 
     m_CurrentPhase = ESkillPhase::Prepare;
     m_OriginalPosition = Caster->GetActorLocation();
 
     // ToDo : Skill Param으로 넘겨받기
     // 타겟 반대 방향으로 PullBackPosition 계산
-    FVector Direction = (Caster->GetActorLocation() - Target->GetActorLocation()).GetSafeNormal();
+    
+    FVector Direction = (Caster->GetActorLocation() - m_Target->GetActorLocation()).GetSafeNormal2D();
     m_PullBackPosition = Caster->GetActorLocation() + Direction * PullBackDistance;
+    m_TargetPos = m_ChainChomp->GetActorLocation() - Direction * PullBackDistance;
 
+    // 타겟 주시
+    m_ChainChomp->LookAtComponentToLocation(m_ChainChomp->ChainChompRoot, m_Target->GetActorLocation(), 1.0f, EMovementInterpolationType::EaseInOut);
+    
     // 뒤로 당기기 시작
-    Caster->MoveToLocationWithSpeed(m_PullBackPosition, PullSpeed);
+    m_ChainChomp->MoveComponentToLocationWithSpeed(m_ChainChomp->ChainChompRoot, m_PullBackPosition, PullSpeed);
 }
 
-void UChainChompPullAndLaunchSkill::OnCastTick(ABaseMonster* Caster, const AActor* Target, float DeltaTime)
+void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
 {
     //Super::OnCastTick(Caster, Target, DeltaTime);
 
-    if (!Caster || !Target) return;
+    if (!m_ChainChomp || !m_Target) return;
 
     switch (m_CurrentPhase)
     {
     case ESkillPhase::Prepare:
         // ToDo IsMoving 보다는 이벤트로 처리
-        if (!Caster->IsMoving())
+        if (!m_ChainChomp->IsMoving())
         {
             // Pull 완료, Launch 시작
             m_CurrentPhase = ESkillPhase::Casting;
-            Caster->MoveToActorWithSpeed(Target, LaunchSpeed);
+            m_ChainChomp->MoveComponentToLocationWithSpeed(m_ChainChomp->ChainChompRoot,m_TargetPos, LaunchSpeed);
+            m_ChainChomp->MoveComponentToLocationWithSpeed(m_ChainChomp->ChainChompRoot,m_TargetPos, LaunchSpeed);
         }
         break;
 
     case ESkillPhase::Casting:
         // ToDo IsMoving 보다는 이벤트로 처리
-        if (!Caster->IsMoving())
+        if (!m_ChainChomp->IsMoving())
         {
             // Launch 완료, Return 시작
             m_CurrentPhase = ESkillPhase::PostCast;
-            Caster->MoveToLocationWithSpeed(m_OriginalPosition, ReturnSpeed);
+            m_ChainChomp->LookAtComponentToLocation(m_ChainChomp->ChainChompRoot, m_OriginalPosition, 1.0f, EMovementInterpolationType::EaseInOut);
+            m_ChainChomp->MoveComponentToLocationWithSpeed(m_ChainChomp->ChainChompRoot,m_OriginalPosition, LaunchSpeed);
+            //m_ChainChomp->ReturnComponentToOriginal(m_ChainChomp->ChainChompRoot, 2.f);
         }
         break;
 
     case ESkillPhase::PostCast:
         // ToDo IsMoving 보다는 이벤트로 처리
-        if (!Caster->IsMoving())
+        if (!m_ChainChomp->IsMoving())
         {
+            m_ChainChomp->LookAtComponentToLocation(m_ChainChomp->ChainChompRoot, m_Target->GetActorLocation(), 1.0f, EMovementInterpolationType::EaseInOut);
             // Return 완료, 스킬 종료
-            OnCastEnd(Caster, Target);
+            OnCastEnd();
         }
         break;
     }
 }
 
-void UChainChompPullAndLaunchSkill::OnCastEnd(ABaseMonster* Caster, const AActor* Target)
+void UChainChompPullAndLaunchSkill::OnCastEnd()
 {
     //Super::OnCastEnd(Caster, Target);
     m_CurrentPhase = ESkillPhase::Ready;

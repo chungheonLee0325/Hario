@@ -76,7 +76,7 @@ void UCommonAttack::Exit()
 	// 공격 스킬 종료
 	if (UBaseSkill* AttackSkill = m_Owner->GetSkillByState(m_AiStateType))
 	{
-		AttackSkill->OnCastEnd(m_Owner, m_Owner->GetAggroTarget());
+		AttackSkill->OnCastEnd();
 	}
 }
 

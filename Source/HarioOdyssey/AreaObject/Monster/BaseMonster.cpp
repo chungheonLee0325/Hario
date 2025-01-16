@@ -46,7 +46,7 @@ void ABaseMonster::Tick(float DeltaTime)
 	// 현재 스킬 업데이트
 	if (UBaseSkill* CurrentSkill = GetSkillByState(EAiStateType::Attack))
 	{
-		CurrentSkill->OnCastTick(this, GetAggroTarget(), DeltaTime);
+		CurrentSkill->OnCastTick(DeltaTime);
 	}
 }
 
@@ -153,6 +153,15 @@ void ABaseMonster::ReturnComponentToOriginal(USceneComponent* ComponentToReturn,
 		m_PathMover->ReturnComponentToOriginal(ComponentToReturn, Duration, InterpType, bStickToGround);
 	}
 }
+// ToDo : 매서드 고치면서 기능 통폐합
+void ABaseMonster::ReturnComponentToOriginalWithSpeed(USceneComponent* ComponentToReturn, float Speed,
+	EMovementInterpolationType InterpType, bool bStickToGround)
+{
+	if (ComponentToReturn && IsValidForMovement())
+	{
+		m_PathMover->ReturnComponentToOriginal(ComponentToReturn, Speed, InterpType, bStickToGround);
+	}
+}
 
 void ABaseMonster::OnMovementFinished()
 {
@@ -231,6 +240,24 @@ void ABaseMonster::LookAtLocationWithSpeed(const FVector& Target, float Speed, E
 	if (IsValidForMovement())
 	{
 		m_PathMover->LookAtLocationWithActorSpeed(Target, Speed, InterpType);
+	}
+}
+
+void ABaseMonster::LookAtComponentToLocation(USceneComponent* ComponentToRotate, const FVector& TargetLocation,
+	float Duration, EMovementInterpolationType InterpType)
+{
+	if (IsValidForMovement())
+	{
+		m_PathMover->LookAtLocationWithComponent(ComponentToRotate, TargetLocation, Duration, InterpType);
+	}
+}
+
+void ABaseMonster::LookAtComponentToLocationWithSpeed(USceneComponent* ComponentToRotate, const FVector& TargetLocation,
+	float Speed, EMovementInterpolationType InterpType)
+{
+	if (IsValidForMovement())
+	{
+		m_PathMover->LookAtLocationWithComponent(ComponentToRotate, TargetLocation, Speed, InterpType);
 	}
 }
 

@@ -57,9 +57,9 @@ void UBaseSkill::OnCastStart(ABaseMonster* Caster, const AActor* Target)
     BP_OnCastStart(Caster, Target);
 }
 
-void UBaseSkill::OnCastTick(ABaseMonster* Caster, const AActor* Target, float DeltaTime)
+void UBaseSkill::OnCastTick(float DeltaTime)
 {
-    if (!Caster || !Target) return;
+    if (!m_Caster || !m_Target) return;
 
     m_CurrentPhaseTime -= DeltaTime;
 
@@ -84,7 +84,7 @@ void UBaseSkill::OnCastTick(ABaseMonster* Caster, const AActor* Target, float De
     case ESkillPhase::PostCast:
         if (m_CurrentPhaseTime <= 0.0f)
         {
-            OnCastEnd(Caster, Target);
+            OnCastEnd();
         }
         break;
 
@@ -96,17 +96,17 @@ void UBaseSkill::OnCastTick(ABaseMonster* Caster, const AActor* Target, float De
         break;
     }
 
-    BP_OnCastTick(Caster, Target, DeltaTime);
+    BP_OnCastTick(DeltaTime);
 }
 
-void UBaseSkill::OnCastEnd(ABaseMonster* Caster, const AActor* Target)
+void UBaseSkill::OnCastEnd()
 {
-    if (!Caster || !Target) return;
+    if (!m_Caster || !m_Target) return;
 
     ClearEffects();
     UpdatePhase(ESkillPhase::Cooldown);
     
-    BP_OnCastEnd(Caster, Target);
+    BP_OnCastEnd();
 }
 
 void UBaseSkill::CancelCast()
@@ -118,7 +118,7 @@ void UBaseSkill::CancelCast()
         
         if (m_Caster && m_Target)
         {
-            BP_OnCastCanceled(m_Caster, m_Target);
+            BP_OnCastCanceled();
         }
     }
 }

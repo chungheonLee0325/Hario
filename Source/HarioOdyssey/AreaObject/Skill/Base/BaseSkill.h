@@ -71,8 +71,8 @@ public:
 
     virtual bool CanCast(class ABaseMonster* Caster, const AActor* Target) const;
     virtual void OnCastStart(class ABaseMonster* Caster, const AActor* Target);
-    virtual void OnCastTick(class ABaseMonster* Caster, const AActor* Target, float DeltaTime);
-    virtual void OnCastEnd(class ABaseMonster* Caster, const AActor* Target);
+    virtual void OnCastTick(float DeltaTime);
+    virtual void OnCastEnd();
     virtual void CancelCast();
 
     // Getters
@@ -111,6 +111,9 @@ protected:
     UPROPERTY()
     const AActor* m_Target;
 
+    UPROPERTY()
+    FVector m_TargetPos;
+    
     // 이펙트 관련 속성 추가
     UPROPERTY()
     TArray<UParticleSystemComponent*> ActiveParticleEffects;
@@ -136,13 +139,13 @@ protected:
     void BP_OnCastStart(const ABaseMonster* Caster, const AActor* Target);
 
     UFUNCTION(BlueprintImplementableEvent)
-    void BP_OnCastTick(const ABaseMonster* Caster, const AActor* Target, float DeltaTime);
+    void BP_OnCastTick(float DeltaTime);
 
     UFUNCTION(BlueprintImplementableEvent)
-    void BP_OnCastEnd(const ABaseMonster* Caster, const AActor* Target);
+    void BP_OnCastEnd();
 
     UFUNCTION(BlueprintImplementableEvent)
-    void BP_OnCastCanceled(const ABaseMonster* Caster, const AActor* Target);
+    void BP_OnCastCanceled();
 
     UFUNCTION(BlueprintImplementableEvent)
     void BP_SpawnCastEffect();

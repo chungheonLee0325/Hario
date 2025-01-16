@@ -7,6 +7,7 @@
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiFSM.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -35,7 +36,7 @@ void UAggroWait::Execute(float dt)
 	if (DetectPlayer())
 	{
 		m_Owner->SetAggroTarget(m_Target);
-		
+
 		m_WaitTimeElapsed += dt;
 		if (m_WaitTimeElapsed >= m_WaitTime)
 		{

@@ -50,6 +50,7 @@ void AChainChomp::BeginPlay()
 	Super::BeginPlay();
 	
 	m_AiFSM->InitStatePool();
+	ChainChompSphere->OnComponentBeginOverlap.AddDynamic(this, &AChainChomp::OnBodyBeginOverlap);
 }
 
 // Called every frame

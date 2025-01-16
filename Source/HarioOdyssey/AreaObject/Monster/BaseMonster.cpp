@@ -21,12 +21,32 @@ void ABaseMonster::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	m_SpawnLocation = GetActorLocation();
+
+	// 스킬 인스턴스 생성
+	for (auto& Pair : StateSkillMap)
+	{
+		if (Pair.Value)
+		{
+			UBaseSkill* NewSkill = NewObject<UBaseSkill>(this, Pair.Value);
+			if (NewSkill)
+			{
+				m_StateSkillInstances.Add(Pair.Key, NewSkill);
+			}
+		}
+	}
 }
 
 // Called every frame
 void ABaseMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// 현재 스킬 업데이트
+	if (UBaseSkill* CurrentSkill = GetSkillByState(EAiStateType::Attack))
+	{
+		CurrentSkill->OnCastTick(this, GetAggroTarget(), DeltaTime);
+	}
 }
 
 // Called to bind functionality to input
@@ -35,11 +55,11 @@ void ABaseMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-UBaseSkill* ABaseMonster::GetSkillByAiState(EAiStateType StateType)
+UBaseSkill* ABaseMonster::GetSkillByState(EAiStateType StateType) const
 {
-	if (UBaseSkill** data = m_SkillByState.Find(StateType))
+	if (UBaseSkill* const* SkillPtr = m_StateSkillInstances.Find(StateType))
 	{
-		return *data;
+		return *SkillPtr;
 	}
 	return nullptr;
 }
@@ -64,74 +84,63 @@ void ABaseMonster::StopMoving()
 	}
 }
 
-void ABaseMonster::LookAtLocation(const FVector& Target, float Speed)
-{
-	if (!IsValidForMovement()) return;
-    
-	if (m_PathMover)
-	{
-		//m_PathMover->RotateActorToward(Target, Speed);
-	}
-}
-
-void ABaseMonster::LookAtActor(AActor* Target, float Speed)
-{
-	if (!Target || !IsValidForMovement()) return;
-    
-	LookAtLocation(Target->GetActorLocation(), Speed);
-}
-
-void ABaseMonster::ComponentLookAtLocation(USceneComponent* Component, const FVector& Target, float Speed)
-{
-	if (!Component || !IsValidForMovement()) return;
-
-	if (m_PathMover)
-	{
-		//m_PathMover->RotateComponentToward(Component, Target, Speed);
-	}
-}
-
-void ABaseMonster::ComponentLookAtActor(USceneComponent* Component, AActor* Target, float Speed)
-{
-	if (!Target || !Component || !IsValidForMovement()) return;
-
-	ComponentLookAtLocation(Component, Target->GetActorLocation(), Speed);
-}
-
 void ABaseMonster::MoveToLocation(const FVector& Target, float Duration, EMovementInterpolationType InterpType)
 {
-	if (!IsValidForMovement()) return;
-    
-	if (m_PathMover)
+	if (IsValidForMovement())
 	{
 		m_PathMover->MoveActorTo(Target, Duration, InterpType);
 	}
 }
 
-void ABaseMonster::MoveToActor(AActor* Target, float Duration, EMovementInterpolationType InterpType)
+void ABaseMonster::MoveToLocationWithSpeed(const FVector& Target, float Speed, EMovementInterpolationType InterpType)
 {
-	if (!Target || !IsValidForMovement()) return;
-    
-	MoveToLocation(Target->GetActorLocation(), Duration, InterpType);
+	if (IsValidForMovement())
+	{
+		m_PathMover->MoveActorToWithSpeed(Target, Speed, InterpType);
+	}
 }
 
-void ABaseMonster::MoveComponentToLocation(USceneComponent* ComponentToMove, const FVector& Target, 
+void ABaseMonster::MoveToActor(AActor* Target, float Duration, EMovementInterpolationType InterpType)
+{
+	if (Target && IsValidForMovement())
+	{
+		MoveToLocation(Target->GetActorLocation(), Duration, InterpType);
+	}
+}
+
+void ABaseMonster::MoveToActorWithSpeed(const AActor* Target, float Speed, EMovementInterpolationType InterpType)
+{
+	if (Target && IsValidForMovement())
+	{
+		MoveToLocationWithSpeed(Target->GetActorLocation(), Speed, InterpType);
+	}
+}
+
+void ABaseMonster::MoveComponentToLocation(USceneComponent* ComponentToMove, const FVector& Target,
 										 float Duration, EMovementInterpolationType InterpType)
 {
-	if (!ComponentToMove || !IsValidForMovement()) return;
-    
-	if (m_PathMover)
+	if (ComponentToMove && IsValidForMovement())
 	{
 		m_PathMover->MoveComponentTo(ComponentToMove, Target, Duration, InterpType);
 	}
 }
 
-void ABaseMonster::MoveComponentToActor(USceneComponent* ComponentToMove, AActor* Target, float Duration,
-	EMovementInterpolationType InterpType)
+void ABaseMonster::MoveComponentToLocationWithSpeed(USceneComponent* ComponentToMove, const FVector& Target,
+													float Speed, EMovementInterpolationType InterpType)
 {
-	if (!Target || !IsValidForMovement()) return;
-    
-	MoveComponentToLocation(ComponentToMove,Target->GetActorLocation(), Duration, InterpType);
+	if (ComponentToMove && IsValidForMovement())
+	{
+		m_PathMover->MoveComponentToWithSpeed(ComponentToMove, Target, Speed, InterpType);
+	}
+}
+
+void ABaseMonster::ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration,
+	EMovementInterpolationType InterpType, bool bStickToGround)
+{
+	if (ComponentToReturn && IsValidForMovement())
+	{
+		m_PathMover->ReturnComponentToOriginal(ComponentToReturn, Duration, InterpType, bStickToGround);
+	}
 }
 
 void ABaseMonster::OnMovementFinished()
@@ -156,4 +165,68 @@ bool ABaseMonster::IsRotating() const
 bool ABaseMonster::IsValidForMovement() const
 {
 	return IsValid(this) && m_PathMover != nullptr;
+}
+
+UBaseSkill* ABaseMonster::GetCurrentSkill()
+{
+	// TODO: 현재 State에 맞는 스킬 반환
+	return nullptr;
+}
+
+AActor* ABaseMonster::GetAggroTarget() const
+{
+	return m_AggroTarget;
+}
+
+bool ABaseMonster::CanCastSkill(UBaseSkill* Skill, const AActor* Target) const
+{
+	return Skill && Skill->CanCast(const_cast<ABaseMonster*>(this), Target);
+}
+
+void ABaseMonster::CastSkill(UBaseSkill* Skill, const AActor* Target)
+{
+	if (CanCastSkill(Skill, Target))
+	{
+		Skill->OnCastStart(this, Target);
+	}
+}
+
+void ABaseMonster::RotateToDirection(const FRotator& Target, float Duration, EMovementInterpolationType InterpType)
+{
+	if (IsValidForMovement())
+	{
+		m_PathMover->RotateActorTo(Target, Duration, InterpType);
+	}
+}
+
+void ABaseMonster::RotateToDirectionWithSpeed(const FRotator& Target, float Speed, EMovementInterpolationType InterpType)
+{
+	if (IsValidForMovement())
+	{
+		m_PathMover->RotateActorToWithSpeed(Target, Speed, InterpType);
+	}
+}
+
+void ABaseMonster::LookAtLocation(const FVector& Target, float Duration, EMovementInterpolationType InterpType)
+{
+	if (IsValidForMovement())
+	{
+		m_PathMover->LookAtLocationWithActor(Target, Duration, InterpType);
+	}
+}
+
+void ABaseMonster::LookAtLocationWithSpeed(const FVector& Target, float Speed, EMovementInterpolationType InterpType)
+{
+	if (IsValidForMovement())
+	{
+		m_PathMover->LookAtLocationWithActorSpeed(Target, Speed, InterpType);
+	}
+}
+
+void ABaseMonster::StopAll()
+{
+	if (IsValidForMovement())
+	{
+		m_PathMover->StopAll();
+	}
 }

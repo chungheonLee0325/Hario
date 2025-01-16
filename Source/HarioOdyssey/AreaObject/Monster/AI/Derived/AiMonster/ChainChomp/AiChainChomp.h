@@ -6,15 +6,14 @@
 #include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiFSM.h"
 #include "AiChainChomp.generated.h"
 
-
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HARIOODYSSEY_API UAiChainChomp : public UBaseAiFSM
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	UAiChainChomp();
+	virtual void InitStatePool() override;
 
 protected:
 	// Called when the game starts
@@ -23,9 +22,10 @@ protected:
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
-
-	virtual void InitStatePool() override;
+							   FActorComponentTickFunction* ThisTickFunction) override;
 
 
+private:
+	UPROPERTY()
+	FVector m_OriginalPosition;
 };

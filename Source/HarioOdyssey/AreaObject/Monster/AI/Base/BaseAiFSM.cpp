@@ -21,9 +21,8 @@ UBaseAiFSM::UBaseAiFSM()
 void UBaseAiFSM::BeginPlay()
 {
 	Super::BeginPlay();
-
+	m_Owner = Cast<ABaseMonster>(GetOwner()); 
 	// ...
-	
 }
 
 

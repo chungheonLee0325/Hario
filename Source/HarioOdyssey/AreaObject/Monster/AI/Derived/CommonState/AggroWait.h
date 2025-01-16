@@ -31,7 +31,6 @@ private:
 	float m_DetectCycleTime = 1.f;
 	float m_DetectCycleTimeElapsed = 0.f;
 	float m_DetectRange = 0.f;
-	EAiStateType m_NextAiState;
 
 	UPROPERTY()
 	AAreaObject *m_Target = nullptr;

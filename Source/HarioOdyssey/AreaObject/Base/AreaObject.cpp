@@ -19,7 +19,8 @@ AAreaObject::AAreaObject()
 	// Health Component 생성
 	m_Health = CreateDefaultSubobject<UHealth>(TEXT("Health"));
 
-	
+	// Condition Component 생성
+	m_Condition = CreateDefaultSubobject<UCondition>(TEXT("Condition"));
 }
 
 

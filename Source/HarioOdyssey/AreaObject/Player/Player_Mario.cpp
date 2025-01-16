@@ -1,5 +1,7 @@
 ﻿
 #include "Player_Mario.h"
+
+#include "MarioController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -8,6 +10,7 @@
 #include "HarioOdyssey/UI/CoinCounterWidget.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -44,17 +47,13 @@ APlayer_Mario::APlayer_Mario()
 void APlayer_Mario::BeginPlay()
 {
     Super::BeginPlay();
-    //UI 생성
-    // CoinCounterWidgetClass = LoadClass<UCoinCounterWidget>(nullptr, TEXT("/Game/_BluePrints/Common/UI/BP_CoinCounterWidget.BP_CoinCounterWidget"));
-    CoinCounterWidget = CreateWidget<UCoinCounterWidget>(GetWorld(), CoinCounterWidgetClass);
-    if (CoinCounterWidget)
+    
+    // MarioController에서 UI 생성 호출
+    auto controller = UGameplayStatics::GetPlayerController(this, 0);
+    auto* MarioController = Cast<AMarioController>(controller);
+    if (MarioController)
     {
-        CoinCounterWidget->AddToViewport();
-        CoinCounterWidget->UpdateCoinCounter(CoinCount);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("CoinCounterWidget is NULL"));
+        CoinCounterWidget=MarioController->CoinCounterWidget;
     }
 }
 
@@ -67,7 +66,7 @@ void APlayer_Mario::Tick(float DeltaTime)
 void APlayer_Mario::AddCoin(int32 CoinValue)
 {
     CoinCount += CoinValue;
-    // UI 업데이트 
+    // UI Coin 업데이트 
     if (CoinCounterWidget)
     {
         CoinCounterWidget->UpdateCoinCounter(CoinCount);
@@ -163,91 +162,27 @@ void APlayer_Mario::OnStartJump()
 //모자 던지기 및 돌아오는 함수
 void APlayer_Mario::OnThrowHat()
 {
-    if (bIsHatThrown || !HatProjectileClass) return;
-
-    // 모자 생성 위치와 방향 설정
-    FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
-    FRotator SpawnRotation = GetActorRotation();
-
-    // 모자 액터 생성
-    CurrentHat = Cast<AHatProjectile>(GetWorld()->SpawnActor<AActor>(HatProjectileClass, SpawnLocation, SpawnRotation));
-    if (CurrentHat)
+   
+    if (HatClass) // HatClass는 HatProjectile 클래스의 레퍼런스
     {
-        // 일정 거리만큼 이동 위치 계산
-        FVector TargetLocation = SpawnLocation + GetActorForwardVector() * HatThrowDistance;
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this; // 소유자를 마리오로 설정
 
-        // 모자를 타겟 위치로 이동
-        FTimerHandle TimerHandle;
-        GetWorldTimerManager().SetTimer(
-            TimerHandle,
-            FTimerDelegate::CreateLambda([this, TargetLocation]()
-            {
-                if (CurrentHat)
-                {
-                    CurrentHat->SetActorLocation(TargetLocation);
-                    bIsHatThrown = true; // 모자 던진 상태로 설정
+        // 모자의 시작 위치와 방향
+        FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
+        FRotator SpawnRotation = GetActorRotation();
 
-                    // 모자가 던져진 후 일정 시간이 지나면 모자가 돌아오도록 설정
-                    FTimerHandle ReturnTimerHandle;
-                    GetWorldTimerManager().SetTimer(
-                        ReturnTimerHandle,
-                        FTimerDelegate::CreateLambda([this, TargetLocation]()
-                        {
-                            OnReturnHat();
-                        }),
-                        HatReturnDelay, // 모자가 돌아오는 시간
-                        false // 반복 여부 (한 번만 실행)
-                    );
-                }
-            }),
-            HatThrowTime, // 모자가 이동하는 시간
-            false // 반복 여부 (한 번만 실행)
-        );
-    }
-    }
-
-
-//모자 받기
-void APlayer_Mario::OnReturnHat()
-{
-    if (CurrentHat && bIsHatThrown)
-    {
-        FVector StartLocation = CurrentHat->GetActorLocation(); // 모자의 현재 위치
-        FVector TargetLocation = GetActorLocation();           // 캐릭터의 현재 위치
-        float TravelTime = HatThrowTime;                        // 이동 시간
-
-        // 시간 경과에 따라 모자를 이동시키기 위한 타이머
-        FTimerHandle TimerHandle;
-        float ElapsedTime = 0.0f;
-
-        // 타이머로 점진적으로 위치를 업데이트
-        GetWorldTimerManager().SetTimer(
-            TimerHandle,
-            FTimerDelegate::CreateLambda([this, StartLocation, TargetLocation, TravelTime, &ElapsedTime]()
-            {
-                if (CurrentHat)
-                {
-                    ElapsedTime += GetWorld()->GetDeltaSeconds();
-
-                    // 비율 계산 (0.0 ~ 1.0)
-                    float Alpha = FMath::Clamp(ElapsedTime / TravelTime, 0.0f, 1.0f);
-
-                    // 선형 보간
-                    FVector NewLocation = FMath::Lerp(StartLocation, TargetLocation, Alpha);
-                    CurrentHat->SetActorLocation(NewLocation);
-
-                    // 이동 완료 시 처리
-                    if (Alpha >= 1.0f)
-                    {
-                        CurrentHat->Destroy(); // 모자를 파괴
-                        bIsHatThrown = false;  // 모자 던진 상태 초기화
-                    }
-                }
-            }),
-            0.01f, // 타이머 업데이트 간격
-            true   // 반복 실행
-        );
+        // HatProjectile 생성
+        //????????????생성하지 않고 있는거 던지는 방법 찾아보기
+        AHatProjectile* Hat = GetWorld()->SpawnActor<AHatProjectile>(HatClass, SpawnLocation, SpawnRotation, SpawnParams);
+        if (Hat)
+        {
+            // 모자에 필요한 초기 설정 전달 (예: 속도, 방향)
+            Hat->InitializeHat(GetActorForwardVector());
+        }
     }
 }
+
+
 
 

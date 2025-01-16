@@ -15,6 +15,7 @@ class HARIOODYSSEY_API UCoinCounterWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	void UpdateCoinCounter(int32 NewCoinCount);
+	void NativeConstruct() override;
 
 protected:
 	UPROPERTY(meta=(BindWidget))

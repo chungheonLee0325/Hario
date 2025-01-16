@@ -12,3 +12,12 @@ void UCoinCounterWidget::UpdateCoinCounter(int32 NewCoinCount)
 		CoinCountText->SetText(FText::AsNumber(NewCoinCount));
 	}
 }
+
+void UCoinCounterWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	if (CoinCountText)
+	{
+		CoinCountText->SetText(FText::FromString(TEXT("0")));
+	}
+}

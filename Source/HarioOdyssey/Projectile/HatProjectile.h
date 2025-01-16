@@ -21,67 +21,20 @@ protected:
 
 public:    
 	virtual void Tick(float DeltaTime) override;
-	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
+	// 모자 초기화 함수
+	void InitializeHat(FVector ForwardDirection);
 	
-	
-	// 던져지는 속도
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Projectile")
-	FVector ThrowVelocity;
-
-	// 모자가 달라붙을 몬스터의 범위
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Projectile")
-	float AttachDistance = 300.f;
-
-	// 모자가 붙을 때 몬스터 위쪽 위치를 조정할 오프셋
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Projectile")
-	FVector AttachOffset = FVector(0.f, 0.f, 50.f);
-
-	// 모자가 붙을 수 있는 몬스터 객체 (타겟)
-	UPROPERTY()
-	AActor* TargetMonster;
-
-	// 모자 속성 (물리적 효과 등)
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* HatMesh;
-
-	// 타겟을 찾고 가까운지 확인하는 함수
-	void CheckAndAttachToMonster();
-    
-	// 몬스터와의 거리 계산
-	bool IsNearMonster();
-
-	UPROPERTY(VisibleAnywhere)
-	class USphereComponent* CollisionComponent;
-
-	UPROPERTY(EditAnywhere)
-	class UProjectileMovementComponent* ProjectileMovement;
-
-	UFUNCTION()
-	void OnHit(class UPrimitiveComponent* HitComp, AActor* OtherActor, 
-			   class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
-			   bool bFromSweep, const FHitResult& SweepResult);
-
-	// 몬스터와 붙을 때 호출될 함수
-	void AttachToMonster(ABaseMonster* Monster);
-
-	// 플레이어를 일시적으로 숨기기
-	void HidePlayerTemporarily();
-
-	// 일시적으로 숨겨진 플레이어가 다시 보이도록 하기
-	void ShowPlayerAgain();
-
-	// 숨김을 해제할 시간 (초 단위)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Visibility")
-	float HiddenDuration = 5.0f;  // 5초 동안 숨김
-
-	// 플레이어 참조
-	APlayer_Mario* Player;
 
 private:
-	// 숨김 타이머
-	FTimerHandle UnhideTimerHandle;
+	FVector InitialDirection; // 모자가 날아갈 방향
+	FVector StartLocation;    // 모자의 시작 위치
+	float Speed;              // 모자의 속도
+	float FlightTime;         // 날아가는 시간
+	float CurrentTime;        // 현재 경과 시간
 
+	bool bReturning;          // 모자가 돌아오는 상태인지 여부
+	AActor* OwnerActor;       // 모자를 던진 주인 (Player_Mario)
 	
 
 };

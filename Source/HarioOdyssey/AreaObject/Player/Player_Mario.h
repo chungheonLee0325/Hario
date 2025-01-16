@@ -5,7 +5,8 @@
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "Player_Mario.generated.h"
 
-class AHatProjectile; 
+class AHatProjectile;
+class UCoinCounterWidget;
 
 UCLASS()
 class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
@@ -62,6 +63,9 @@ private:
 	// 동전 카운트
 	int32 CoinCount = 0;
 
+	//UI 생성
+	TSubclassOf<UCoinCounterWidget> CoinCounterWidgetClass;
+	TObjectPtr<UCoinCounterWidget> CoinCounterWidget;
 	
 	
 	// 모자 던지기 관련 변수

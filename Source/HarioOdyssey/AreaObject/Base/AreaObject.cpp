@@ -3,8 +3,12 @@
 
 #include "AreaObject.h"
 
+#include <ThirdParty/ShaderConductor/ShaderConductor/External/DirectXShaderCompiler/include/dxc/DXIL/DxilConstants.h>
+
+#include "HarioOdyssey/AreaObject/Attribute/Condition.h"
 #include "HarioOdyssey/AreaObject/Attribute/Health.h"
 #include "HarioOdyssey/Contents/HarioGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AAreaObject::AAreaObject()
@@ -28,13 +32,13 @@ void AAreaObject::BeginPlay()
 	dt_AreaObject = Cast<UHarioGameInstance>(GetGameInstance())->GetDataAreaObject(m_AreaObjectID);
 
 	// Health 초기화 By Data
-	float HPMax = 1.0f;
+	float hpMax = 1.0f;
 	if (dt_AreaObject != nullptr)
 	{
-		HPMax = dt_AreaObject->HPMax;
+		hpMax = dt_AreaObject->HPMax;
 	}
 	
-	m_Health->InitHealth(HPMax);
+	m_Health->InitHealth(hpMax);
 }
 
 void AAreaObject::PostInitializeComponents()
@@ -53,7 +57,50 @@ void AAreaObject::Tick(float DeltaTime)
 void AAreaObject::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
 
-
+void AAreaObject::CalcDamage(float Damage, AActor* Caster, AActor* Target, bool IsPointDamage)
+{
 	
+	if (false == IsPointDamage)
+	{
+		UGameplayStatics::ApplyDamage(Target,
+			Damage,
+			GetController(),
+			this,
+			UDamageType::StaticClass());
+	}
+	else
+	{
+		//ToDo : 추가 구현
+		//UGameplayStatics::ApplyPointDamage();
+	}
+}
+
+float AAreaObject::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
+                              AActor* DamageCauser)
+{
+	if (IsDie() || m_Condition->HasCondition(EConditionType::Invincible))
+		return 0.0f;
+		
+	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if ( FMath::IsNearlyZero(m_Health->IncreaseHP(-ActualDamage)))
+	{
+		m_Condition->ExchangeDead();
+	}
+	
+	return ActualDamage;
+}
+
+void AAreaObject::OnDie()
+{
+}
+
+void AAreaObject::OnKill()
+{
+}
+
+void AAreaObject::OnRevival()
+{
 }

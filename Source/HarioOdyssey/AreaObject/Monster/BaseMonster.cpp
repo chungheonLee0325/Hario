@@ -3,6 +3,7 @@
 
 #include "BaseMonster.h"
 
+#include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 #include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
 #include "HarioOdyssey/PathMover/PathMover.h"
 
@@ -53,6 +54,16 @@ void ABaseMonster::Tick(float DeltaTime)
 void ABaseMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void ABaseMonster::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	auto player = Cast<APlayer_Mario>(OtherActor);
+	if (player != nullptr)
+	{
+		CalcDamage(1.0f,this,player);
+	}
 }
 
 UBaseSkill* ABaseMonster::GetSkillByState(EAiStateType StateType) const

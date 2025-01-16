@@ -8,6 +8,16 @@
 
 // Enum
 // 언리얼 리플렉션 시스템과 통합하기 위해 UENUM() 매크로를 사용
+UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+enum class EConditionType : uint8
+{
+	None        = 0,        // 0b0000
+	Dead        = 1 << 0,   // 0b0001
+	Invincible  = 1 << 1,   // 0b0010
+	Hide        = 1 << 2    // 0b0100
+};
+ENUM_CLASS_FLAGS(EConditionType);
+
 UENUM(BlueprintType)
 enum class EAreaObjectType : uint8 {
 	None        UMETA(DisplayName = "None"),       // 블루프린트에서 표시될 이름

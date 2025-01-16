@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "HarioOdyssey/AreaObject/Attribute/Condition.h"
 #include "HarioOdyssey/ResourceManager/HarioGameType.h"
 #include "AreaObject.generated.h"
+
+class UCondition;
 
 UCLASS()
 class HARIOODYSSEY_API AAreaObject : public ACharacter
@@ -30,9 +33,19 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void CalcDamage(float Damage, AActor* Caster, AActor* Target, bool IsPointDamage = false);
+	
+	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-UPROPERTY(Blueprintable)
+	virtual void OnDie();
+
+	virtual void OnKill();
+
+	virtual void OnRevival();
+
+	bool IsDie() const { return m_Condition->IsDead(); }
+
+	UPROPERTY(Blueprintable)
 	int m_AreaObjectID;
 
 private:
@@ -40,7 +53,10 @@ private:
 UPROPERTY()
 	class UHealth* m_Health;
 
+UPROPERTY()
+	UCondition* m_Condition;
+	
 	// 스마트 포인터 사용?
 	struct FAreaObjectData* dt_AreaObject;
-
+	
 };

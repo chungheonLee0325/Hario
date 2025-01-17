@@ -57,7 +57,7 @@ public:
 	float ReturnSpeed = 300.0f;
 	
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
-	float ChainLength = 400.0f;
+	float ChainLength = 1300.0f;
 
 	// Getter 함수들
 	float GetAttackSpeed() const { return AttackSpeed; }

@@ -3,14 +3,16 @@
 
 #include "MarioController.h"
 
-#include "Blueprint/UserWidget.h"
 #include "HarioOdyssey/UI/CoinCounterWidget.h"
+#include "HarioOdyssey/UI/HealthWidget.h"
+
 
 void AMarioController::BeginPlay()
 {
 	Super::BeginPlay();
 	// UI 생성
 	CreateCoinCounterUI();
+	CreateHealthUI();
 }
 
 
@@ -24,5 +26,27 @@ void AMarioController::CreateCoinCounterUI()
 			CoinCounterWidget->AddToViewport();
 			CoinCounterWidget->UpdateCoinCounter(CoinCount);
 		}
+	}
+}
+
+
+void AMarioController::CreateHealthUI()
+{
+	if (HealthWidgetClass && !HealthWidget)
+	{
+		HealthWidget = CreateWidget<UHealthWidget>(GetWorld(), HealthWidgetClass);
+		if (HealthWidget)
+		{
+			HealthWidget->AddToViewport();
+			//HealthWidget->UpdateHealth(CurrentHealth);
+		}
+	}
+}
+
+void AMarioController::UpdateHealthUI(float CurrentHealth)
+{
+	if (HealthWidget)
+	{
+		HealthWidget->UpdateHealth(CurrentHealth);
 	}
 }

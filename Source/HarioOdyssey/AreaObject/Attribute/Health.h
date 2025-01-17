@@ -31,9 +31,11 @@ public:
 	UFUNCTION()
 	float IncreaseHP(float Delta);
 
+	//최대체력기준 현재체력
 	UFUNCTION()
 	void SetHPByRate(float Rate);
 
+	//현제체력
 	UFUNCTION()
 	float GetHP() const;
 	

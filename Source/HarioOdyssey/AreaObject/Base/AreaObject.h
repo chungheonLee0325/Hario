@@ -26,6 +26,9 @@ protected:
 	// 초기화 로직
 	virtual void PostInitializeComponents() override;
 
+UPROPERTY()
+	class UHealth* m_Health;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -55,8 +58,7 @@ public:
 
 private:
 	
-UPROPERTY()
-	class UHealth* m_Health;
+
 
 UPROPERTY()
 	UCondition* m_Condition;

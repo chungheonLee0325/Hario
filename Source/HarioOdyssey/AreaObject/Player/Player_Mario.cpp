@@ -10,6 +10,9 @@
 #include "HarioOdyssey/UI/CoinCounterWidget.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
+#include "HarioOdyssey/AreaObject/Attribute/Health.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
+#include "HarioOdyssey/UI/HealthWidget.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -18,6 +21,8 @@ APlayer_Mario::APlayer_Mario()
 {
     // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
+
+    m_AreaObjectID = 1;
 
     //카메라 붐 설정(캐릭터를 따라다니는 카메라)
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -35,6 +40,8 @@ APlayer_Mario::APlayer_Mario()
     
     GetCharacterMovement()->bOrientRotationToMovement = true; // 이동 방향으로 회전
 
+    
+    //m_Condition = CreateDefaultSubobject<AAreaObject>(TEXT("Condition"));
    
 }
 
@@ -49,7 +56,16 @@ void APlayer_Mario::BeginPlay()
     if (MarioController)
     {
         CoinCounterWidget=MarioController->CoinCounterWidget;
+        HealthWidget = MarioController->HealthWidget;
+
+        CoinCounterWidget->UpdateCoinCounter(CoinCount);
+        if (m_Health)
+        {
+            HealthWidget->UpdateHealth(m_Health->GetHP());
+        }
     }
+    
+ 
 }
 
 // Called every frame
@@ -148,7 +164,7 @@ void APlayer_Mario::OnLookUp(float Value)
 // 카메라 시점 초기화 함수 
 void APlayer_Mario::OnResetView() 
 {
-     UE_LOG(LogTemp,Warning,TEXT("APlayer_Mario::OnResetView"));
+     //UE_LOG(LogTemp,Warning,TEXT("시점초기화"));
     
       if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
       {
@@ -194,70 +210,118 @@ void APlayer_Mario::OnThrowHat()
 float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)
 {
-    // 데미지 호출
-    float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
-    if (ActualDamage > 0.0f && !bIsInvincible)
+    auto actureDamage= Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+    // LCH 수정 예정
+    if (IsDie() || HasCondition(EConditionType::Invincible))
     {
-        HandleBlinkingEffect(true); // 깜빡이는 효과 시작
+        return actureDamage;
     }
+    //무적상태
+    if (AddCondition(EConditionType::Invincible))
+    {
+        UE_LOG(LogTemp,Warning,TEXT("무적상태"));
+        FTimerHandle TimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+        {
+            // 딜레이 후 실행될 코드
+            RemoveCondition(EConditionType::Invincible);
+            UE_LOG(LogTemp,Warning,TEXT("무적해제"));
+        }, 2.0f, false); // 2초 후 실행, 반복 안함
+    }
+    if (HealthWidget)
+    {
+        HealthWidget->UpdateHealth(m_Health->GetHP());
+        
+    }
+    return actureDamage;
+   
 
-    return ActualDamage;
+
+    
+    // 깜빡이는 효과 시작
+    // if (ActualDamage > 0.0f && !bIsInvincible)
+    // {
+    //     HandleBlinkingEffect(true); 
+    // }
+
+ 
 }
+
+void APlayer_Mario::NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                             bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
+                             const FHitResult& Hit)
+{
+    Super::NotifyHit(MyComp, OtherActor, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
+
+    if (OtherActor && OtherActor->IsA(AChainChomp::StaticClass()))
+    {
+        AddCondition(EConditionType::Invincible);
+
+        GetWorldTimerManager().SetTimer(InvincibleTimerHandle, this, &APlayer_Mario::RemoveInvincibility, 3.0f, false);
+    }
+}
+
+void APlayer_Mario::RemoveInvincibility()
+{
+    RemoveCondition(EConditionType::Invincible);
+}
+
+
 
 
 // 깜빡이는 효과 처리 및 정리
-void APlayer_Mario::StartBlinkingEffect()
-{
-    HandleBlinkingEffect(true); // 래퍼 함수
-}
-void APlayer_Mario::HandleBlinkingEffect(bool bStart)
-{
-    if (bStart)
-    {
-        // 무적 상태 활성화
-        bIsInvincible = true;
-
-        // 초기 타이머 설정
-        BlinkTimer = 0.0f;
-        BlinkDuration = 2.0f;   // 총 지속 시간
-        BlinkInterval = 0.2f;   // 깜빡이는 간격
-
-        // 타이머 시작
-        GetWorldTimerManager().SetTimer(BlinkHandle, this, &APlayer_Mario::StartBlinkingEffect, BlinkInterval, true);
-
-    }
-    else
-    {
-        // 타이머 실행 중일 때 깜빡임 처리
-        if (USkeletalMeshComponent* LocalMesh  = GetMesh())
-        {
-            // Mesh의 보이기 상태를 반전
-            bool bNewVisibility = !LocalMesh ->IsVisible();
-            LocalMesh ->SetVisibility(bNewVisibility);
-        }
-
-        // 타이머 업데이트
-        BlinkTimer += BlinkInterval;
-
-        // 깜빡이는 효과 종료 조건
-        if (BlinkTimer >= BlinkDuration)
-        {
-            // 타이머 정지 및 초기화
-            GetWorldTimerManager().ClearTimer(BlinkHandle);
-
-            if (USkeletalMeshComponent* LocalMesh  = GetMesh())
-            {
-                // Mesh를 항상 보이도록 설정
-                LocalMesh ->SetVisibility(true);
-            }
-
-            // 무적 상태 비활성화
-            bIsInvincible = false;
-        }
-    }
-
-  
+// void APlayer_Mario::StartBlinkingEffect()
+// {
+//     HandleBlinkingEffect(true); // 래퍼 함수
+// }
+// void APlayer_Mario::HandleBlinkingEffect(bool bStart)
+// {
+//     if (bStart)
+//     {
+//         // 무적 상태 활성화
+//         bIsInvincible = true;
+//
+//         // 초기 타이머 설정
+//         BlinkTimer = 0.0f;
+//         BlinkDuration = 2.0f;   // 총 지속 시간
+//         BlinkInterval = 0.2f;   // 깜빡이는 간격
+//
+//         // 타이머 시작
+//         GetWorldTimerManager().SetTimer(BlinkHandle, this, &APlayer_Mario::StartBlinkingEffect, BlinkInterval, true);
+//
+//     }
+//     else
+//     {
+//         // 타이머 실행 중일 때 깜빡임 처리
+//         if (USkeletalMeshComponent* LocalMesh  = GetMesh())
+//         {
+//             // Mesh의 보이기 상태를 반전
+//             bool bNewVisibility = !LocalMesh ->IsVisible();
+//             LocalMesh ->SetVisibility(bNewVisibility);
+//         }
+//
+//         // 타이머 업데이트
+//         BlinkTimer += BlinkInterval;
+//
+//         // 깜빡이는 효과 종료 조건
+//         if (BlinkTimer >= BlinkDuration)
+//         {
+//             // 타이머 정지 및 초기화
+//             GetWorldTimerManager().ClearTimer(BlinkHandle);
+//
+//             if (USkeletalMeshComponent* LocalMesh  = GetMesh())
+//             {
+//                 // Mesh를 항상 보이도록 설정
+//                 LocalMesh ->SetVisibility(true);
+//             }
+//
+//             // 무적 상태 비활성화
+//             bIsInvincible = false;
+//         }
+//     }
+//
+//   
 
 
     
@@ -266,11 +330,11 @@ void APlayer_Mario::HandleBlinkingEffect(bool bStart)
 
     // ToDoKHA : 애니메이션(동작 불가 n초)
     //return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-}
+//}
 
-
-void APlayer_Mario::OnDie()
-{
-    Super::OnDie();
-}
+//
+// void APlayer_Mario::OnDie()
+// {
+//     Super::OnDie();
+// }
 

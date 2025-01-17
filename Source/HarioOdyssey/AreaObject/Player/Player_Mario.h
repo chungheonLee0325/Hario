@@ -7,6 +7,8 @@
 
 class AHatProjectile;
 class UCoinCounterWidget;
+class UHealthWidget;
+
 
 UCLASS()
 class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
@@ -20,7 +22,7 @@ public:
 protected:
 	// 게임이 시작하거나 스폰될 때 호출됩니다.
 	virtual void BeginPlay() override;
-
+	
 public:	
 	// 매 프레임마다 호출됩니다.
 	virtual void Tick(float DeltaTime) override;
@@ -47,15 +49,20 @@ public:
 	void OnThrowHat();
 	
 	//무적상태
-	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
-		AActor* DamageCauser) override;
+	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+						   bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
+						   const FHitResult& Hit) override;
+	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
+
+
 	
 	// 깜빡이는 효과 처리 및 정리
-	void HandleBlinkingEffect(bool bStart);
-	void StartBlinkingEffect();
+	// void HandleBlinkingEffect(bool bStart);
+	// void StartBlinkingEffect();
 	
 	
-	virtual void OnDie() override; //죽을 때 함수
+	//virtual void OnDie() override; //죽을 때 함수
 
 private:
 	// 카메라 붐 (Spring Arm)과 카메라 컴포넌트
@@ -73,17 +80,23 @@ private:
 	int32 CoinCount = 0;
 
 	//UI 생성
-	TObjectPtr<UCoinCounterWidget> CoinCounterWidget;
+	TObjectPtr<UCoinCounterWidget> CoinCounterWidget= nullptr;
+	TObjectPtr<UHealthWidget> HealthWidget= nullptr;
+	
+
+	//무적상태
+	FTimerHandle InvincibleTimerHandle;
+	void RemoveInvincibility();
 
 	// 깜빡이는 상태 변수
-	bool bIsInvincible = false;
+	//bool bIsInvincible = false;
 
 	// 깜빡이는 타이머 변수
-	FTimerHandle BlinkHandle;
-	float BlinkDuration; // 총 지속 시간
-	float BlinkInterval; // 깜빡이는 간격
-	float BlinkTimer;    // 현재까지 경과 시간
-	
+	// FTimerHandle BlinkHandle;
+	// float BlinkDuration; // 총 지속 시간
+	// float BlinkInterval; // 깜빡이는 간격
+	// float BlinkTimer;    // 현재까지 경과 시간
+	//
 
 	
 protected:

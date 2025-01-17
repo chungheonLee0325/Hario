@@ -21,7 +21,7 @@ protected:
 	
 public:
 	
-	// UI 생성
+	// CoinCounterWidget UI 생성
 	void CreateCoinCounterUI();
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="UI")
 	TSubclassOf<UCoinCounterWidget> CoinCounterWidgetClass;
@@ -31,7 +31,18 @@ public:
 
 	int32 CoinCount = 0;
 	
+	//HealthWidget UI 생성
+	void CreateHealthUI();
 
+	//????????수정필요
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void UpdateHealthUI(float CurrentHealth);
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="UI")
+	TSubclassOf<class UHealthWidget> HealthWidgetClass;
+
+	TObjectPtr<UHealthWidget>HealthWidget;
 	
 
+	
 };

@@ -14,7 +14,7 @@ bool UCondition::AddCondition(EConditionType Condition)
 
 bool UCondition::RemoveCondition(EConditionType Condition)
 {
-	if (HasCondition(Condition))
+	if (!HasCondition(Condition))
 		return false;
 	
 	ConditionFlags &= ~static_cast<uint8>(Condition);

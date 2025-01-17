@@ -46,7 +46,7 @@ void UAiChainChomp::InitStatePool()
 
 	// AggroWait 상태 설정
 	auto AggroWait = CreateState<UAggroWait>(this, m_Owner, EAiStateType::Idle);
-	AggroWait->SetM_DetectRange(ChainChompOwner->GetChainLength() + 100.0f);
+	AggroWait->SetM_DetectRange(ChainChompOwner->GetChainLength() + 1200.0f);
 	AggroWait->SetM_WaitTime(2.0f);
 	AggroWait->SetNextState(EAiStateType::Attack);
 	AddState(EAiStateType::Idle, AggroWait);

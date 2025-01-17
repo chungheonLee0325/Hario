@@ -21,16 +21,16 @@ public:
 
 protected:
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
-    float PullBackDistance = 400.f;
+    float PullBackDistance = 900.f;
 
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
-    float PullSpeed = 300.f;
+    float PullSpeed = 1500.f;
 
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
-    float LaunchSpeed = 1300.f;
+    float LaunchSpeed = 3000.f;
 
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
-    float ReturnSpeed = 150.f;
+    float ReturnSpeed = 500.f;
 
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
     float RotateTime = 1.0f;

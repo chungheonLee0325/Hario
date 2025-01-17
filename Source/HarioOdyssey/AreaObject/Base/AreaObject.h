@@ -28,6 +28,9 @@ protected:
 
 UPROPERTY()
 	class UHealth* m_Health;
+	
+UPROPERTY()
+	UCondition* m_Condition;
 
 public:	
 	// Called every frame
@@ -60,8 +63,7 @@ private:
 	
 
 
-UPROPERTY()
-	UCondition* m_Condition;
+
 	
 	// 스마트 포인터 사용?
 	struct FAreaObjectData* dt_AreaObject;

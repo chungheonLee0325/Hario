@@ -40,6 +40,16 @@ void ABaseItem::BeginPlay()
 void ABaseItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// 아이템 진동
+	Radian += DeltaTime * Period;
+	Radian = FMath::Fmod(Radian, 2 * PI);
+	float deltaZ = Amplitude * FMath::Sin(Radian);
+
+	AddActorWorldOffset(FVector(0, 0, deltaZ));
+
+	// 아이템 회전
+	ItemMesh->AddRelativeRotation(CoinRotator * DeltaTime);
 }
 
 bool ABaseItem::CanBeCollectedBy(class APlayer_Mario* Player)

@@ -24,5 +24,10 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	// Heart 회복수치
+UPROPERTY(EditAnywhere)
 	float m_HeartValue;
+
 };

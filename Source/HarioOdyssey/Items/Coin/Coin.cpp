@@ -49,8 +49,5 @@ void ACoin::ApplyEffect(class APlayer_Mario* Player)
 void ACoin::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// 코인 회전(애니메이션 있을시 x)
-	ItemMesh->AddRelativeRotation(CoinRotator * DeltaTime);
 }
 

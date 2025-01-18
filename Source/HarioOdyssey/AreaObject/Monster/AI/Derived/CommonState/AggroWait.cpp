@@ -27,7 +27,7 @@ void UAggroWait::Enter()
 
 void UAggroWait::Execute(float dt)
 {
-	if (m_Owner == nullptr)
+	if (m_Owner == nullptr || m_Target == nullptr)
 		return;
 
 	m_WaitTimeElapsed += dt;

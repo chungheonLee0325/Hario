@@ -81,14 +81,17 @@ void AAreaObject::CalcDamage(float Damage, AActor* Caster, AActor* Target, bool 
 float AAreaObject::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
                               AActor* DamageCauser)
 {
-	if (IsDie() || m_Condition->HasCondition(EConditionType::Invincible))
+	if (IsDie() || HasCondition(EConditionType::Invincible))
 		return 0.0f;
 		
 	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
 	if ( FMath::IsNearlyZero(m_Health->IncreaseHP(-ActualDamage)))
 	{
-		m_Condition->ExchangeDead();
+		if(true== ExchangeDead())
+		{
+			OnDie();
+		}
 	}
 	
 	return ActualDamage;
@@ -117,5 +120,10 @@ bool AAreaObject::RemoveCondition(EConditionType Condition) const
 bool AAreaObject::HasCondition(EConditionType Condition) const
 {
 	return m_Condition->HasCondition(Condition);
+}
+
+bool AAreaObject::ExchangeDead()
+{
+	return m_Condition->ExchangeDead();
 }
 

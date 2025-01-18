@@ -40,7 +40,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void CalcDamage(float Damage, AActor* Caster, AActor* Target, bool IsPointDamage = false);
-	
+
 	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	virtual void OnDie();
@@ -54,6 +54,7 @@ public:
 	bool AddCondition(EConditionType Condition) const;
 	bool RemoveCondition(EConditionType Condition) const;
 	bool HasCondition(EConditionType Condition) const;
+	bool ExchangeDead();
 	
 
 	UPROPERTY(Blueprintable)

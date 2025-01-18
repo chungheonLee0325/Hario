@@ -26,6 +26,38 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
     float PullSpeed = 1500.f;
 
+public:
+    void SetPullBackDistance(float _PullBackDistance)
+    {
+        this->PullBackDistance = _PullBackDistance;
+    }
+
+    void SetPullSpeed(float _PullSpeed)
+    {
+        this->PullSpeed = _PullSpeed;
+    }
+
+    void SetLaunchSpeed(float _LaunchSpeed)
+    {
+        this->LaunchSpeed = _LaunchSpeed;
+    }
+
+    void SetReturnSpeed(float _ReturnSpeed)
+    {
+        this->ReturnSpeed = _ReturnSpeed;
+    }
+
+    void SetRotateTime(float _RotateTime)
+    {
+        this->RotateTime = _RotateTime;
+    }
+
+    void SetM_ChainChomp(AChainChomp* _M_ChainChomp)
+    {
+        m_ChainChomp = _M_ChainChomp;
+    }
+
+protected:
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
     float LaunchSpeed = 3000.f;
 

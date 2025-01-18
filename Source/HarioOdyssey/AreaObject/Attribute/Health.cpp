@@ -39,17 +39,28 @@ void UHealth::InitHealth(float _hpMax)	// 추후 사용에따라 구조체나 �
 {
 	m_HPMax = _hpMax;
 	m_HP = m_HPMax;
+	this->OnHealthChanged.Broadcast(m_HP,0,m_HPMax);
 }
 
 float UHealth::IncreaseHP(float Delta)
 {
+	float oldHP = m_HP;
 	m_HP = FMath::Clamp(m_HP + Delta,0.0f,m_HPMax);
+	if (false == FMath::IsNearlyEqual((oldHP), (m_HP)))
+	{
+		this->OnHealthChanged.Broadcast(m_HP,Delta,m_HPMax);
+  	}
 	return m_HP;
 }
 
 void UHealth::SetHPByRate(float Rate)
 {
+	float oldHP = m_HP;
 	m_HP = m_HPMax * Rate;
+	if (false == FMath::IsNearlyEqual((oldHP), (m_HP)))
+	{
+		this->OnHealthChanged.Broadcast(m_HP,m_HP - oldHP, m_HPMax);
+	}
 }
 
 float UHealth::GetHP() const

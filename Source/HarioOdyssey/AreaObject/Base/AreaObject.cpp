@@ -86,7 +86,7 @@ float AAreaObject::TakeDamage(float Damage, const FDamageEvent& DamageEvent, ACo
 		
 	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
-	if ( FMath::IsNearlyZero(m_Health->IncreaseHP(-ActualDamage)))
+	if ( FMath::IsNearlyZero(IncreaseHP(-ActualDamage)))
 	{
 		if(true== ExchangeDead())
 		{
@@ -121,9 +121,26 @@ bool AAreaObject::HasCondition(EConditionType Condition) const
 {
 	return m_Condition->HasCondition(Condition);
 }
-
-bool AAreaObject::ExchangeDead()
+bool AAreaObject::ExchangeDead() const
 {
 	return m_Condition->ExchangeDead();
 }
+
+float AAreaObject::IncreaseHP(float Delta) const
+{
+	return m_Health->IncreaseHP(Delta);
+}
+
+void AAreaObject::SetHPByRate(float Rate) const
+{
+	m_Health->SetHPByRate(Rate);
+}
+
+float AAreaObject::GetHP() const
+{
+	return m_Health->GetHP();
+}
+
+
+
 

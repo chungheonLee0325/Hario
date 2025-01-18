@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "HarioOdyssey/Items/BaseItem.h"
 #include "Heart.generated.h"
 
 UCLASS()
-class HARIOODYSSEY_API AHeart : public AActor
+class HARIOODYSSEY_API AHeart : public ABaseItem
 {
 	GENERATED_BODY()
 
@@ -18,8 +19,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void ApplyEffect(APlayer_Mario* Player) override;
 
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	float m_HeartValue;
 };

@@ -43,10 +43,11 @@ void AMarioController::CreateHealthUI()
 	}
 }
 
+// ToDo : 삭제예정
 void AMarioController::UpdateHealthUI(float CurrentHealth)
 {
-	if (HealthWidget)
-	{
-		HealthWidget->UpdateHealth(CurrentHealth);
-	}
+	//if (HealthWidget)
+	//{
+	//	HealthWidget->UpdateHealth(CurrentHealth);
+	//}
 }

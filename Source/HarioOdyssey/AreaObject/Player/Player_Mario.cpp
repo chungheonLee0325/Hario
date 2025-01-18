@@ -59,10 +59,6 @@ void APlayer_Mario::BeginPlay()
         HealthWidget = MarioController->HealthWidget;
 
         CoinCounterWidget->UpdateCoinCounter(CoinCount);
-        if (m_Health)
-        {
-            HealthWidget->UpdateHealth(m_Health->GetHP());
-        }
     }
     
  
@@ -212,28 +208,24 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
 {
 
     auto actureDamage= Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-    // LCH 수정 예정
-    if (IsDie() || HasCondition(EConditionType::Invincible))
+    // 무적이거나, 이미 죽은 경우
+    if (FMath::IsNearlyZero(actureDamage))
     {
         return actureDamage;
     }
-    //무적상태
+    //무적 상태 적용
     if (AddCondition(EConditionType::Invincible))
     {
         UE_LOG(LogTemp,Warning,TEXT("무적상태"));
         FTimerHandle TimerHandle;
         GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
         {
-            // 딜레이 후 실행될 코드
+            // 딜레이 후 실행될 코드 - 무적 해제
             RemoveCondition(EConditionType::Invincible);
             UE_LOG(LogTemp,Warning,TEXT("무적해제"));
         }, 2.0f, false); // 2초 후 실행, 반복 안함
     }
-    if (HealthWidget)
-    {
-        HealthWidget->UpdateHealth(m_Health->GetHP());
-        
-    }
+
     return actureDamage;
    
 

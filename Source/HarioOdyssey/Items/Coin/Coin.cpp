@@ -12,7 +12,7 @@ ACoin::ACoin()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 코인 누적 초기화
+	// 코인 가치 초기화
 	m_CoinValue = 1;
 
 	// 코인 메시 설정

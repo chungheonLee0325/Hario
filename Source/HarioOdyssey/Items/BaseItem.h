@@ -57,6 +57,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float Period;
 	// 아이템 회전 속도
-	FRotator CoinRotator = FRotator(0, 60.f , 0);
+	FRotator ItemRotator = FRotator(0, 100.f , 0);
 
 };

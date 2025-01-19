@@ -15,8 +15,6 @@ AHeart::AHeart()
 
 	// 멤버 변수 초기화
 	m_HeartValue = 1.0f;
-	Period = 5.0f;
-	Amplitude = 0.25f;
 
 	// Collision Scale 설정
 	CollectionSphere->SetRelativeScale3D(FVector(1.4f));

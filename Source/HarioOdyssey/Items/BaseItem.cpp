@@ -23,6 +23,10 @@ ABaseItem::ABaseItem()
 
 	// 멤버 변수 초기화
 	m_IsCollected = false;
+
+	ItemRotator = FRotator(0, 100.f , 0);
+	Period = 2.0f;
+	Amplitude = 0.15f;
 }
 
 
@@ -49,7 +53,7 @@ void ABaseItem::Tick(float DeltaTime)
 	AddActorWorldOffset(FVector(0, 0, deltaZ));
 
 	// 아이템 회전
-	ItemMesh->AddRelativeRotation(CoinRotator * DeltaTime);
+	ItemMesh->AddRelativeRotation(ItemRotator * DeltaTime);
 }
 
 bool ABaseItem::CanBeCollectedBy(class APlayer_Mario* Player)

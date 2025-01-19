@@ -3,8 +3,14 @@
 
 #include "ChainChomp.h"
 
+#include "RootAnchor.h"
+#include "ChainComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/SplineComponent.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Derived/AiMonster/ChainChomp/AiChainChomp.h"
+#include "HarioOdyssey/Utility/SpawnUtilLib.h"
+#include "HarioOdyssey/AreaObject/Skill/Monster/ChainChompPullAndLaunchSkill.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -13,6 +19,34 @@ AChainChomp::AChainChomp()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
+
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempCCBody(TEXT("/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/ChainChomp2/ChainChomp2.ChainChomp2'"));
+	if (tempCCBody.Succeeded())
+	{
+		GetMesh()->SetSkeletalMesh(tempCCBody.Object);
+	}
+	GetMesh()->SetRelativeScale3D(FVector(0.3f));
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f,0.0f,40.0f),FRotator(0.0f,-90.0f,0.0f));
+	
+	ChainChompSphere = CreateDefaultSubobject<USphereComponent>("ChainChompSphere");
+	ChainChompSphere->SetupAttachment(GetMesh());
+	ChainChompSphere->SetRelativeScale3D(FVector(14.0f));
+
+	ChainStartScene = CreateDefaultSubobject<USceneComponent>("ChainStartScene");
+	ChainStartScene->SetupAttachment(GetMesh());
+	ChainStartScene->SetRelativeLocationAndRotation(FVector(0.0f,-635.f,0.0f),FRotator(0.0f,-90.0f,0.0f));
+
+	ChainComponent = CreateDefaultSubobject<UChainComponent>("ChainComponent");
+	ChainComponent->SetupAttachment(ChainStartScene);
+	
+	// Monster로 옮겨야 할듯...
+	m_AiFSM = CreateDefaultSubobject<UAiChainChomp>("FSM");
+	StateSkillMap.Add(EAiStateType::Attack,UChainChompPullAndLaunchSkill::StaticClass());
+
+	
+	
+	/*
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempRoot(TEXT("/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/Peg.Peg'"));
 	if (tempRoot.Succeeded())
 	{
@@ -42,6 +76,7 @@ AChainChomp::AChainChomp()
 
 	// Monster로 옮겨야 할듯...
 	m_AiFSM = CreateDefaultSubobject<UAiChainChomp>("FSM");
+	 */
 }
 
 // Called when the game starts or when spawned
@@ -49,14 +84,29 @@ void AChainChomp::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	m_AiFSM->InitStatePool();
+	RootPosition = GetActorLocation();	
+	FVector SpawnLocation = RootPosition;
+	AActor* RootAnchor =USpawnUtilLib::SpawnActorOnGround(this,ARootAnchor::StaticClass(),SpawnLocation,FRotator::ZeroRotator);
+	if (RootAnchor != nullptr)
+	{
+		RootAnchorPosition = RootAnchor->GetActorLocation();
+	}
+	ChainComponent->UpdateChainPosition(ChainStartScene->GetComponentLocation(),RootAnchorPosition +FVector(0,0,60));
+
 	ChainChompSphere->OnComponentBeginOverlap.AddDynamic(this, &AChainChomp::OnBodyBeginOverlap);
+
+	m_AiFSM->InitStatePool();
 }
 
 // Called every frame
 void AChainChomp::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (m_PathMover->IsMoving() || m_PathMover->IsRotating())
+	{
+		ChainComponent->UpdateChainPosition(ChainStartScene->GetComponentLocation(),RootAnchorPosition +FVector(0,0,60));
+	}
 }
 
 // Called to bind functionality to input

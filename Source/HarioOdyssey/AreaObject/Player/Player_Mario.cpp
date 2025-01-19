@@ -11,7 +11,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
 #include "HarioOdyssey/AreaObject/Attribute/Health.h"
-#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 #include "HarioOdyssey/UI/HealthWidget.h"
 #include "Kismet/GameplayStatics.h"
 

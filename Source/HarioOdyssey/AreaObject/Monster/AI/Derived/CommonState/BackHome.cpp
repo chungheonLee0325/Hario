@@ -4,7 +4,7 @@
 #include "BackHome.h"
 
 #include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiFSM.h"
-#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 
 void UBackHome::InitState()
 {
@@ -16,8 +16,6 @@ void UBackHome::Enter()
 
 void UBackHome::Execute(float dt)
 {
-	m_Owner->ReturnComponentToOriginal(Cast<AChainChomp>(m_Owner)->ChainChompRoot,2.0f,EMovementInterpolationType::EaseIn,true);
-	
 }
 
 void UBackHome::Exit()

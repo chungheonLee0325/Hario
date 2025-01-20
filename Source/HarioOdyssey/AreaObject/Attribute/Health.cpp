@@ -37,23 +37,25 @@ void UHealth::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 
 void UHealth::InitHealth(float _hpMax)	// 추후 사용에따라 구조체나 다른 형식으로 변환 예정
 {
-	m_HPMax = _hpMax;
-	m_HP = m_HPMax;
+	m_HPMax = _hpMax; //최대 체력을 설정
+	m_HP = m_HPMax; //현재 체력을 최대 체력으로 초기화
 }
 
+//체력을 증가,감소
 float UHealth::IncreaseHP(float Delta)
 {
+	//체력값을 최소0과 최대 체력 사이로 클램핑
 	m_HP = FMath::Clamp(m_HP + Delta,0.0f,m_HPMax);
-	return m_HP;
+	return m_HP; //변경된 체력 반환
 }
 
 void UHealth::SetHPByRate(float Rate)
 {
-	m_HP = m_HPMax * Rate;
+	m_HP = m_HPMax * Rate; //최대 체력 비율화
 }
 
 float UHealth::GetHP() const
 {
-	return m_HP;
+	return m_HP; //현재 체력 반환
 }
 

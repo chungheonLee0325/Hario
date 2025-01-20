@@ -9,7 +9,6 @@
 #include "GameFramework/PlayerController.h"
 #include "HarioOdyssey/UI/CoinCounterWidget.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Blueprint/UserWidget.h"
 #include "HarioOdyssey/AreaObject/Attribute/Health.h"
 #include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
 #include "HarioOdyssey/UI/HealthWidget.h"
@@ -221,36 +220,64 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
     if (AddCondition(EConditionType::Invincible))
     {
         UE_LOG(LogTemp,Warning,TEXT("무적상태"));
-        FTimerHandle TimerHandle;
-        GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+
+        // Dynamic Material Instance 생성
+        if (!DynamicMaterialInstance)
+        {
+            DynamicMaterialInstance = GetMesh()->CreateAndSetMaterialInstanceDynamic(0);
+
+            // if (DynamicMaterialInstance==nullptr)
+            // {
+            //     UE_LOG(LogTemp,Warning,TEXT("머테리얼 생성 실패"));
+            // }
+        }
+
+        // 캐릭터 깜빡이는 효과
+        GetWorld()->GetTimerManager().SetTimer(BlinkTimerHandle,[this]()
+        {
+            static bool bIsVisible = true;
+            bIsVisible = !bIsVisible;
+            if (DynamicMaterialInstance)
+            {
+                //Opacity 값을 0.2 또는 1.0으로 토글
+                float NewOpacity = bIsVisible ? 1.0f : 0.2f;
+                DynamicMaterialInstance -> SetScalarParameterValue(FName("Opacity"), NewOpacity);
+            }
+        }, 0.1f, true); 
+        
+        //2초 후 무적 해제 및 깜빡임 멈춤
+        GetWorld()->GetTimerManager().SetTimer(this->InvincibleLocalTimerHandle, [this]()
         {
             // 딜레이 후 실행될 코드
             RemoveCondition(EConditionType::Invincible);
             UE_LOG(LogTemp,Warning,TEXT("무적해제"));
-        }, 2.0f, false); // 2초 후 실행, 반복 안함
+            
+            // 깜빡임 멈춤
+           GetWorld()->GetTimerManager().ClearTimer(BlinkTimerHandle);
+            if (DynamicMaterialInstance)
+            {
+                // Opacity 값을 1.0으로 복구
+                DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), 1.0f);
+            }
+        }, 2.0f, false); 
     }
     if (HealthWidget)
     {
         HealthWidget->UpdateHealth(m_Health->GetHP());
-        
     }
     return actureDamage;
    
-
-
-    
-    // 깜빡이는 효과 시작
-    // if (ActualDamage > 0.0f && !bIsInvincible)
-    // {
-    //     HandleBlinkingEffect(true); 
-    // }
-
- 
 }
 
+
+
+
+
+
+
 void APlayer_Mario::NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                             bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
-                             const FHitResult& Hit)
+                              bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
+                              const FHitResult& Hit)
 {
     Super::NotifyHit(MyComp, OtherActor, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
@@ -270,71 +297,11 @@ void APlayer_Mario::RemoveInvincibility()
 
 
 
-// 깜빡이는 효과 처리 및 정리
-// void APlayer_Mario::StartBlinkingEffect()
-// {
-//     HandleBlinkingEffect(true); // 래퍼 함수
-// }
-// void APlayer_Mario::HandleBlinkingEffect(bool bStart)
-// {
-//     if (bStart)
-//     {
-//         // 무적 상태 활성화
-//         bIsInvincible = true;
-//
-//         // 초기 타이머 설정
-//         BlinkTimer = 0.0f;
-//         BlinkDuration = 2.0f;   // 총 지속 시간
-//         BlinkInterval = 0.2f;   // 깜빡이는 간격
-//
-//         // 타이머 시작
-//         GetWorldTimerManager().SetTimer(BlinkHandle, this, &APlayer_Mario::StartBlinkingEffect, BlinkInterval, true);
-//
-//     }
-//     else
-//     {
-//         // 타이머 실행 중일 때 깜빡임 처리
-//         if (USkeletalMeshComponent* LocalMesh  = GetMesh())
-//         {
-//             // Mesh의 보이기 상태를 반전
-//             bool bNewVisibility = !LocalMesh ->IsVisible();
-//             LocalMesh ->SetVisibility(bNewVisibility);
-//         }
-//
-//         // 타이머 업데이트
-//         BlinkTimer += BlinkInterval;
-//
-//         // 깜빡이는 효과 종료 조건
-//         if (BlinkTimer >= BlinkDuration)
-//         {
-//             // 타이머 정지 및 초기화
-//             GetWorldTimerManager().ClearTimer(BlinkHandle);
-//
-//             if (USkeletalMeshComponent* LocalMesh  = GetMesh())
-//             {
-//                 // Mesh를 항상 보이도록 설정
-//                 LocalMesh ->SetVisibility(true);
-//             }
-//
-//             // 무적 상태 비활성화
-//             bIsInvincible = false;
-//         }
-//     }
-//
-//   
 
 
-    
-    // ToDoKHA : 깜빡이기 + 무적
-    //m_Condition->AddCondition(EConditionType::Invincible);
 
-    // ToDoKHA : 애니메이션(동작 불가 n초)
-    //return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-//}
 
-//
 // void APlayer_Mario::OnDie()
 // {
 //     Super::OnDie();
 // }
-

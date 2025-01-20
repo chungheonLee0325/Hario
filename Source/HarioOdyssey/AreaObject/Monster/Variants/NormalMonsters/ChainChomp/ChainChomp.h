@@ -24,6 +24,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual UBaseAiFSM* CreateFSM() override;
 
 public:
 	// Called every frame
@@ -58,8 +59,7 @@ public:
 	FVector GetRootAnchorPosition() const { return RootAnchorPosition; };
 
 	// 몬스터로 옮겨야할듯
-	UPROPERTY()
-	UAiChainChomp* m_AiFSM;
+
 
 private:
 	// 몬스터의 기본 속성들

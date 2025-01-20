@@ -94,8 +94,11 @@ void AChainChomp::BeginPlay()
 	ChainComponent->UpdateChainPosition(ChainStartScene->GetComponentLocation(),RootAnchorPosition +FVector(0,0,60));
 
 	ChainChompSphere->OnComponentBeginOverlap.AddDynamic(this, &AChainChomp::OnBodyBeginOverlap);
+}
 
-	m_AiFSM->InitStatePool();
+UBaseAiFSM* AChainChomp::CreateFSM()
+{
+	return CreateDefaultSubobject<UAiChainChomp>("FSM");
 }
 
 // Called every frame

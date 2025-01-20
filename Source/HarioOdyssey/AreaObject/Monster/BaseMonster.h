@@ -41,6 +41,7 @@ BaseMonster System
 #include "HarioOdyssey/PathMover/PathMover.h"
 #include "BaseMonster.generated.h"
 
+class UBaseAiFSM;
 class UBaseSkill;
 class UPathMover;
 
@@ -191,8 +192,8 @@ public:
 	FMonsterData MonsterData;
 	
 protected:
-
-
+	virtual UBaseAiFSM* CreateFSM();
+	
 	// Skill System
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TArray<TSubclassOf<UBaseSkill>> SkillClasses;
@@ -223,6 +224,9 @@ protected:
 
 	UPROPERTY()
 	FVector m_SpawnLocation;
+	
+	UPROPERTY()
+	UBaseAiFSM* m_AiFSM;
 
 private:
 	bool IsValidForMovement() const;

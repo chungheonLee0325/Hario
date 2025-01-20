@@ -42,7 +42,7 @@ void UChainChompPullAndLaunchSkill::OnCastStart(ABaseMonster* Caster, const AAct
     m_ChainChomp->LookAtLocation(m_TargetPos, RotateTime);
     
     // 뒤로 당기기 시작
-    m_ChainChomp->MoveToLocationWithSpeed(m_PullBackPosition, PullSpeed);
+    m_ChainChomp->MoveToLocationWithSpeed(m_PullBackPosition, PullSpeed, EMovementInterpolationType::Linear);
 }
 
 void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
@@ -59,7 +59,7 @@ void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
         {
             // Pull 완료, Launch 시작
             m_CurrentPhase = ESkillPhase::Casting;
-            m_ChainChomp->MoveToLocationWithSpeed(m_TargetPos, LaunchSpeed);
+            m_ChainChomp->MoveToLocationWithSpeed(m_TargetPos, LaunchSpeed, EMovementInterpolationType::EaseOutBounce);
         }
         break;
 
@@ -69,8 +69,8 @@ void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
         {
             // Launch 완료, Return 시작
             m_CurrentPhase = ESkillPhase::PostCast;
-            m_ChainChomp->LookAtLocation(m_OriginalPosition, RotateTime, EMovementInterpolationType::EaseIn);
-            m_ChainChomp->MoveToLocationWithSpeed(m_OriginalPosition, ReturnSpeed);
+            m_ChainChomp->LookAtLocation(m_OriginalPosition, RotateTime, EMovementInterpolationType::EaseInOut);
+            m_ChainChomp->MoveToLocationWithSpeed(m_OriginalPosition, ReturnSpeed, EMovementInterpolationType::Linear);
             //m_ChainChomp->ReturnComponentToOriginal(m_ChainChomp->ChainChompRoot, 2.f);
         }
         break;
@@ -80,7 +80,7 @@ void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
         if (!m_ChainChomp->IsMoving())
         {
             FVector targetPos = FVector(m_Target->GetActorLocation().X,m_Target->GetActorLocation().Y,m_ChainChomp->GetActorLocation().Z);
-            m_ChainChomp->LookAtLocation(targetPos, RotateTime, EMovementInterpolationType::EaseIn);
+            m_ChainChomp->LookAtLocation(targetPos, RotateTime, EMovementInterpolationType::EaseInOut);
             // Return 완료, 스킬 종료
             OnCastEnd();
         }

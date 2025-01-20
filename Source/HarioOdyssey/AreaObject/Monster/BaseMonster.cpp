@@ -3,6 +3,7 @@
 
 #include "BaseMonster.h"
 
+#include "AI/Base/BaseAiFSM.h"
 #include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 #include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
 #include "HarioOdyssey/PathMover/PathMover.h"
@@ -15,6 +16,7 @@ ABaseMonster::ABaseMonster()
 	PrimaryActorTick.bCanEverTick = true;
 
 	m_PathMover = CreateDefaultSubobject<UPathMover>(TEXT("PathMover"));
+	m_AiFSM = CreateFSM();
 }
 
 // Called when the game starts or when spawned
@@ -36,6 +38,7 @@ void ABaseMonster::BeginPlay()
 			}
 		}
 	}
+	m_AiFSM->InitStatePool();
 }
 
 // Called every frame
@@ -48,6 +51,11 @@ void ABaseMonster::Tick(float DeltaTime)
 	{
 		CurrentSkill->OnCastTick(DeltaTime);
 	}
+}
+
+UBaseAiFSM* ABaseMonster::CreateFSM()
+{
+	return CreateDefaultSubobject<UBaseAiFSM>(TEXT("AiFSM"));
 }
 
 // Called to bind functionality to input

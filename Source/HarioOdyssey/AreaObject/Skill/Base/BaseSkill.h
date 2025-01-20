@@ -74,6 +74,9 @@ public:
 	virtual bool CanCast(class ABaseMonster* Caster, const AActor* Target) const;
 	virtual void OnCastStart(class ABaseMonster* Caster, const AActor* Target);
 	virtual void OnCastTick(float DeltaTime);
+	virtual void UpdatePreparePhase(float DeltaTime);
+	virtual void UpdateCastingPhase(float DeltaTime);
+	virtual void UpdatePostCastPhase(float DeltaTime);
 	virtual void OnCastEnd();
 	virtual void CancelCast();
 
@@ -133,6 +136,7 @@ protected:
 	virtual void ClearEffects();
 
 	// 유틸리티 메서드
+	virtual void OnPhaseChanged(ESkillPhase NewPhase);
 	void UpdatePhase(ESkillPhase NewPhase);
 	USceneComponent* GetAttachComponent() const;
 };

@@ -6,11 +6,9 @@
 #include "RootAnchor.h"
 #include "ChainComponent.h"
 #include "Components/SphereComponent.h"
-#include "Components/SplineComponent.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Derived/AiMonster/ChainChomp/AiChainChomp.h"
 #include "HarioOdyssey/Utility/SpawnUtilLib.h"
 #include "HarioOdyssey/AreaObject/Skill/Monster/ChainChompPullAndLaunchSkill.h"
-#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -38,9 +36,9 @@ AChainChomp::AChainChomp()
 	ChainStartScene->SetupAttachment(GetMesh());
 	ChainStartScene->SetRelativeLocationAndRotation(FVector(0.0f,-635.f,0.0f),FRotator(0.0f,-90.0f,0.0f));
 
-	ChainComponent = CreateDefaultSubobject<UChainComponent>("ChainComponent");
+	ChainComponent = CreateDefaultSubobject<UChainComponent>("Chains");
 	ChainComponent->SetupAttachment(ChainStartScene);
-
+	ChainComponent->AttachToComponent(ChainStartScene, FAttachmentTransformRules::KeepRelativeTransform);
 	// 스킬 추가
 	m_StateSkillClasses.Add(EAiStateType::Attack,UChainChompPullAndLaunchSkill::StaticClass());
 
@@ -51,7 +49,6 @@ AChainChomp::AChainChomp()
 void AChainChomp::BeginPlay()
 {
 	Super::BeginPlay();
-	
 	RootPosition = GetActorLocation();	
 	FVector SpawnLocation = RootPosition;
 	AActor* RootAnchor =USpawnUtilLib::SpawnActorOnGround(this,ARootAnchor::StaticClass(),SpawnLocation,FRotator::ZeroRotator);

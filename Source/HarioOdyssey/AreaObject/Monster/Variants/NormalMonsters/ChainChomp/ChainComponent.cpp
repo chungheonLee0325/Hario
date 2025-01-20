@@ -13,13 +13,18 @@ UChainComponent::UChainComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	RootScence = CreateDefaultSubobject<USceneComponent>("Root");
+	RootScence->SetupAttachment(this);
+	
+
+	
 	ChainLinks.SetNum(ChainNum);
 	for(int32 i = 0; i < ChainNum; i++)
 	{
 		FString CompName = FString::Printf(TEXT("ChainLink_%d"), i);
 		ChainLinks[i] = CreateDefaultSubobject<UStaticMeshComponent>(*CompName);
-		ChainLinks[i]->SetRelativeScale3D(FVector(0.8f));
-		ChainLinks[i]->SetupAttachment(this);
+		ChainLinks[i]->SetupAttachment(RootScence);
+		ChainLinks[i]->SetRelativeScale3D(FVector(0.9f));
 	}
 	
 	// 체인 링크 메시 초기화

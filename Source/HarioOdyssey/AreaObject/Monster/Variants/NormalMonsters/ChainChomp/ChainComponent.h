@@ -26,6 +26,9 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	void UpdateChainPosition(FVector Start, FVector End);
+	
+	UPROPERTY(EditAnywhere, Category = "Chain Settings")
+	USceneComponent* RootScence;
 
 private:
 	// 설정값들
@@ -35,5 +38,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Chain Settings")
 	TArray<UStaticMeshComponent*> ChainLinks;
 
-	int ChainNum = 10;
+
+	
+	const int ChainNum = 7;
 };

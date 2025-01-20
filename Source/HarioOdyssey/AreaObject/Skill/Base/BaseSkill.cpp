@@ -50,6 +50,18 @@ void UBaseSkill::OnCastStart(ABaseMonster* Caster, const AActor* Target)
     }
 }
 
+void UBaseSkill::UpdatePreparePhase(float DeltaTime)
+{
+}
+
+void UBaseSkill::UpdateCastingPhase(float DeltaTime)
+{
+}
+
+void UBaseSkill::UpdatePostCastPhase(float DeltaTime)
+{
+}
+
 void UBaseSkill::OnCastTick(float DeltaTime)
 {
     if (!m_Caster || !m_Target) return;
@@ -64,6 +76,11 @@ void UBaseSkill::OnCastTick(float DeltaTime)
             UpdatePhase(ESkillPhase::Casting);
             SpawnProgressEffect();
         }
+        else
+        {
+            UpdatePreparePhase(DeltaTime);
+        }
+        
         break;
 
     case ESkillPhase::Casting:
@@ -72,12 +89,20 @@ void UBaseSkill::OnCastTick(float DeltaTime)
             UpdatePhase(ESkillPhase::PostCast);
             SpawnEndEffect();
         }
+        else
+        {
+            UpdateCastingPhase(DeltaTime);
+        }
         break;
 
     case ESkillPhase::PostCast:
         if (m_CurrentPhaseTime <= 0.0f)
         {
             OnCastEnd();
+        }
+        else
+        {
+            UpdatePostCastPhase(DeltaTime);
         }
         break;
 
@@ -187,6 +212,8 @@ void UBaseSkill::UpdatePhase(ESkillPhase NewPhase)
     //    m_CurrentPhaseTime = SkillData.Cooldown;
     //    break;
     }
+
+    OnPhaseChanged(NewPhase);
 }
 
 USceneComponent* UBaseSkill::GetAttachComponent() const
@@ -311,5 +338,9 @@ void UBaseSkill::SpawnEndEffect()
     }
 }
 void UBaseSkill::ClearEffects()
+{
+}
+
+void UBaseSkill::OnPhaseChanged(ESkillPhase NewPhase)
 {
 }

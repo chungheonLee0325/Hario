@@ -32,6 +32,7 @@ AChainChomp::AChainChomp()
 	ChainChompSphere = CreateDefaultSubobject<USphereComponent>("ChainChompSphere");
 	ChainChompSphere->SetupAttachment(GetMesh());
 	ChainChompSphere->SetRelativeScale3D(FVector(14.0f));
+	ChainChompSphere->SetCollisionProfileName(TEXT("Enemy"));
 
 	ChainStartScene = CreateDefaultSubobject<USceneComponent>("ChainStartScene");
 	ChainStartScene->SetupAttachment(GetMesh());
@@ -40,9 +41,9 @@ AChainChomp::AChainChomp()
 	ChainComponent = CreateDefaultSubobject<UChainComponent>("ChainComponent");
 	ChainComponent->SetupAttachment(ChainStartScene);
 	
-	// Monster로 옮겨야 할듯...
-	m_AiFSM = CreateDefaultSubobject<UAiChainChomp>("FSM");
 	StateSkillMap.Add(EAiStateType::Attack,UChainChompPullAndLaunchSkill::StaticClass());
+
+	m_AiFSM = AChainChomp::CreateFSM();
 }
 
 // Called when the game starts or when spawned

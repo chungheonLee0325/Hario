@@ -25,9 +25,9 @@ public:
 	virtual void InitState() PURE_VIRTUAL(UBaseAiState::InitState);
 	void SetOwner(ABaseMonster* Owner);
 	virtual void SetNextState(EAiStateType NextState);
-	virtual void Enter() PURE_VIRTUAL(UAiState::Enter,);
+	virtual void Enter() PURE_VIRTUAL(UBaseAiState::Enter,);
 	virtual void Execute(float dt) PURE_VIRTUAL(UAiState::Excute,);
-	virtual void Exit() PURE_VIRTUAL(UAiState::Exit,);
+	virtual void Exit() PURE_VIRTUAL(UBaseAiState::Exit,);
 
 protected:
 	EAiStateType m_AiStateType;

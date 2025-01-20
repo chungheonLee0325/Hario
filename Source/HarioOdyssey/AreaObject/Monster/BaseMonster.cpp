@@ -15,8 +15,9 @@ ABaseMonster::ABaseMonster()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
 	m_PathMover = CreateDefaultSubobject<UPathMover>(TEXT("PathMover"));
-	m_AiFSM = CreateFSM();
 }
 
 // Called when the game starts or when spawned
@@ -38,7 +39,10 @@ void ABaseMonster::BeginPlay()
 			}
 		}
 	}
-	m_AiFSM->InitStatePool();
+	if (m_AiFSM != nullptr)
+	{
+		m_AiFSM->InitStatePool();
+	}
 }
 
 // Called every frame
@@ -51,11 +55,6 @@ void ABaseMonster::Tick(float DeltaTime)
 	{
 		CurrentSkill->OnCastTick(DeltaTime);
 	}
-}
-
-UBaseAiFSM* ABaseMonster::CreateFSM()
-{
-	return CreateDefaultSubobject<UBaseAiFSM>(TEXT("AiFSM"));
 }
 
 // Called to bind functionality to input
@@ -80,6 +79,11 @@ UBaseSkill* ABaseMonster::GetSkillByState(EAiStateType StateType) const
 	{
 		return *SkillPtr;
 	}
+	return nullptr;
+}
+
+UBaseAiFSM* ABaseMonster::CreateFSM()
+{
 	return nullptr;
 }
 

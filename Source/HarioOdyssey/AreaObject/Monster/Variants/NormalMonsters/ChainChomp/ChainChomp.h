@@ -34,9 +34,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* ChainChompMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USphereComponent* ChainChompSphere;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -57,9 +54,6 @@ public:
 	float GetChainLength() const { return ChainLength; }
 	FVector GetRootPosition() const { return RootPosition; };
 	FVector GetRootAnchorPosition() const { return RootAnchorPosition; };
-
-	// 몬스터로 옮겨야할듯
-
 
 private:
 	// 몬스터의 기본 속성들

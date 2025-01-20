@@ -36,7 +36,7 @@ public:
 
 	virtual void UpdateState(float dt);
 
-	virtual void InitStatePool() PURE_VIRTUAL(UAiFSM::InitStatePool,);
+	virtual void InitStatePool() PURE_VIRTUAL(UBaseAiFSM::InitStatePool,);
 
 public:
 	template<typename T>

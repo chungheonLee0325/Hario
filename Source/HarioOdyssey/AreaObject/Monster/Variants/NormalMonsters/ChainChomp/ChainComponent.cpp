@@ -3,6 +3,8 @@
 
 #include "ChainComponent.h"
 
+#include "MovieSceneSequenceID.h"
+
 
 // Sets default values for this component's properties
 UChainComponent::UChainComponent()
@@ -16,9 +18,8 @@ UChainComponent::UChainComponent()
 	{
 		FString CompName = FString::Printf(TEXT("ChainLink_%d"), i);
 		ChainLinks[i] = CreateDefaultSubobject<UStaticMeshComponent>(*CompName);
-		//ChainLinks[i]->SetupAttachment();
-		ChainLinks[i]->SetRelativeScale3D(FVector(0.3f));
-		ChainLinks[i]->SetRelativeRotation(FRotator(0, 90, 0));
+		ChainLinks[i]->SetRelativeScale3D(FVector(0.8f));
+		ChainLinks[i]->SetupAttachment(this);
 	}
 	
 	// 체인 링크 메시 초기화
@@ -56,12 +57,16 @@ void UChainComponent::UpdateChainPosition(FVector Start, FVector End)
 {
 	// 시작점과 끝점 사이에 체인 링크들을 배치
 	FVector Direction = End - Start;
-	float SegmentLength = Direction.Size() / (ChainLinks.Num() - 1);
+	float SegmentLength = Direction.Size() / (ChainLinks.Num());
 	Direction.Normalize();
 
 	for(int32 i = 0; i < ChainLinks.Num(); i++)
 	{
 		FVector Position = Start + Direction * (SegmentLength * i);
 		ChainLinks[i]->SetWorldLocation(Position);
+
+		// 체인 링크의 회전 설정
+		FRotator Rotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+		ChainLinks[i]->SetWorldRotation(Rotation);
 	}
 }

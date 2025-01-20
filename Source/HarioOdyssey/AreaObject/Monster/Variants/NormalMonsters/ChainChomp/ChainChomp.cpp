@@ -43,40 +43,6 @@ AChainChomp::AChainChomp()
 	// Monster로 옮겨야 할듯...
 	m_AiFSM = CreateDefaultSubobject<UAiChainChomp>("FSM");
 	StateSkillMap.Add(EAiStateType::Attack,UChainChompPullAndLaunchSkill::StaticClass());
-
-	
-	
-	/*
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempRoot(TEXT("/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/Peg.Peg'"));
-	if (tempRoot.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(tempRoot.Object);
-	}
-	GetMesh()->SetRelativeScale3D(FVector(0.3f));
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f,0.0f,-65.0f), FRotator(0.0f,0.0f,-90.0f));
-	
-	ChainChompRoot = CreateDefaultSubobject<USceneComponent>("ChainChompRoot");
-	ChainChompRoot->SetRelativeLocation(FVector(0.0f,0.0f,-60.0f));
-	ChainChompRoot->SetupAttachment(RootComponent);
-	
-	ChainChompMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ChainChomp");
-	ChainChompMesh->SetupAttachment(ChainChompRoot);
-	ChainChompMesh->SetRelativeScale3D(FVector(0.3f));
-	ChainChompMesh->SetRelativeLocationAndRotation(FVector(0.0f,0.0f,130.0f),FRotator(0.0f,-90.0f,0.0f));
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempCCBody(TEXT("/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/ChainChomp2/ChainChomp2.ChainChomp2'"));
-	if (tempCCBody.Succeeded())
-	{
-		ChainChompMesh->SetSkeletalMesh(tempCCBody.Object);
-	}
-	
-	ChainChompSphere = CreateDefaultSubobject<USphereComponent>("ChainChompSphere");
-	ChainChompSphere->SetupAttachment(ChainChompRoot);
-	ChainChompSphere->SetRelativeLocation(FVector(0.0f,0.0f,130.0f));
-	ChainChompSphere->SetRelativeScale3D(FVector(4.0f));
-
-	// Monster로 옮겨야 할듯...
-	m_AiFSM = CreateDefaultSubobject<UAiChainChomp>("FSM");
-	 */
 }
 
 // Called when the game starts or when spawned

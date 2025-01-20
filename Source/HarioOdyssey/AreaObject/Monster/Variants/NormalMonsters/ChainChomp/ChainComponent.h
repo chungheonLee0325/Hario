@@ -30,13 +30,10 @@ public:
 private:
 	// 설정값들
 	UPROPERTY(EditAnywhere, Category = "Chain Settings")
-	int32 NumChainLinks = 5;
-    
-	UPROPERTY(EditAnywhere, Category = "Chain Settings")
 	UStaticMesh* ChainLinkMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Chain Settings")
 	TArray<UStaticMeshComponent*> ChainLinks;
 
-	int ChainNum = 8;
+	int ChainNum = 10;
 };

@@ -25,6 +25,7 @@ public:
 	virtual void Enter() override;
 	virtual void Execute(float DeltaTime) override;
 	virtual void Exit() override;
+	void OnSkillCompleted();	
 
 	// 설정 함수들
 	void SetM_AttackSpeed(float Speed) { m_AttackSpeed = Speed; }

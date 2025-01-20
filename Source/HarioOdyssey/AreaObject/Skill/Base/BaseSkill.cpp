@@ -17,11 +17,6 @@ UBaseSkill::UBaseSkill()
 {
 }
 
-UBaseSkill::~UBaseSkill()
-{
-    //ClearEffects();
-}
-
 bool UBaseSkill::CanCast(ABaseMonster* Caster, const AActor* Target) const
 {
     if (!Caster || !Target) return false;
@@ -53,8 +48,6 @@ void UBaseSkill::OnCastStart(ABaseMonster* Caster, const AActor* Target)
         SpawnCastEffect();
         SpawnProgressEffect();
     }
-
-    BP_OnCastStart(Caster, Target);
 }
 
 void UBaseSkill::OnCastTick(float DeltaTime)
@@ -95,8 +88,6 @@ void UBaseSkill::OnCastTick(float DeltaTime)
    //     }
    //     break;
     }
-
-    BP_OnCastTick(DeltaTime);
 }
 
 void UBaseSkill::OnCastEnd()
@@ -104,10 +95,21 @@ void UBaseSkill::OnCastEnd()
     if (!m_Caster || !m_Target) return;
 
     m_Caster->ClearCurrentSkill();
+    if (nullptr != m_NextSkill && m_Caster->CanCastSkill(m_NextSkill, m_Target))
+    {
+        m_NextSkill->OnSkillComplete = OnSkillComplete;
+        m_Caster->CastSkill(m_NextSkill, m_Target);
+    }
+    else
+    {
+        if (OnSkillComplete.IsBound() == true)
+        {
+            OnSkillComplete.Execute();
+            OnSkillComplete.Unbind();
+        }
+    }
     ClearEffects();
     UpdatePhase(ESkillPhase::Ready);
-    
-    BP_OnCastEnd();
 }
 
 void UBaseSkill::CancelCast()
@@ -119,11 +121,6 @@ void UBaseSkill::CancelCast()
         m_Caster->ClearCurrentSkill();
         ClearEffects();
         UpdatePhase(ESkillPhase::Ready);
-        
-        if (m_Caster && m_Target)
-        {
-            BP_OnCastCanceled();
-        }
     }
 }
 
@@ -190,8 +187,6 @@ void UBaseSkill::UpdatePhase(ESkillPhase NewPhase)
     //    m_CurrentPhaseTime = SkillData.Cooldown;
     //    break;
     }
-
-    BP_OnPhaseChanged(NewPhase);
 }
 
 USceneComponent* UBaseSkill::GetAttachComponent() const
@@ -203,11 +198,6 @@ USceneComponent* UBaseSkill::GetAttachComponent() const
     if (MeshComponent) return MeshComponent;
     
     return m_Caster->GetRootComponent();
-}
-
-void UBaseSkill::SetM_NextSkill(UBaseSkill* const M_NextSkill)
-{
-    m_NextSkill = M_NextSkill;
 }
 
 void UBaseSkill::SpawnCastEffect()
@@ -249,8 +239,6 @@ void UBaseSkill::SpawnCastEffect()
             }
         }
     }
-
-    BP_SpawnCastEffect();
 }
 
 void UBaseSkill::SpawnProgressEffect()
@@ -286,8 +274,6 @@ void UBaseSkill::SpawnProgressEffect()
             }
         }
     }
-
-    BP_SpawnProgressEffect();
 }
 
 void UBaseSkill::SpawnEndEffect()
@@ -326,6 +312,4 @@ void UBaseSkill::SpawnEndEffect()
 }
 void UBaseSkill::ClearEffects()
 {
-    // Blueprint에서 구현
-    BP_ClearEffects();
 }

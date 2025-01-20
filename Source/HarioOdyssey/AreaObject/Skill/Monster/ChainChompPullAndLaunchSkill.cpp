@@ -93,4 +93,12 @@ void UChainChompPullAndLaunchSkill::OnCastEnd()
 {
     //Super::OnCastEnd(Caster, Target);
     m_CurrentPhase = ESkillPhase::Ready;
+
+    if (OnSkillComplete.IsBound() == true)
+    {
+        OnSkillComplete.Execute();
+        OnSkillComplete.Unbind();
+    }
+    
+    m_ChainChomp->ClearCurrentSkill();
 } 

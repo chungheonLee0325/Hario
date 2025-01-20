@@ -34,6 +34,8 @@ void UCommonAttack::Execute(float DeltaTime)
 		{
 			if (m_Owner->CanCastSkill(AttackSkill,Target))
 			{
+				//AttackSkill->OnSkillComplete.BindLambda(this,&UCommonAttack::OnSkillCompleted);
+				AttackSkill->OnSkillComplete.BindUObject(this,&UCommonAttack::OnSkillCompleted);
 				m_Owner->CastSkill(AttackSkill,Target);
 				m_IsSkillStarted = true;
 			}
@@ -47,16 +49,16 @@ void UCommonAttack::Execute(float DeltaTime)
 			m_AiFSM->ChangeState(EAiStateType::Idle);
 		}
 	}
-	else
-	{
-		if (UBaseSkill* AttackSkill = m_Owner->FindSkillByState(m_AiStateType))
-		{
-			if (AttackSkill->GetCurrentPhase() == ESkillPhase::Ready)
-			{
-				m_AiFSM->ChangeState(m_NextState);
-			}
-		}
-	}
+	//else
+	//{
+	//	if (UBaseSkill* AttackSkill = m_Owner->FindSkillByState(m_AiStateType))
+	//	{
+	//		if (AttackSkill->GetCurrentPhase() == ESkillPhase::Ready)
+	//		{
+	//			m_AiFSM->ChangeState(m_NextState);
+	//		}
+	//	}
+	//}
 	//// 현재 페이즈에 따른 실행
 	//switch (m_CurrentPhase)
 	//{
@@ -74,13 +76,11 @@ void UCommonAttack::Execute(float DeltaTime)
 
 void UCommonAttack::Exit()
 {
-	if (!m_Owner) return;
+}
 
-	// 공격 스킬 종료
-	if (UBaseSkill* AttackSkill = m_Owner->FindSkillByState(m_AiStateType))
-	{
-		AttackSkill->OnCastEnd();
-	}
+void UCommonAttack::OnSkillCompleted()
+{
+	if (m_AiFSM) m_AiFSM->ChangeState(m_NextState);
 }
 
 void UCommonAttack::ExecutePreparePhase(float DeltaTime)

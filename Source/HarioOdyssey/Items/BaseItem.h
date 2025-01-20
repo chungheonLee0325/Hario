@@ -47,4 +47,16 @@ protected:
 
 	bool m_IsCollected;
 
+	// 아이템 진동 라디안
+	UPROPERTY(EditAnywhere)
+	float Radian;
+	// 아이템 진동 진폭
+	UPROPERTY(EditAnywhere)
+	float Amplitude;
+	// 아이템 진동 주기
+	UPROPERTY(EditAnywhere)
+	float Period;
+	// 아이템 회전 속도
+	FRotator ItemRotator = FRotator(0, 100.f , 0);
+
 };

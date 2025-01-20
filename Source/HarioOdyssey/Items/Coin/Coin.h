@@ -29,6 +29,5 @@ protected:
 	int32 m_CoinValue;
 
 private:
-	//코인 회전 속도
-	FRotator CoinRotator = FRotator(0, 60.f , 0);
+
 };

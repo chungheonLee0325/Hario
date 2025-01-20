@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "HarioOdyssey/AreaObject/Attribute/Condition.h"
+#include "HarioOdyssey/AreaObject/Attribute/Health.h"
 #include "HarioOdyssey/ResourceManager/HarioGameType.h"
 #include "AreaObject.generated.h"
 
@@ -18,6 +19,8 @@ class HARIOODYSSEY_API AAreaObject : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AAreaObject();
+UPROPERTY()
+	class UHealth* m_Health;
 
 protected:
 	// Called when the game starts or when spawned
@@ -26,8 +29,6 @@ protected:
 	// 초기화 로직
 	virtual void PostInitializeComponents() override;
 
-UPROPERTY()
-	class UHealth* m_Health;
 	
 UPROPERTY()
 	UCondition* m_Condition;
@@ -40,7 +41,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void CalcDamage(float Damage, AActor* Caster, AActor* Target, bool IsPointDamage = false);
-	
+
 	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	virtual void OnDie();
@@ -51,20 +52,21 @@ public:
 
 	bool IsDie() const { return m_Condition->IsDead(); }
 
+	// Condition 기능 퍼사드 제공
 	bool AddCondition(EConditionType Condition) const;
 	bool RemoveCondition(EConditionType Condition) const;
 	bool HasCondition(EConditionType Condition) const;
-	
+	bool ExchangeDead() const;
+
+	// Health 기능 퍼사드 제공
+	float IncreaseHP(float Delta) const;
+	void SetHPByRate(float Rate) const;
+	float GetHP() const;
 
 	UPROPERTY(Blueprintable)
 	int m_AreaObjectID;
 
 private:
-	
-
-
-
-	
 	// 스마트 포인터 사용?
 	struct FAreaObjectData* dt_AreaObject;
 	

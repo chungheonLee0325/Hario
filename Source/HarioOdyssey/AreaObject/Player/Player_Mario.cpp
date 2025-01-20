@@ -10,7 +10,7 @@
 #include "HarioOdyssey/UI/CoinCounterWidget.h"
 #include "UObject/ConstructorHelpers.h"
 #include "HarioOdyssey/AreaObject/Attribute/Health.h"
-#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 #include "HarioOdyssey/UI/HealthWidget.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -58,10 +58,6 @@ void APlayer_Mario::BeginPlay()
         HealthWidget = MarioController->HealthWidget;
 
         CoinCounterWidget->UpdateCoinCounter(CoinCount);
-        if (m_Health)
-        {
-            HealthWidget->UpdateHealth(m_Health->GetHP());
-        }
     }
     
  
@@ -211,12 +207,12 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
 {
 
     auto actureDamage= Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-    // LCH 수정 예정
-    if (IsDie() || HasCondition(EConditionType::Invincible))
+    // 무적이거나, 이미 죽은 경우
+    if (FMath::IsNearlyZero(actureDamage))
     {
         return actureDamage;
     }
-    //무적상태
+    //무적 상태 적용
     if (AddCondition(EConditionType::Invincible))
     {
         UE_LOG(LogTemp,Warning,TEXT("무적상태"));
@@ -248,7 +244,7 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
         //2초 후 무적 해제 및 깜빡임 멈춤
         GetWorld()->GetTimerManager().SetTimer(this->InvincibleLocalTimerHandle, [this]()
         {
-            // 딜레이 후 실행될 코드
+            // 딜레이 후 실행될 코드 - 무적 해제
             RemoveCondition(EConditionType::Invincible);
             UE_LOG(LogTemp,Warning,TEXT("무적해제"));
             
@@ -261,10 +257,7 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
             }
         }, 2.0f, false); 
     }
-    if (HealthWidget)
-    {
-        HealthWidget->UpdateHealth(m_Health->GetHP());
-    }
+
     return actureDamage;
    
 }

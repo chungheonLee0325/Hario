@@ -7,7 +7,7 @@
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Base/BaseAiFSM.h"
-#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -27,7 +27,7 @@ void UAggroWait::Enter()
 
 void UAggroWait::Execute(float dt)
 {
-	if (m_Owner == nullptr)
+	if (m_Owner == nullptr || m_Target == nullptr)
 		return;
 
 	m_WaitTimeElapsed += dt;
@@ -65,7 +65,8 @@ void UAggroWait::SetM_WaitTime(float Time)
 
 bool UAggroWait::DetectPlayer() const
 {
-	if (m_Target->GetDistanceTo(m_Owner) <= m_DetectRange)
+	float distance = m_Target->GetDistanceTo(m_Owner);
+	if (distance <= m_DetectRange)
 	{
 		return true;
 	}

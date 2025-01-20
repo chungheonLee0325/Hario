@@ -3,6 +3,7 @@
 
 #include "BaseMonster.h"
 
+#include "AI/Base/BaseAiFSM.h"
 #include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 #include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
 #include "HarioOdyssey/PathMover/PathMover.h"
@@ -14,6 +15,8 @@ ABaseMonster::ABaseMonster()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
 	m_PathMover = CreateDefaultSubobject<UPathMover>(TEXT("PathMover"));
 }
 
@@ -35,6 +38,10 @@ void ABaseMonster::BeginPlay()
 				m_StateSkillInstances.Add(Pair.Key, NewSkill);
 			}
 		}
+	}
+	if (m_AiFSM != nullptr)
+	{
+		m_AiFSM->InitStatePool();
 	}
 }
 
@@ -72,6 +79,11 @@ UBaseSkill* ABaseMonster::GetSkillByState(EAiStateType StateType) const
 	{
 		return *SkillPtr;
 	}
+	return nullptr;
+}
+
+UBaseAiFSM* ABaseMonster::CreateFSM()
+{
 	return nullptr;
 }
 

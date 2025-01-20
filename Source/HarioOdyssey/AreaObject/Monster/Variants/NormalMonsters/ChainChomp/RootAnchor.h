@@ -4,30 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "HarioOdyssey/Items/BaseItem.h"
-#include "Heart.generated.h"
+#include "RootAnchor.generated.h"
 
 UCLASS()
-class HARIOODYSSEY_API AHeart : public ABaseItem
+class HARIOODYSSEY_API ARootAnchor : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	AHeart();
+	ARootAnchor();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	virtual void ApplyEffect(APlayer_Mario* Player) override;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-private:
-	// Heart 회복수치
-UPROPERTY(EditAnywhere)
-	float m_HeartValue;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* Mesh;
 };

@@ -16,8 +16,12 @@ class HARIOODYSSEY_API UHealthWidget : public UUserWidget
 
 	
 public:
+	// ToDo : 삭제 예정
+	//UFUNCTION(BlueprintCallable, Category = "Health")
+	//void UpdateHealth(float CurrentHealth);
+
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	void UpdateHealth(float CurrentHealth);
+	void UpdateHP(float currentHP, float delta, float maxHP);
 	void NativeConstruct() override;
     
 protected:

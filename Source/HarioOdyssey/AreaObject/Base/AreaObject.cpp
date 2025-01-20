@@ -65,7 +65,6 @@ void AAreaObject::CalcDamage(float Damage, AActor* Caster, AActor* Target, bool 
 	
 	if (false == IsPointDamage)
 	{
-		//범위 피해 적용
 		UGameplayStatics::ApplyDamage(Target,
 			Damage,
 			GetController(),
@@ -82,50 +81,66 @@ void AAreaObject::CalcDamage(float Damage, AActor* Caster, AActor* Target, bool 
 float AAreaObject::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
                               AActor* DamageCauser)
 {
-	//이미 죽었거나 무적 상태인 경우 피해를 받지 않음
-	if (IsDie() || m_Condition->HasCondition(EConditionType::Invincible))
+	if (IsDie() || HasCondition(EConditionType::Invincible))
 		return 0.0f;
-
-	//기본 피해 처리
+		
 	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
-	//남은 체력이 0에 도달하면 사망 상태로 전환
-	if ( FMath::IsNearlyZero(m_Health->IncreaseHP(-ActualDamage)))
+	if ( FMath::IsNearlyZero(IncreaseHP(-ActualDamage)))
 	{
-		m_Condition->ExchangeDead();
+		if(true== ExchangeDead())
+		{
+			OnDie();
+		}
 	}
 	
 	return ActualDamage;
 }
 
-//사망 시
 void AAreaObject::OnDie()
 {
 }
 
-//적 처치 시
 void AAreaObject::OnKill()
 {
 }
 
-//부활 시
 void AAreaObject::OnRevival()
 {
 }
 
-//상태 추가
 bool AAreaObject::AddCondition(EConditionType Condition) const
 {
 	return m_Condition->AddCondition(Condition);
 }
-//상태 제거
 bool AAreaObject::RemoveCondition(EConditionType Condition) const
 {
 	return m_Condition->RemoveCondition(Condition);
 }
-//현재 상태
 bool AAreaObject::HasCondition(EConditionType Condition) const
 {
 	return m_Condition->HasCondition(Condition);
 }
+bool AAreaObject::ExchangeDead() const
+{
+	return m_Condition->ExchangeDead();
+}
+
+float AAreaObject::IncreaseHP(float Delta) const
+{
+	return m_Health->IncreaseHP(Delta);
+}
+
+void AAreaObject::SetHPByRate(float Rate) const
+{
+	m_Health->SetHPByRate(Rate);
+}
+
+float AAreaObject::GetHP() const
+{
+	return m_Health->GetHP();
+}
+
+
+
 

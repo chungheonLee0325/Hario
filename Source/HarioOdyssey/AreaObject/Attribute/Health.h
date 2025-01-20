@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "Health.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHealthChangedDelegate, float, CurrentHP,float, Delta ,float, MaxHP);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HARIOODYSSEY_API UHealth : public UActorComponent
@@ -38,7 +39,10 @@ public:
 	//현제체력
 	UFUNCTION()
 	float GetHP() const;
-	
+
+	// 체력 변경 델리게이트
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnHealthChangedDelegate OnHealthChanged;
 
 
 private:

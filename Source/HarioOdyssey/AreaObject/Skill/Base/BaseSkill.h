@@ -16,7 +16,7 @@ enum class ESkillPhase : uint8
     Prepare,    // 선딜레이
     Casting,    // 시전 중
     PostCast,   // 후딜레이
-    Cooldown    // 쿨타임
+    //Cooldown    // 쿨타임
 };
 
 USTRUCT(BlueprintType)
@@ -91,6 +91,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Skill")
     bool IsInRange(const ABaseMonster* Caster, const AActor* Target) const;
 
+    void SetM_NextSkill(UBaseSkill* const M_NextSkill);
+    
 protected:
     // 기존 속성들
     UPROPERTY(EditAnywhere, Category = "Skill Data")
@@ -113,7 +115,10 @@ protected:
 
     UPROPERTY()
     FVector m_TargetPos;
-    
+
+    UPROPERTY()
+    UBaseSkill * m_NextSkill;
+
     // 이펙트 관련 속성 추가
     UPROPERTY()
     TArray<UParticleSystemComponent*> ActiveParticleEffects;

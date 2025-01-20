@@ -39,6 +39,7 @@ BaseMonster System
 #include "CoreMinimal.h"
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "HarioOdyssey/PathMover/PathMover.h"
+#include "Containers/Queue.h"
 #include "BaseMonster.generated.h"
 
 class UBaseAiFSM;
@@ -149,9 +150,6 @@ public:
 
 	// Combat Interface
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual UBaseSkill* GetCurrentSkill();
-	
-	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual AActor* GetAggroTarget() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -160,6 +158,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void CastSkill(UBaseSkill* Skill, const AActor* Target);
 
+	// Skill Interface
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual UBaseSkill* GetCurrentSkill();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void UpdateCurrentSkill(UBaseSkill* NewSkill);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void ClearCurrentSkill();
+	
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void EnQueueSkill(UBaseSkill* Skill);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual UBaseSkill* DeQueueSkill();
+	
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void ClearQueueSkill();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual UBaseSkill* FindSkillByClass(TSubclassOf<UBaseSkill> SkillClass);	// 아마 Skill Table 추가되면 SkillID로 찾는 방식으로 변화될듯
+	
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	UBaseSkill* FindSkillByState(EAiStateType StateType) const;
+
+	
 	// State Checks
 	UFUNCTION(BlueprintPure, Category = "State")
 	bool IsMoving() const;
@@ -179,9 +203,6 @@ public:
 
 	// Combat System
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	UBaseSkill* GetSkillByState(EAiStateType StateType) const;
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void SetAggroTarget(AActor* NewTarget) { m_AggroTarget = NewTarget; }
 
 	// Data Access
@@ -195,16 +216,16 @@ protected:
 	virtual UBaseAiFSM* CreateFSM();
 	
 	// Skill System
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	TArray<TSubclassOf<UBaseSkill>> SkillClasses;
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	TSet<TSubclassOf<UBaseSkill>> m_SkillClasses;
 	
-	UPROPERTY()
-	TArray<UBaseSkill*> Skills;
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	TMap<TSubclassOf<UBaseSkill>,UBaseSkill*> m_SkillInstances;
 		
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	TMap<EAiStateType, TSubclassOf<UBaseSkill>> StateSkillMap;
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	TMap<EAiStateType, TSubclassOf<UBaseSkill>> m_StateSkillClasses;
 	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Skill")
 	TMap<EAiStateType, UBaseSkill*> m_StateSkillInstances;
 	
 	// Movement System
@@ -227,6 +248,11 @@ protected:
 	
 	UPROPERTY()
 	UBaseAiFSM* m_AiFSM;
+
+	UPROPERTY()
+	UBaseSkill* m_CurrentSkill;
+	
+	TQueue<UBaseSkill*> m_SkillQueue;
 
 private:
 	bool IsValidForMovement() const;

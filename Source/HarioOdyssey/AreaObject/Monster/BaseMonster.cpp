@@ -16,7 +16,7 @@ ABaseMonster::ABaseMonster()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	
+
 	m_PathMover = CreateDefaultSubobject<UPathMover>(TEXT("PathMover"));
 }
 
@@ -24,11 +24,11 @@ ABaseMonster::ABaseMonster()
 void ABaseMonster::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	m_SpawnLocation = GetActorLocation();
 
 	// 스킬 인스턴스 생성
-	for (auto& Pair : StateSkillMap)
+	for (auto& Pair : m_StateSkillClasses)
 	{
 		if (Pair.Value)
 		{
@@ -36,7 +36,16 @@ void ABaseMonster::BeginPlay()
 			if (NewSkill)
 			{
 				m_StateSkillInstances.Add(Pair.Key, NewSkill);
+				m_SkillInstances.Add(Pair.Value, NewSkill);
 			}
+		}
+	}
+	for (auto& skillClass : m_SkillClasses)
+	{
+		if (skillClass)
+		{
+			UBaseSkill* NewSkill = NewObject<UBaseSkill>(this, skillClass);
+			m_SkillInstances.Add(skillClass, NewSkill);
 		}
 	}
 	if (m_AiFSM != nullptr)
@@ -51,9 +60,9 @@ void ABaseMonster::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// 현재 스킬 업데이트
-	if (UBaseSkill* CurrentSkill = GetSkillByState(EAiStateType::Attack))
+	if (m_CurrentSkill)
 	{
-		CurrentSkill->OnCastTick(DeltaTime);
+		m_CurrentSkill->OnCastTick(DeltaTime);
 	}
 }
 
@@ -64,20 +73,31 @@ void ABaseMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 }
 
 void ABaseMonster::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                      const FHitResult& SweepResult)
 {
 	auto player = Cast<APlayer_Mario>(OtherActor);
 	if (player != nullptr)
 	{
-		CalcDamage(1.0f,this,player);
+		CalcDamage(1.0f, this, player);
 	}
 }
 
-UBaseSkill* ABaseMonster::GetSkillByState(EAiStateType StateType) const
+UBaseSkill* ABaseMonster::FindSkillByState(EAiStateType StateType) const
 {
 	if (UBaseSkill* const* SkillPtr = m_StateSkillInstances.Find(StateType))
 	{
 		return *SkillPtr;
+	}
+	return nullptr;
+}
+
+UBaseSkill* ABaseMonster::FindSkillByClass(TSubclassOf<UBaseSkill> SkillClass)
+{
+	auto skill = m_SkillInstances.Find(SkillClass);
+	if (skill != nullptr)
+	{
+		return *skill;
 	}
 	return nullptr;
 }
@@ -90,7 +110,7 @@ UBaseAiFSM* ABaseMonster::CreateFSM()
 void ABaseMonster::StopRotating()
 {
 	if (!IsValidForMovement()) return;
-    
+
 	if (m_PathMover)
 	{
 		m_PathMover->StopRotation();
@@ -100,7 +120,7 @@ void ABaseMonster::StopRotating()
 void ABaseMonster::StopMoving()
 {
 	if (!IsValidForMovement()) return;
-    
+
 	if (m_PathMover)
 	{
 		m_PathMover->StopMovement();
@@ -140,7 +160,7 @@ void ABaseMonster::MoveToActorWithSpeed(const AActor* Target, float Speed, EMove
 }
 
 void ABaseMonster::MoveComponentToLocation(USceneComponent* ComponentToMove, const FVector& Target,
-										 float Duration, EMovementInterpolationType InterpType)
+                                           float Duration, EMovementInterpolationType InterpType)
 {
 	if (ComponentToMove && IsValidForMovement())
 	{
@@ -149,7 +169,7 @@ void ABaseMonster::MoveComponentToLocation(USceneComponent* ComponentToMove, con
 }
 
 void ABaseMonster::MoveComponentToLocationWithSpeed(USceneComponent* ComponentToMove, const FVector& Target,
-													float Speed, EMovementInterpolationType InterpType)
+                                                    float Speed, EMovementInterpolationType InterpType)
 {
 	if (ComponentToMove && IsValidForMovement())
 	{
@@ -158,16 +178,17 @@ void ABaseMonster::MoveComponentToLocationWithSpeed(USceneComponent* ComponentTo
 }
 
 void ABaseMonster::ReturnComponentToOriginal(USceneComponent* ComponentToReturn, float Duration,
-	EMovementInterpolationType InterpType, bool bStickToGround)
+                                             EMovementInterpolationType InterpType, bool bStickToGround)
 {
 	if (ComponentToReturn && IsValidForMovement())
 	{
 		m_PathMover->ReturnComponentToOriginal(ComponentToReturn, Duration, InterpType, bStickToGround);
 	}
 }
+
 // ToDo : 매서드 고치면서 기능 통폐합
 void ABaseMonster::ReturnComponentToOriginalWithSpeed(USceneComponent* ComponentToReturn, float Speed,
-	EMovementInterpolationType InterpType, bool bStickToGround)
+                                                      EMovementInterpolationType InterpType, bool bStickToGround)
 {
 	if (ComponentToReturn && IsValidForMovement())
 	{
@@ -185,14 +206,13 @@ void ABaseMonster::OnRotationFinished()
 
 bool ABaseMonster::IsMoving() const
 {
-	return m_PathMover && m_PathMover->IsMoving();  
+	return m_PathMover && m_PathMover->IsMoving();
 }
 
 bool ABaseMonster::IsRotating() const
 {
 	return m_PathMover && m_PathMover->IsRotating();
 }
-
 
 bool ABaseMonster::IsValidForMovement() const
 {
@@ -201,8 +221,26 @@ bool ABaseMonster::IsValidForMovement() const
 
 UBaseSkill* ABaseMonster::GetCurrentSkill()
 {
-	// TODO: 현재 State에 맞는 스킬 반환
-	return nullptr;
+	return m_CurrentSkill;
+}
+
+void ABaseMonster::UpdateCurrentSkill(UBaseSkill* NewSkill)
+{
+	if (nullptr == NewSkill)
+	{
+		NewSkill = DeQueueSkill();
+	}
+
+	if (nullptr == NewSkill)
+	{
+		return;
+	}
+	
+	m_CurrentSkill = NewSkill;
+}
+void ABaseMonster::ClearCurrentSkill()
+{
+	m_CurrentSkill = nullptr;
 }
 
 AActor* ABaseMonster::GetAggroTarget() const
@@ -219,8 +257,27 @@ void ABaseMonster::CastSkill(UBaseSkill* Skill, const AActor* Target)
 {
 	if (CanCastSkill(Skill, Target))
 	{
+		UpdateCurrentSkill(Skill);
 		Skill->OnCastStart(this, Target);
 	}
+}
+
+void ABaseMonster::EnQueueSkill(UBaseSkill* Skill)
+{
+	m_SkillQueue.Enqueue(Skill);
+}
+
+UBaseSkill* ABaseMonster::DeQueueSkill()
+{
+	UBaseSkill* Skill = nullptr;
+	m_SkillQueue.Dequeue(Skill);
+	
+	return Skill;
+}
+
+void ABaseMonster::ClearQueueSkill()
+{
+	m_SkillQueue.Empty();
 }
 
 void ABaseMonster::RotateToDirection(const FRotator& Target, float Duration, EMovementInterpolationType InterpType)
@@ -231,7 +288,8 @@ void ABaseMonster::RotateToDirection(const FRotator& Target, float Duration, EMo
 	}
 }
 
-void ABaseMonster::RotateToDirectionWithSpeed(const FRotator& Target, float Speed, EMovementInterpolationType InterpType)
+void ABaseMonster::RotateToDirectionWithSpeed(const FRotator& Target, float Speed,
+                                              EMovementInterpolationType InterpType)
 {
 	if (IsValidForMovement())
 	{
@@ -256,7 +314,7 @@ void ABaseMonster::LookAtLocationWithSpeed(const FVector& Target, float Speed, E
 }
 
 void ABaseMonster::LookAtComponentToLocation(USceneComponent* ComponentToRotate, const FVector& TargetLocation,
-	float Duration, EMovementInterpolationType InterpType)
+                                             float Duration, EMovementInterpolationType InterpType)
 {
 	if (IsValidForMovement())
 	{
@@ -265,7 +323,7 @@ void ABaseMonster::LookAtComponentToLocation(USceneComponent* ComponentToRotate,
 }
 
 void ABaseMonster::LookAtComponentToLocationWithSpeed(USceneComponent* ComponentToRotate, const FVector& TargetLocation,
-	float Speed, EMovementInterpolationType InterpType)
+                                                      float Speed, EMovementInterpolationType InterpType)
 {
 	if (IsValidForMovement())
 	{

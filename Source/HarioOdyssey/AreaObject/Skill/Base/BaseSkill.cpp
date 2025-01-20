@@ -88,12 +88,12 @@ void UBaseSkill::OnCastTick(float DeltaTime)
         }
         break;
 
-    case ESkillPhase::Cooldown:
-        if (m_CurrentPhaseTime <= 0.0f)
-        {
-            UpdatePhase(ESkillPhase::Ready);
-        }
-        break;
+   // case ESkillPhase::Cooldown:
+   //     if (m_CurrentPhaseTime <= 0.0f)
+   //     {
+   //         UpdatePhase(ESkillPhase::Ready);
+   //     }
+   //     break;
     }
 
     BP_OnCastTick(DeltaTime);
@@ -103,16 +103,20 @@ void UBaseSkill::OnCastEnd()
 {
     if (!m_Caster || !m_Target) return;
 
+    m_Caster->ClearCurrentSkill();
     ClearEffects();
-    UpdatePhase(ESkillPhase::Cooldown);
+    UpdatePhase(ESkillPhase::Ready);
     
     BP_OnCastEnd();
 }
 
 void UBaseSkill::CancelCast()
 {
+    if (!m_Caster) return;
+    
     if (m_CurrentPhase != ESkillPhase::Ready)
     {
+        m_Caster->ClearCurrentSkill();
         ClearEffects();
         UpdatePhase(ESkillPhase::Ready);
         
@@ -139,9 +143,9 @@ float UBaseSkill::GetPhaseProgress() const
     case ESkillPhase::PostCast:
         totalTime = SkillData.PostCastTime;
         break;
-    case ESkillPhase::Cooldown:
-        totalTime = SkillData.Cooldown;
-        break;
+    // case ESkillPhase::Cooldown:
+    //     totalTime = SkillData.Cooldown;
+    //     break;
     }
 
     if (totalTime <= 0.0f) return 1.0f;
@@ -182,9 +186,9 @@ void UBaseSkill::UpdatePhase(ESkillPhase NewPhase)
     case ESkillPhase::PostCast:
         m_CurrentPhaseTime = SkillData.PostCastTime;
         break;
-    case ESkillPhase::Cooldown:
-        m_CurrentPhaseTime = SkillData.Cooldown;
-        break;
+    //case ESkillPhase::Cooldown:
+    //    m_CurrentPhaseTime = SkillData.Cooldown;
+    //    break;
     }
 
     BP_OnPhaseChanged(NewPhase);
@@ -199,6 +203,11 @@ USceneComponent* UBaseSkill::GetAttachComponent() const
     if (MeshComponent) return MeshComponent;
     
     return m_Caster->GetRootComponent();
+}
+
+void UBaseSkill::SetM_NextSkill(UBaseSkill* const M_NextSkill)
+{
+    m_NextSkill = M_NextSkill;
 }
 
 void UBaseSkill::SpawnCastEffect()

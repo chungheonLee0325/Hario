@@ -30,14 +30,17 @@ void UCommonAttack::Execute(float DeltaTime)
 	if (!m_IsSkillStarted)
 	{
 		// 공격 스킬 시작
-		if (UBaseSkill* AttackSkill = m_Owner->GetSkillByState(m_AiStateType))
+		if (UBaseSkill* AttackSkill = m_Owner->FindSkillByState(m_AiStateType))
 		{
 			if (m_Owner->CanCastSkill(AttackSkill,Target))
 			{
 				m_Owner->CastSkill(AttackSkill,Target);
 				m_IsSkillStarted = true;
 			}
-			m_Owner->CastSkill(AttackSkill, m_Owner->GetAggroTarget());
+			else
+			{
+				m_AiFSM->ChangeState(EAiStateType::Idle);
+			}
 		}
 		else
 		{
@@ -46,7 +49,7 @@ void UCommonAttack::Execute(float DeltaTime)
 	}
 	else
 	{
-		if (UBaseSkill* AttackSkill = m_Owner->GetSkillByState(m_AiStateType))
+		if (UBaseSkill* AttackSkill = m_Owner->FindSkillByState(m_AiStateType))
 		{
 			if (AttackSkill->GetCurrentPhase() == ESkillPhase::Ready)
 			{
@@ -74,7 +77,7 @@ void UCommonAttack::Exit()
 	if (!m_Owner) return;
 
 	// 공격 스킬 종료
-	if (UBaseSkill* AttackSkill = m_Owner->GetSkillByState(m_AiStateType))
+	if (UBaseSkill* AttackSkill = m_Owner->FindSkillByState(m_AiStateType))
 	{
 		AttackSkill->OnCastEnd();
 	}

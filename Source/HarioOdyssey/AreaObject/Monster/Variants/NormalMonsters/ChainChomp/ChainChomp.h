@@ -66,9 +66,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
 	float ChainLength = 1200.0f;
 
-	
-
-private:
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
 	FVector RootAnchorPosition = FVector::ZeroVector;
 

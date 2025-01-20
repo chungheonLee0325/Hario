@@ -26,4 +26,9 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void InitStatePool() override;
+
+	
+private:
+	UPROPERTY()
+	FVector m_OriginalPosition;
 };

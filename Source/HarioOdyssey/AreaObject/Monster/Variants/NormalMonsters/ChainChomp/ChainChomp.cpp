@@ -40,8 +40,9 @@ AChainChomp::AChainChomp()
 
 	ChainComponent = CreateDefaultSubobject<UChainComponent>("ChainComponent");
 	ChainComponent->SetupAttachment(ChainStartScene);
-	
-	StateSkillMap.Add(EAiStateType::Attack,UChainChompPullAndLaunchSkill::StaticClass());
+
+	// 스킬 추가
+	m_StateSkillClasses.Add(EAiStateType::Attack,UChainChompPullAndLaunchSkill::StaticClass());
 
 	m_AiFSM = AChainChomp::CreateFSM();
 }

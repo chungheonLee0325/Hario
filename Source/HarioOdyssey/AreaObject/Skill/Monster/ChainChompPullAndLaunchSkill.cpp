@@ -26,6 +26,7 @@ void UChainChompPullAndLaunchSkill::OnCastStart(ABaseMonster* Caster, const AAct
     
     m_Target = Target;
     m_ChainChomp = Cast<AChainChomp>(Caster);
+    
     if (!m_ChainChomp || !m_Target) return;
 
     m_CurrentPhase = ESkillPhase::Prepare;
@@ -69,7 +70,7 @@ void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
         {
             // Launch 완료, Return 시작
             m_CurrentPhase = ESkillPhase::PostCast;
-            m_ChainChomp->LookAtLocation(m_OriginalPosition, RotateTime, EMovementInterpolationType::EaseInOut);
+             m_ChainChomp->LookAtLocation(m_OriginalPosition, RotateTime, EMovementInterpolationType::EaseInOut);
             m_ChainChomp->MoveToLocationWithSpeed(m_OriginalPosition, ReturnSpeed, EMovementInterpolationType::Linear);
             //m_ChainChomp->ReturnComponentToOriginal(m_ChainChomp->ChainChompRoot, 2.f);
         }

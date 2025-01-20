@@ -59,3 +59,10 @@ void ABurrbo::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+float ABurrbo::GetDetectRange() const
+{
+	return DetectRange;
+}
+
+
+

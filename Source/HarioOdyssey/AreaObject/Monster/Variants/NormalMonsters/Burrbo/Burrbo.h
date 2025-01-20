@@ -31,4 +31,16 @@ public:
 	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	float GetDetectRange() const;
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Monster Settings")
+	float ChaseSpeed = 800.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Monster Settings")
+	float ReturnSpeed = 600.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Monster Settings")
+	float DetectRange = 800.0f;
 };

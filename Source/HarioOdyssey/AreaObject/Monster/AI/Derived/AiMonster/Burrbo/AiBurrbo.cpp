@@ -3,7 +3,12 @@
 
 #include "AiBurrbo.h"
 
+#include "HarioOdyssey/AreaObject/Monster/AI/Derived/CommonState/AggroWait.h"
+#include "HarioOdyssey/AreaObject/Monster/AI/Derived/CommonState/CommonAttack.h"
+#include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/Burrbo/Burrbo.h"
 
+
+class UCommonAttack;
 // Sets default values for this component's properties
 UAiBurrbo::UAiBurrbo()
 {
@@ -35,6 +40,21 @@ void UAiBurrbo::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 
 void UAiBurrbo::InitStatePool()
 {
+	ABurrbo* Burrbo = Cast<ABurrbo>(m_Owner);
+	if (!Burrbo) return;
 	
+	m_OriginalPosition = m_Owner->GetActorLocation();
+
+	// AggroWait 상태 설정
+	auto AggroWait = CreateState<UAggroWait>(this, m_Owner, EAiStateType::Idle);
+	AggroWait->SetM_DetectRange(Burrbo->GetDetectRange());
+	AggroWait->SetM_WaitTime(2.0f);
+	AggroWait->SetNextState(EAiStateType::Attack);
+	AddState(EAiStateType::Idle, AggroWait);
+
+	// Attack 상태 설정
+	auto Attack = CreateState<UCommonAttack>(this, m_Owner, EAiStateType::Attack);
+	Attack->SetNextState(EAiStateType::Idle);
+	AddState(EAiStateType::Attack, Attack);
 }
 

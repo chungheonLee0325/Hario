@@ -17,6 +17,7 @@ public:
     virtual bool CanCast(ABaseMonster* Caster, const AActor* Target) const override;
     virtual void OnCastStart(ABaseMonster* Caster, const AActor* Target) override;
     virtual void OnCastTick(float DeltaTime) override;
+    void PerformJumpSequence();
     virtual void OnCastEnd() override;
 
 protected:
@@ -25,6 +26,8 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Skill Settings")
     float PullSpeed = 1500.f;
+    FTimerHandle FirstJumpHandle;
+    FTimerHandle SecondJumpHandle;
 
 public:
     void SetPullBackDistance(float _PullBackDistance)
@@ -72,4 +75,10 @@ private:
 
 UPROPERTY(EditAnywhere)
     AChainChomp * m_ChainChomp;
+
+    const float FirstJumpDelay = 0.3f;
+    const float SecondJumpDelay = 1.05f;
+    const float JumpHeight = 200.f;
+    const float JumpDuration = 0.4f;
+    const float LandingDuration = 0.3f;
 }; 

@@ -47,13 +47,12 @@ void UAiChainChomp::InitStatePool()
 	// AggroWait 상태 설정
 	auto AggroWait = CreateState<UAggroWait>(this, m_Owner, EAiStateType::Idle);
 	AggroWait->SetM_DetectRange(ChainChompOwner->GetChainLength());
-	AggroWait->SetM_WaitTime(2.0f);
+	AggroWait->SetM_WaitTime(0.7f);
 	AggroWait->SetNextState(EAiStateType::Attack);
 	AddState(EAiStateType::Idle, AggroWait);
 
 	// Attack 상태 설정
 	auto Attack = CreateState<UCommonAttack>(this, m_Owner, EAiStateType::Attack);
-	//Attack->SetM_PathMover(ChainChompOwner->ChainChompPathMover);
 	Attack->SetM_AttackSpeed(ChainChompOwner->GetAttackSpeed());
 	Attack->SetM_ChainLength(ChainChompOwner->GetChainLength());
 	Attack->SetM_AnchorPosition(m_OriginalPosition);

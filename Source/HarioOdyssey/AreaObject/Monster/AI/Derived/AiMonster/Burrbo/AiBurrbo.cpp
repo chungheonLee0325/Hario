@@ -56,5 +56,7 @@ void UAiBurrbo::InitStatePool()
 	auto Attack = CreateState<UCommonAttack>(this, m_Owner, EAiStateType::Attack);
 	Attack->SetNextState(EAiStateType::Idle);
 	AddState(EAiStateType::Attack, Attack);
+
+	ChangeState(EAiStateType::Idle);;
 }
 

@@ -36,11 +36,11 @@ void UPathMover::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 		const FVector NewPosition = FMath::Lerp(MovementState.StartPos, MovementState.TargetPos, InterpolatedAlpha);
 		if (CurrentMovingComponent.IsValid())
 		{
-			CurrentMovingComponent->SetWorldLocation(NewPosition);
+			CurrentMovingComponent->SetWorldLocation(NewPosition,true);
 		}
 		else if (AActor* Owner = GetOwner())
 		{
-			Owner->SetActorLocation(NewPosition);
+			Owner->SetActorLocation(NewPosition,true);
 		}
 
 		OnMovementProgress.Broadcast(Alpha);
@@ -104,7 +104,7 @@ void UPathMover::MoveComponentTo(USceneComponent* ComponentToMove, const FVector
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(GetOwner());
 
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams))
 		{
 			AdjustedTargetPosition.Z = HitResult.Location.Z;
 		}
@@ -129,7 +129,7 @@ void UPathMover::MoveComponentToWithSpeed(USceneComponent* ComponentToMove, cons
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(GetOwner());
 
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams))
 		{
 			AdjustedTargetPosition.Z = HitResult.Location.Z;
 		}
@@ -155,7 +155,7 @@ void UPathMover::MoveActorTo(const FVector& TargetPosition, float Duration,
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(GetOwner());
 
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams))
 		{
 			AdjustedTargetPosition.Z = HitResult.Location.Z;
 		}
@@ -181,7 +181,7 @@ void UPathMover::MoveActorToWithSpeed(const FVector& TargetPosition, float Speed
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(GetOwner());
 
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams))
 		{
 			AdjustedTargetPosition.Z = HitResult.Location.Z;
 		}
@@ -209,7 +209,7 @@ void UPathMover::ReturnComponentToOriginal(USceneComponent* ComponentToReturn, f
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(GetOwner());
 
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams))
 		{
 			AdjustedOriginalPosition.Z = HitResult.Location.Z;
 		}

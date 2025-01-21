@@ -7,6 +7,7 @@
 #include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 #include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
 #include "HarioOdyssey/PathMover/PathMover.h"
+#include "HarioOdyssey/PathMover/VerticalMover.h"
 
 
 // Sets default values
@@ -18,6 +19,7 @@ ABaseMonster::ABaseMonster()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	m_PathMover = CreateDefaultSubobject<UPathMover>(TEXT("PathMover"));
+	m_VerticalMover = CreateDefaultSubobject<UVerticalMover>(TEXT("VerticalMover"));
 }
 
 // Called when the game starts or when spawned

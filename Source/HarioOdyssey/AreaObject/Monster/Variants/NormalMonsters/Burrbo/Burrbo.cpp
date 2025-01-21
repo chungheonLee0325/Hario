@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Derived/AiMonster/Burrbo/AiBurrbo.h"
+#include "HarioOdyssey/AreaObject/Skill/Monster/JumpAttack.h"
 
 
 // Sets default values
@@ -31,6 +32,7 @@ ABurrbo::ABurrbo()
 	BodyCollider->SetRelativeLocation(FVector(0.0f,0.0f,160.0f));
 	BodyCollider->SetCollisionProfileName(TEXT("Enemy"));
 
+	m_StateSkillClasses.Add(EAiStateType::Attack, UJumpAttack::StaticClass());
 	m_AiFSM = ABurrbo::CreateFSM();
 }
 

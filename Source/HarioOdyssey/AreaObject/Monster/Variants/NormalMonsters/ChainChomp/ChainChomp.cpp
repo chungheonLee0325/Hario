@@ -39,6 +39,7 @@ AChainChomp::AChainChomp()
 	ChainComponent = CreateDefaultSubobject<UChainComponent>("Chains");
 	ChainComponent->SetupAttachment(ChainStartScene);
 	ChainComponent->AttachToComponent(ChainStartScene, FAttachmentTransformRules::KeepRelativeTransform);
+	
 	// 스킬 추가
 	m_StateSkillClasses.Add(EAiStateType::Attack,UChainChompPullAndLaunchSkill::StaticClass());
 

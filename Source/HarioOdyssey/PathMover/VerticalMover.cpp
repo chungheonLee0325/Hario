@@ -8,6 +8,7 @@ UVerticalMover::UVerticalMover()
     bIsMoving = false;
     CurrentTime = 0.0f;
     HoverTimer = 0.0f;
+    TargetComponent =nullptr;
     CurrentMoveState = EMoveState::Stopped;
 }
 
@@ -18,7 +19,7 @@ void UVerticalMover::BeginPlay()
 
 void UVerticalMover::StartVerticalMovement(USceneComponent* Target, float InTargetHeight, float InRiseTime, float InFallTime)
 {
-    if (!Target || InRiseTime <= 0.0f || InFallTime <= 0.0f)
+    if (nullptr == Target || InRiseTime <= 0.0f || InFallTime <= 0.0f)
     {
         return;
     }

@@ -211,6 +211,9 @@ public:
 	// Monster Data
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
 	FMonsterData MonsterData;
+
+	UPROPERTY()
+	class UVerticalMover* m_VerticalMover;
 	
 protected:
 	virtual UBaseAiFSM* CreateFSM();

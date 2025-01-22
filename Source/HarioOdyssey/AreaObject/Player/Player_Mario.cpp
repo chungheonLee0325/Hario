@@ -12,6 +12,7 @@
 #include "HarioOdyssey/AreaObject/Attribute/Health.h"
 #include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 #include "HarioOdyssey/UI/HealthWidget.h"
+#include "HarioOdyssey/Contents/HarioGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -287,11 +288,25 @@ void APlayer_Mario::RemoveInvincibility()
     RemoveCondition(EConditionType::Invincible);
 }
 
-
-
-
-
-
+void APlayer_Mario::OnDie()
+{
+    Super::OnDie();
+    //폰 컨트롤러에 대한 레퍼런스 구하기
+    AController* CortollerRef = GetController();
+ 
+    //플레이어 소멸.
+    Destroy();
+ 
+    //월드와 월드의 게임 모드가 RestartPlayer 함수를 호출하도록 함.
+    if (UWorld* World = GetWorld())
+    {
+        if (AHarioGameMode* GameMode = Cast<AHarioGameMode>(World->GetAuthGameMode()))
+        {
+            GameMode->RestartPlayer(CortollerRef);
+        }
+    }
+    Super::Destroyed();
+}
 
 
 // void APlayer_Mario::OnDie()

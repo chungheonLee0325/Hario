@@ -7,6 +7,7 @@
 #include "HarioOdyssey/ResourceManager/HarioGameType.h"
 #include "HarioGameInstance.generated.h"
 
+class USoundManager;
 /**
  * 
  */
@@ -22,4 +23,7 @@ public:
 	FAreaObjectData* GetDataAreaObject(int AreaObjectID);
 	
 	TMap<int32, FAreaObjectData> dt_AreaObject;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundManager* SoundManager;
 };

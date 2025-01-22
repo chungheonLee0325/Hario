@@ -62,7 +62,9 @@ public:
 	void RemoveInvincibility();
 
 	
-	//virtual void OnDie() override; //죽을 때 함수
+	virtual void OnDie() override; //죽을 때 함수
+
+	void CallRestartPlayer();
 
 private:
 	// 카메라 붐 (Spring Arm)과 카메라 컴포넌트

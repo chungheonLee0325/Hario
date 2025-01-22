@@ -8,7 +8,7 @@
 class AHatProjectile;
 class UCoinCounterWidget;
 class UHealthWidget;
-
+class UTakeDamageMaterial;
 
 UCLASS()
 class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
@@ -44,6 +44,7 @@ public:
 
 	// 점프 함수
 	void OnStartJump();
+	void OnStopJump();
 	
 	// 모자 던지기와 받기 함수
 	void OnThrowHat();
@@ -54,12 +55,16 @@ public:
 						   const FHitResult& Hit) override;
 	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	void IsActorHidden();
-
+	// TakeDamageMaterial 인스턴스를 생성하는 함수
+	void TakeDamageMaterialHandler();
+	
 	//무적상태
 	FTimerHandle BlinkTimerHandle;
 	FTimerHandle InvincibleLocalTimerHandle;
 	FTimerHandle InvincibleTimerHandle;
 	void RemoveInvincibility();
+	// TakeDamageMaterial 인스턴스
+	UTakeDamageMaterial* TakeDamageMaterialInstance;
 
 	
 	//virtual void OnDie() override; //죽을 때 함수
@@ -72,6 +77,16 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* FollowCamera;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* CameraComponent;
+	
+	//bool bPressedJump;
+	bool bIsJumping;
+	//class UCameraComponent* bIsJumping=nullptr;
+
+	// 카메라의 초기 위치와 회전 저장
+	FTransform CameraInitialTransform;
+	
 	//카메라 시점 초기화
 	UPROPERTY(VisibleAnywhere)
 	FRotator DefaultCameraRotation;

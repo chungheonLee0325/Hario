@@ -13,6 +13,8 @@
 #include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 #include "HarioOdyssey/UI/HealthWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
+#include "HarioOdyssey/Utility/TakeDamageMaterial.h"
 
 
 // Sets default values
@@ -30,9 +32,22 @@ APlayer_Mario::APlayer_Mario()
     CameraBoom->bUsePawnControlRotation = true; //캐릭터 회전을 따라감
 
     //카메라 설정
-    FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-    FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-    FollowCamera->bUsePawnControlRotation = false; // 카메라 자체 회전 사용 안 함
+    CameraComponent  = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+    CameraComponent ->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+    CameraComponent ->bUsePawnControlRotation = false; // 카메라 자체 회전 사용 안 함
+    AutoPossessPlayer = EAutoReceiveInput::Player0;
+    PrimaryActorTick.bCanEverTick = true; // 캐릭터가 Tick을 호출하도록 활성화
+
+    // 기본값 설정
+    bPressedJump = false;
+    bIsJumping = false;
+    
+  
+
+    // 카메라 컴포넌트 생성 및 설정
+    CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    CameraComponent->SetupAttachment(RootComponent);
+    CameraComponent->bUsePawnControlRotation = false; // 컨트롤러 회전에 종속되지 않도록 설정
 
     // 캐릭터 회전 설정
     bUseControllerRotationYaw = false;
@@ -68,17 +83,12 @@ void APlayer_Mario::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    //무적일때 깜빡이기
-    // if (!bIsInvincible) //????????데미지 받으면
-    // {
-    //     float TimeInSenconds = GetWorld()->GetTimeSeconds();
-    //     bool bShouldBlink=FMath::Fmod(TimeInSenconds*5.0f,1.0f) > 0.5f;
-    //     SetActorHiddenInGame(bShouldBlink);
-    // }
-    // else
-    // {
-    //     SetActorHiddenInGame(false);
-    // }
+   
+    // 점프 중일 때 카메라 위치를 고정
+    if (bIsJumping)
+    {
+        CameraComponent->SetWorldTransform(CameraInitialTransform);
+    }
 }
 
 
@@ -110,6 +120,7 @@ void APlayer_Mario::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
     // 점프 입력
     PlayerInputComponent->BindAction("OnStartJump", IE_Pressed, this, &APlayer_Mario::OnStartJump);
+    PlayerInputComponent->BindAction("OnStartJump", IE_Released, this, &APlayer_Mario::OnStopJump);
 
     //모자 던지기,받기 입력
     PlayerInputComponent->BindAction("OnThrowHat", IE_Pressed, this, &APlayer_Mario::OnThrowHat);
@@ -173,11 +184,35 @@ void APlayer_Mario::OnResetView()
 
 // 점프 함수
 void APlayer_Mario::OnStartJump()
-{
-    bPressedJump = true;
+ {
+    bPressedJump = true; //?????? false가나옴
+    bIsJumping = true; //?????? false가나옴
+    UE_LOG(LogTemp,Warning,TEXT("점프 로그1"));
+
+    // 카메라 고정: 현재 위치와 회전을 저장
+    //CameraInitialTransform = CameraComponent->GetComponentTransform();
+    if (bIsJumping && CameraComponent)//?????? false가나옴
+    {
+        CameraComponent->SetWorldTransform(CameraInitialTransform);
+    }
+    UE_LOG(LogTemp,Warning,TEXT("점프 로그1"));
 }
 
+// 점프 중지 함수
+void APlayer_Mario::OnStopJump()
+{
+    bPressedJump = false;
+    bIsJumping = false;
+    UE_LOG(LogTemp,Warning,TEXT("점프 로그22"));
 
+    //CameraBoom->bUsePawnControlRotation = true;
+    //점프 종료 후 카메라를 캐릭터와 동기화
+    if (CameraComponent)
+    {
+        CameraComponent->AttachToComponent(CameraBoom, FAttachmentTransformRules::KeepRelativeTransform);
+    }
+    UE_LOG(LogTemp,Warning,TEXT("점프 로그22"));
+}
 
 //모자 던지기 및 돌아오는 함수
 void APlayer_Mario::OnThrowHat()
@@ -201,61 +236,77 @@ void APlayer_Mario::OnThrowHat()
         }
     }
 }
+void APlayer_Mario::TakeDamageMaterialHandler()
+{
+    if (!TakeDamageMaterialInstance)
+    {
+        TakeDamageMaterialInstance = NewObject<UTakeDamageMaterial>();
+    }
+}
 
 float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)
 {
 
     auto actureDamage= Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
     // 무적이거나, 이미 죽은 경우
     if (FMath::IsNearlyZero(actureDamage))
     {
         return actureDamage;
     }
+    
     //무적 상태 적용
     if (AddCondition(EConditionType::Invincible))
     {
         UE_LOG(LogTemp,Warning,TEXT("무적상태"));
 
-        // Dynamic Material Instance 생성
-        if (!DynamicMaterialInstance)
-        {
-            DynamicMaterialInstance = GetMesh()->CreateAndSetMaterialInstanceDynamic(0);
+        // TakeDamageMaterialInstance를 통해 깜빡임 효과 시작
+        // TakeDamageMaterial 인스턴스 초기화
+        TakeDamageMaterialHandler();  
+        TakeDamageMaterialInstance->StartBlinkEffect(GetMesh(), BlinkTimerHandle, InvincibleLocalTimerHandle);
 
-            // if (DynamicMaterialInstance==nullptr)
-            // {
-            //     UE_LOG(LogTemp,Warning,TEXT("머테리얼 생성 실패"));
-            // }
-        }
+
+
+        // Dynamic Material Instance 생성
+        // if (!DynamicMaterialInstance)
+        // {
+        //     DynamicMaterialInstance = GetMesh()->CreateAndSetMaterialInstanceDynamic(0);
+        //
+        //     // if (DynamicMaterialInstance==nullptr)
+        //     // {
+        //     //     UE_LOG(LogTemp,Warning,TEXT("머테리얼 생성 실패"));
+        //     // }
+        // }
 
         // 캐릭터 깜빡이는 효과
-        GetWorld()->GetTimerManager().SetTimer(BlinkTimerHandle,[this]()
-        {
-            static bool bIsVisible = true;
-            bIsVisible = !bIsVisible;
-            if (DynamicMaterialInstance)
-            {
-                //Opacity 값을 0.2 또는 1.0으로 토글
-                float NewOpacity = bIsVisible ? 1.0f : 0.2f;
-                DynamicMaterialInstance -> SetScalarParameterValue(FName("Opacity"), NewOpacity);
-            }
-        }, 0.1f, true); 
-        
-        //2초 후 무적 해제 및 깜빡임 멈춤
-        GetWorld()->GetTimerManager().SetTimer(this->InvincibleLocalTimerHandle, [this]()
-        {
-            // 딜레이 후 실행될 코드 - 무적 해제
-            RemoveCondition(EConditionType::Invincible);
-            UE_LOG(LogTemp,Warning,TEXT("무적해제"));
-            
-            // 깜빡임 멈춤
-           GetWorld()->GetTimerManager().ClearTimer(BlinkTimerHandle);
-            if (DynamicMaterialInstance)
-            {
-                // Opacity 값을 1.0으로 복구
-                DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), 1.0f);
-            }
-        }, 2.0f, false); 
+        // GetWorld()->GetTimerManager().SetTimer(BlinkTimerHandle,[this]()
+        // {
+        //     static bool bIsVisible = true;
+        //     bIsVisible = !bIsVisible;
+        //     if (DynamicMaterialInstance)
+        //     {
+        //         //Opacity 값을 0.2 또는 1.0으로 토글
+        //         float NewOpacity = bIsVisible ? 1.0f : 0.2f;
+        //         DynamicMaterialInstance -> SetScalarParameterValue(FName("Opacity"), NewOpacity);
+        //     }
+        // }, 0.1f, true); 
+        //
+        // //2초 후 무적 해제 및 깜빡임 멈춤
+        // GetWorld()->GetTimerManager().SetTimer(this->InvincibleLocalTimerHandle, [this]()
+        // {
+        //     // 딜레이 후 실행될 코드 - 무적 해제
+        //     RemoveCondition(EConditionType::Invincible);
+        //     UE_LOG(LogTemp,Warning,TEXT("무적해제"));
+        //     
+        //     // 깜빡임 멈춤
+        //    GetWorld()->GetTimerManager().ClearTimer(BlinkTimerHandle);
+        //     if (DynamicMaterialInstance)
+        //     {
+        //         // Opacity 값을 1.0으로 복구
+        //         DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), 1.0f);
+        //     }
+         //}
     }
 
     return actureDamage;

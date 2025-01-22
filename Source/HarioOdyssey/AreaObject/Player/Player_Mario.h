@@ -9,6 +9,7 @@ class AHatProjectile;
 class UCoinCounterWidget;
 class UHealthWidget;
 class UTakeDamageMaterial;
+class AHatProjectile;
 
 UCLASS()
 class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
@@ -48,6 +49,8 @@ public:
 	
 	// 모자 던지기와 받기 함수
 	void OnThrowHat();
+	AHatProjectile* ActiveHat;
+
 	
 	//무적상태
 	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -107,5 +110,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hat")
 	TSubclassOf<class AHatProjectile> HatClass;
 
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	USceneComponent* HatAttachPoint;
 	
 };

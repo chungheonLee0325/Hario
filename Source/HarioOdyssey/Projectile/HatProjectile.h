@@ -16,25 +16,31 @@ class HARIOODYSSEY_API AHatProjectile : public AActor
 public:    
 	AHatProjectile();
 
+	// 모자 초기화 함수
+	void InitializeHat(FVector Direction,AActor* Owner);
+	
 protected:
 	virtual void BeginPlay() override;
-
-public:    
 	virtual void Tick(float DeltaTime) override;
 
-	// 모자 초기화 함수
-	void InitializeHat(FVector ForwardDirection);
-	
 
 private:
-	FVector InitialDirection; // 모자가 날아갈 방향
-	FVector StartLocation;    // 모자의 시작 위치
-	float Speed;              // 모자의 속도
-	float FlightTime;         // 날아가는 시간
-	float CurrentTime;        // 현재 경과 시간
+	FVector InitialDirection; // 모자 방향
+	float Speed=1000.0f;       // 모자 속도
+
+	//모자 비행 시간
+	float FlightTime=2.0f;         // 날아가는 시간
+	float CurrentTime=0.0f;        // 현재 경과 시간
+	
+	AActor* OwnerActor;       // 모자를 던진 주인 (Player_Mario)
 
 	bool bReturning;          // 모자가 돌아오는 상태인지 여부
-	AActor* OwnerActor;       // 모자를 던진 주인 (Player_Mario)
 	
+	//모자 메시 컴포넌트
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* HatMesh;
+	
+	FVector StartLocation;    // 모자의 시작 위치
 
+	
 };

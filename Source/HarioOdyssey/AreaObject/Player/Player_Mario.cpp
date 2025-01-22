@@ -43,7 +43,7 @@ APlayer_Mario::APlayer_Mario()
     bIsJumping = false;
     
   
-
+    //?????????????
     // 카메라 컴포넌트 생성 및 설정
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComponent->SetupAttachment(RootComponent);
@@ -53,6 +53,11 @@ APlayer_Mario::APlayer_Mario()
     bUseControllerRotationYaw = false;
     
     GetCharacterMovement()->bOrientRotationToMovement = true; // 이동 방향으로 회전
+
+    // 모자 부착 지점 설정
+    HatAttachPoint = CreateDefaultSubobject<USceneComponent>(TEXT("HatAttachPoint"));
+    HatAttachPoint->SetupAttachment(GetMesh());
+
 
     
     //m_Condition = CreateDefaultSubobject<AAreaObject>(TEXT("Condition"));
@@ -82,13 +87,15 @@ void APlayer_Mario::BeginPlay()
 void APlayer_Mario::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
+    
+    ActiveHat = nullptr;
    
     // 점프 중일 때 카메라 위치를 고정
     if (bIsJumping)
     {
         CameraComponent->SetWorldTransform(CameraInitialTransform);
     }
+    
 }
 
 
@@ -218,21 +225,20 @@ void APlayer_Mario::OnStopJump()
 void APlayer_Mario::OnThrowHat()
 {
    
-    if (HatClass) // HatClass는 HatProjectile 클래스의 레퍼런스
+    if (HatClass && !ActiveHat) 
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.Owner = this; // 소유자를 마리오로 설정
 
         // 모자의 시작 위치와 방향
-        FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
+        FVector SpawnLocation =HatAttachPoint-> GetComponentLocation();
         FRotator SpawnRotation = GetActorRotation();
 
-        // HatProjectile 생성
-        AHatProjectile* Hat = GetWorld()->SpawnActor<AHatProjectile>(HatClass, SpawnLocation, SpawnRotation, SpawnParams);
-        if (Hat)
+        ActiveHat = GetWorld()->SpawnActor<AHatProjectile>(HatClass,SpawnLocation,SpawnRotation,SpawnParams);
+        if (ActiveHat)
         {
-            // 모자에 필요한 초기 설정 전달 (예: 속도, 방향)
-            Hat->InitializeHat(GetActorForwardVector());
+            // 모자 초기화
+            ActiveHat->InitializeHat(GetActorForwardVector(),this); //????forward?????마리오위치로 오게할 것
         }
     }
 }

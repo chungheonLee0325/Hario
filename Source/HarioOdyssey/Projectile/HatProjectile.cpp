@@ -2,6 +2,7 @@
 #include "GameFramework/Actor.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values
 AHatProjectile::AHatProjectile()
@@ -9,10 +10,13 @@ AHatProjectile::AHatProjectile()
 	// Set this actor to call Tick() every frame
 	PrimaryActorTick.bCanEverTick = true;
 
-	Speed = 600.0f;        // 모자의 속도
-	FlightTime = 2.0f;     // 모자가 날아가는 총 시간
-	CurrentTime = 0.0f;
-	bReturning = false;
+	//모자 메시 컴포넌트 초기화
+	HatMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hat"));
+	RootComponent = HatMesh;
+
+	//초기 방향 설정
+	InitialDirection = FVector::ZeroVector;
+	OwnerActor = nullptr;
 	
 }
 
@@ -21,10 +25,10 @@ void AHatProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//시작 위치 
 	StartLocation = GetActorLocation();
 }
 
-// Called every frame
 void AHatProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -46,27 +50,42 @@ void AHatProjectile::Tick(float DeltaTime)
 	}
 	else
 	{
-		// 모자가 돌아오기
-		FVector DirectionToOwner = (StartLocation - GetActorLocation()).GetSafeNormal();
-		FVector NewLocation = GetActorLocation() + (DirectionToOwner * Speed * DeltaTime);
-		SetActorLocation(NewLocation);
-
-		// 원래 위치로 돌아오면 삭제
-		if (FVector::Dist(GetActorLocation(), StartLocation) <= 10.0f)
+		if (OwnerActor)
 		{
-			Destroy();
+			// 모자가 돌아오기
+			FVector DirectionToOwner = (OwnerActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+			FVector NewLocation = GetActorLocation() + (DirectionToOwner * Speed * DeltaTime);
+			SetActorLocation(NewLocation);
+		
+
+			// 원래 위치로 돌아오면 삭제
+			if (FVector::Dist(OwnerActor->GetActorLocation(), StartLocation) <= 10.0f)
+			{
+				Destroy();
+			}
 		}
 	}
-	
 }
 
 
 
-void AHatProjectile::InitializeHat(FVector ForwardDirection)
+void AHatProjectile::InitializeHat(FVector Direction, AActor* Owner)
 {
-	InitialDirection = ForwardDirection;
-	CurrentTime = 0.0f;
-	bReturning = false;
+	//모자 초기 방향. 주인 설정
+	InitialDirection = Direction;
+	OwnerActor = Owner;
+
+	//모자 발사
+	FVector Velocity = Direction * 1000.f;  
+	HatMesh->AddImpulse(Velocity, NAME_None, true);
+
+	//초기화 상태
+	 CurrentTime = 0.0f;
+	 bReturning = false;
+	 StartLocation=GetActorLocation();
+
+	// StartLocation = GetActorLocation();
+	// OwnerActor = GetOwner();
 }
 
 	

@@ -17,11 +17,15 @@ public:
 	AHatProjectile();
 
 	// 모자 초기화 함수
-	void InitializeHat(FVector Direction,AActor* Owner);
+	void InitializeHat(FVector Direction,AActor* NewOwner);
+
+
+
 	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
 
 
 private:
@@ -31,10 +35,15 @@ private:
 	//모자 비행 시간
 	float FlightTime=2.0f;         // 날아가는 시간
 	float CurrentTime=0.0f;        // 현재 경과 시간
-	
+
+	UPROPERTY()
 	AActor* OwnerActor;       // 모자를 던진 주인 (Player_Mario)
 
 	bool bReturning;          // 모자가 돌아오는 상태인지 여부
+
+	// 루트
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* BoxComp;
 	
 	//모자 메시 컴포넌트
 	UPROPERTY(VisibleAnywhere)

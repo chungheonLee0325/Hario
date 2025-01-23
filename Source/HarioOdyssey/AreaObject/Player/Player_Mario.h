@@ -5,11 +5,17 @@
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "Player_Mario.generated.h"
 
-class AHatProjectile;
 class UCoinCounterWidget;
 class UHealthWidget;
 class UTakeDamageMaterial;
-class AHatProjectile;
+class  AHatProjectile;
+/**
+ * 마리오 캐릭터 클래스
+ * - 모자 던지기/회수
+ * - 동전 획득
+ * - 카메라 조작
+ * - 무적 상태 등
+ */
 
 UCLASS()
 class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
@@ -21,19 +27,10 @@ public:
 	APlayer_Mario();
 
 protected:
-	// 게임이 시작하거나 스폰될 때 호출됩니다.
 	virtual void BeginPlay() override;
-	
-public:	
-	// 매 프레임마다 호출됩니다.
 	virtual void Tick(float DeltaTime) override;
-
-	// 동전 획득 함수
-	void AddCoin(int32 CoinValue);
-
-	// 플레이어 입력 설정 함수
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 	// 이동 함수
 	void OnMoveForward(float Value);
 	void OnMoveRight(float Value);
@@ -49,31 +46,30 @@ public:
 	
 	// 모자 던지기와 받기 함수
 	void OnThrowHat();
-	AHatProjectile* ActiveHat;
+
+
 
 	
 	//무적상태
+	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 						   bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
 						   const FHitResult& Hit) override;
-	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	void IsActorHidden();
+	void RemoveInvincibility();
+	
+
 	// TakeDamageMaterial 인스턴스를 생성하는 함수
 	void TakeDamageMaterialHandler();
 	
-	//무적상태
-	FTimerHandle BlinkTimerHandle;
-	FTimerHandle InvincibleLocalTimerHandle;
-	FTimerHandle InvincibleTimerHandle;
-	void RemoveInvincibility();
-	// TakeDamageMaterial 인스턴스
-	UTakeDamageMaterial* TakeDamageMaterialInstance;
+public:
+	// 동전 획득 함수
+	void AddCoin(int32 CoinValue);
+	
+	static int32 m_AreaObjectID;
 
 	
-	//virtual void OnDie() override; //죽을 때 함수
-
 private:
-	// 카메라 붐 (Spring Arm)과 카메라 컴포넌트
+	//  카메라 컴포넌트
 	UPROPERTY(VisibleAnywhere)
 	class USpringArmComponent* CameraBoom;
 
@@ -82,35 +78,85 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComponent;
-	
-	//bool bPressedJump;
-	bool bIsJumping;
-	//class UCameraComponent* bIsJumping=nullptr;
 
-	// 카메라의 초기 위치와 회전 저장
-	FTransform CameraInitialTransform;
-	
-	//카메라 시점 초기화
-	UPROPERTY(VisibleAnywhere)
-	FRotator DefaultCameraRotation;
+	/*모자 [Case3]*/
+	// 모자 클래스 레퍼런스
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	TSubclassOf<AHatProjectile> HatClass;
 
-	// 동전 카운트
-	int32 CoinCount = 0;
+	// 모자 인스턴스
+	UPROPERTY()
+	AHatProjectile* HatInstance;
+
+	// 모자 투척 여부
+	bool bIsHatThrown;
+
+	// 모자 던지기 위치와 방향
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	FVector HatSpawnOffset;
+
+	// 모자가 이동하는 거리
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	float MaxHatThrowDistance;
+
+	// 모자 던지는 속도
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	float HatThrowSpeed;
+
+	// 모자가 돌아오는 속도
+	UPROPERTY(EditAnywhere, Category = "Hat")
+	float HatRecallSpeed;
+
+
+
+	
+	// 모자 메시 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Hat", meta=(AllowPrivateAccess="true"))
+	USkeletalMeshComponent* HatMesh;
+	
+	// 모자를 다시 부착할 지점
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Hat", meta=(AllowPrivateAccess="true"))
+	USceneComponent* HatAttachPoint;
+
+	// 모자 던졌는지 여부
+	//bool bIsHatThrown = false;
+
+	// 모자 던졌을 때, 돌아오기 및 재부착을 위한 타이머 핸들
+	FTimerHandle HatReturnTimerHandle;
+	FTimerHandle HatReattachTimerHandle;
+	
+	//점프 상태
+	bool bIsJumping = false;
 
 	//UI 생성
 	TObjectPtr<UCoinCounterWidget> CoinCounterWidget= nullptr;
 	TObjectPtr<UHealthWidget> HealthWidget= nullptr;
+
+	// 동전 카운트
+	int32 CoinCount = 0;
+	
+	// 카메라의 초기 위치, 회전 저장
+	FTransform CameraInitialTransform;
+	
+	//무적상태
+	FTimerHandle BlinkTimerHandle;
+	FTimerHandle InvincibleLocalTimerHandle;
+	FTimerHandle InvincibleTimerHandle;
+	
+	//카메라 시점 초기화
+	UPROPERTY(VisibleAnywhere)
+	FRotator DefaultCameraRotation;
+	
+	// TakeDamageMaterial 인스턴스
+	UTakeDamageMaterial* TakeDamageMaterialInstance=nullptr;
 	
 	//무적상태 - 깜빡임
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterialInstance;
 
-protected:
-	// 모자 던지기 관련 변수
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hat")
-	TSubclassOf<class AHatProjectile> HatClass;
+	//무적상태 해제
+	void IsActorHidden();
 
-	UPROPERTY(EditAnywhere, Category = "Hat")
-	USceneComponent* HatAttachPoint;
-	
+protected:
+	void RemoveInvincibilityTimer();
 };

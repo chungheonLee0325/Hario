@@ -17,13 +17,13 @@
 #include "HarioOdyssey/Utility/TakeDamageMaterial.h"
 
 
-// Sets default values
+
+int APlayer_Mario::m_AreaObjectID = 1;
+
 APlayer_Mario::APlayer_Mario()
 {
-    // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
-    m_AreaObjectID = 1;
+   
 
     //카메라 붐 설정(캐릭터를 따라다니는 카메라)
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -35,86 +35,66 @@ APlayer_Mario::APlayer_Mario()
     CameraComponent  = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     CameraComponent ->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     CameraComponent ->bUsePawnControlRotation = false; // 카메라 자체 회전 사용 안 함
+
     AutoPossessPlayer = EAutoReceiveInput::Player0;
     PrimaryActorTick.bCanEverTick = true; // 캐릭터가 Tick을 호출하도록 활성화
-
-    // 기본값 설정
-    bPressedJump = false;
-    bIsJumping = false;
-    
-  
-    //?????????????
-    // 카메라 컴포넌트 생성 및 설정
-    CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-    CameraComponent->SetupAttachment(RootComponent);
-    CameraComponent->bUsePawnControlRotation = false; // 컨트롤러 회전에 종속되지 않도록 설정
-
-    // 캐릭터 회전 설정
-    bUseControllerRotationYaw = false;
-    
-    GetCharacterMovement()->bOrientRotationToMovement = true; // 이동 방향으로 회전
 
     // 모자 부착 지점 설정
     HatAttachPoint = CreateDefaultSubobject<USceneComponent>(TEXT("HatAttachPoint"));
     HatAttachPoint->SetupAttachment(GetMesh());
 
+    // 초기화
+    // bIsJumping = false;
+    // bPressedJump = false;
+     CoinCount=0;
 
-    
-    //m_Condition = CreateDefaultSubobject<AAreaObject>(TEXT("Condition"));
-   
+    /*모자 [Case3] */
+    // 기본값 설정
+    bIsHatThrown = false;
+    HatSpawnOffset = FVector(100.f, 0.f, 50.f);
+    MaxHatThrowDistance = 1000.f;
+    HatThrowSpeed = 1200.f;
+    HatRecallSpeed = 800.f;
+
 }
 
-// Called when the game starts or when spawned
 void APlayer_Mario::BeginPlay()
 {
     Super::BeginPlay();
     
     // MarioController에서 UI 생성 호출
-    auto controller = UGameplayStatics::GetPlayerController(this, 0);
-    auto* MarioController = Cast<AMarioController>(controller);
-    if (MarioController)
-    {
-        CoinCounterWidget=MarioController->CoinCounterWidget;
-        HealthWidget = MarioController->HealthWidget;
+   if ( auto controller = UGameplayStatics::GetPlayerController(this, 0))
+   {
+       if (auto* MarioController = Cast<AMarioController>(controller))
+       {
+           CoinCounterWidget=MarioController->CoinCounterWidget;
+           HealthWidget = MarioController->HealthWidget;
 
-        CoinCounterWidget->UpdateCoinCounter(CoinCount);
-    }
-    
- 
+           if (MarioController)
+           {
+               CoinCounterWidget->UpdateCoinCounter(CoinCount);
+           }
+       }
+   } 
 }
 
-// Called every frame
 void APlayer_Mario::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     
-    ActiveHat = nullptr;
-   
     // 점프 중일 때 카메라 위치를 고정
     if (bIsJumping)
     {
         CameraComponent->SetWorldTransform(CameraInitialTransform);
     }
-    
+
 }
 
-
-
-void APlayer_Mario::AddCoin(int32 CoinValue)
-{
-    CoinCount += CoinValue;
-    // UI Coin 업데이트 
-    if (CoinCounterWidget)
-    {
-        CoinCounterWidget->UpdateCoinCounter(CoinCount);
-    }
-    // OnCoinsUpdate.Broadcast(CoinCount);
-}
 
 void APlayer_Mario::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+    
     // 이동 입력
     PlayerInputComponent->BindAxis("OnMoveForward", this, &APlayer_Mario::OnMoveForward);
     PlayerInputComponent->BindAxis("OnMoveRight", this, &APlayer_Mario::OnMoveRight);
@@ -131,8 +111,6 @@ void APlayer_Mario::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
     //모자 던지기,받기 입력
     PlayerInputComponent->BindAction("OnThrowHat", IE_Pressed, this, &APlayer_Mario::OnThrowHat);
-
-    
 }
 
 //이동 함수
@@ -179,154 +157,98 @@ void APlayer_Mario::OnResetView()
 {
      //UE_LOG(LogTemp,Warning,TEXT("시점초기화"));
     
-      if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+      if (auto* PC = GetWorld()->GetFirstPlayerController())
       {
          //캐릭터가 바라보는 방향으로 카메라 초기화
          FRotator NewRot=GetActorForwardVector().ToOrientationRotator();
-          
-         //auto t = PlayerController->GetControlRotation();
-         PlayerController->SetControlRotation(NewRot);
+          PC->SetControlRotation(NewRot);
       }
 }
 
 // 점프 함수
 void APlayer_Mario::OnStartJump()
  {
-    bPressedJump = true; //?????? false가나옴
-    bIsJumping = true; //?????? false가나옴
-    UE_LOG(LogTemp,Warning,TEXT("점프 로그1"));
+    bIsJumping = true;
 
-    // 카메라 고정: 현재 위치와 회전을 저장
-    //CameraInitialTransform = CameraComponent->GetComponentTransform();
-    if (bIsJumping && CameraComponent)//?????? false가나옴
-    {
-        CameraComponent->SetWorldTransform(CameraInitialTransform);
-    }
-    UE_LOG(LogTemp,Warning,TEXT("점프 로그1"));
+    // 카메라 위치/회전 저장
+    CameraInitialTransform = CameraComponent->GetComponentTransform();
 }
 
 // 점프 중지 함수
 void APlayer_Mario::OnStopJump()
 {
-    bPressedJump = false;
     bIsJumping = false;
-    UE_LOG(LogTemp,Warning,TEXT("점프 로그22"));
-
-    //CameraBoom->bUsePawnControlRotation = true;
-    //점프 종료 후 카메라를 캐릭터와 동기화
+    
+    // 점프 종료 후 카메라를 캐릭터와 동기화
     if (CameraComponent)
     {
         CameraComponent->AttachToComponent(CameraBoom, FAttachmentTransformRules::KeepRelativeTransform);
     }
-    UE_LOG(LogTemp,Warning,TEXT("점프 로그22"));
 }
 
 //모자 던지기 및 돌아오는 함수
 void APlayer_Mario::OnThrowHat()
 {
-   
-    if (HatClass && !ActiveHat) 
+    if (HatClass) // HatClass는 HatProjectile 클래스의 레퍼런스
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.Owner = this; // 소유자를 마리오로 설정
 
         // 모자의 시작 위치와 방향
-        FVector SpawnLocation =HatAttachPoint-> GetComponentLocation();
+        FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 200.0f;
         FRotator SpawnRotation = GetActorRotation();
 
-        ActiveHat = GetWorld()->SpawnActor<AHatProjectile>(HatClass,SpawnLocation,SpawnRotation,SpawnParams);
-        if (ActiveHat)
+        // HatProjectile 생성
+        AHatProjectile* Hat = GetWorld()->SpawnActor<AHatProjectile>(HatClass, SpawnLocation, SpawnRotation, SpawnParams);
+        if (Hat)
         {
-            // 모자 초기화
-            ActiveHat->InitializeHat(GetActorForwardVector(),this); //????forward?????마리오위치로 오게할 것
+            // 모자에 필요한 초기 설정 전달 (예: 속도, 방향)
+            Hat->InitializeHat(GetActorForwardVector(), this);
         }
     }
-}
-void APlayer_Mario::TakeDamageMaterialHandler()
-{
-    if (!TakeDamageMaterialInstance)
-    {
-        TakeDamageMaterialInstance = NewObject<UTakeDamageMaterial>();
-    }
+    
 }
 
+//동전 획득
+void APlayer_Mario::AddCoin(int32 CoinValue)
+{
+    CoinCount += CoinValue;
+    // UI Coin 업데이트 
+    if (CoinCounterWidget)
+    {
+    	CoinCounterWidget->UpdateCoinCounter(CoinCount);
+    }
+}
+    
+//데미지 처리
 float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)
 {
+    	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+    	if (FMath::IsNearlyZero(ActualDamage))
+    	{
+    	    return ActualDamage; // 이미 죽었거나 무적일 때
+    	}
 
-    auto actureDamage= Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+    	// 무적 상태 적용
+    	if (AddCondition(EConditionType::Invincible))
+    	{
+    	    UE_LOG(LogTemp, Warning, TEXT("무적상태 진입"));
+    	    TakeDamageMaterialHandler();  
+    	    if (TakeDamageMaterialInstance)
+    	    {
+    	        TakeDamageMaterialInstance->StartBlinkEffect(GetMesh(), BlinkTimerHandle, InvincibleLocalTimerHandle);
+    	    }
+    	}
 
-    // 무적이거나, 이미 죽은 경우
-    if (FMath::IsNearlyZero(actureDamage))
-    {
-        return actureDamage;
-    }
-    
-    //무적 상태 적용
-    if (AddCondition(EConditionType::Invincible))
-    {
-        UE_LOG(LogTemp,Warning,TEXT("무적상태"));
-
-        // TakeDamageMaterialInstance를 통해 깜빡임 효과 시작
-        // TakeDamageMaterial 인스턴스 초기화
-        TakeDamageMaterialHandler();  
-        TakeDamageMaterialInstance->StartBlinkEffect(GetMesh(), BlinkTimerHandle, InvincibleLocalTimerHandle);
-
-
-
-        // Dynamic Material Instance 생성
-        // if (!DynamicMaterialInstance)
-        // {
-        //     DynamicMaterialInstance = GetMesh()->CreateAndSetMaterialInstanceDynamic(0);
-        //
-        //     // if (DynamicMaterialInstance==nullptr)
-        //     // {
-        //     //     UE_LOG(LogTemp,Warning,TEXT("머테리얼 생성 실패"));
-        //     // }
-        // }
-
-        // 캐릭터 깜빡이는 효과
-        // GetWorld()->GetTimerManager().SetTimer(BlinkTimerHandle,[this]()
-        // {
-        //     static bool bIsVisible = true;
-        //     bIsVisible = !bIsVisible;
-        //     if (DynamicMaterialInstance)
-        //     {
-        //         //Opacity 값을 0.2 또는 1.0으로 토글
-        //         float NewOpacity = bIsVisible ? 1.0f : 0.2f;
-        //         DynamicMaterialInstance -> SetScalarParameterValue(FName("Opacity"), NewOpacity);
-        //     }
-        // }, 0.1f, true); 
-        //
-        // //2초 후 무적 해제 및 깜빡임 멈춤
-        // GetWorld()->GetTimerManager().SetTimer(this->InvincibleLocalTimerHandle, [this]()
-        // {
-        //     // 딜레이 후 실행될 코드 - 무적 해제
-        //     RemoveCondition(EConditionType::Invincible);
-        //     UE_LOG(LogTemp,Warning,TEXT("무적해제"));
-        //     
-        //     // 깜빡임 멈춤
-        //    GetWorld()->GetTimerManager().ClearTimer(BlinkTimerHandle);
-        //     if (DynamicMaterialInstance)
-        //     {
-        //         // Opacity 값을 1.0으로 복구
-        //         DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), 1.0f);
-        //     }
-         //}
-    }
-
-    return actureDamage;
+    	return ActualDamage;
    
 }
 
-
-
-
-
-
-
-void APlayer_Mario::NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                              bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
+    
+/** Hit 이벤트 (체인촘프 등과 부딪혔을 때) */
+void APlayer_Mario::NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
+                              bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, 
                               const FHitResult& Hit)
 {
     Super::NotifyHit(MyComp, OtherActor, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
@@ -334,16 +256,23 @@ void APlayer_Mario::NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, U
     if (OtherActor && OtherActor->IsA(AChainChomp::StaticClass()))
     {
         AddCondition(EConditionType::Invincible);
-
         GetWorldTimerManager().SetTimer(InvincibleTimerHandle, this, &APlayer_Mario::RemoveInvincibility, 3.0f, false);
     }
 }
 
+/** 무적 해제 */
 void APlayer_Mario::RemoveInvincibility()
 {
     RemoveCondition(EConditionType::Invincible);
 }
 
+void APlayer_Mario::TakeDamageMaterialHandler()
+{
+    if (!TakeDamageMaterialInstance)
+    {
+    	TakeDamageMaterialInstance = NewObject<UTakeDamageMaterial>();
+    }
+}
 
 
 
@@ -351,7 +280,3 @@ void APlayer_Mario::RemoveInvincibility()
 
 
 
-// void APlayer_Mario::OnDie()
-// {
-//     Super::OnDie();
-// }

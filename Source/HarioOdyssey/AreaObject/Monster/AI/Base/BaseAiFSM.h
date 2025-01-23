@@ -38,6 +38,8 @@ public:
 
 	virtual void InitStatePool() PURE_VIRTUAL(UBaseAiFSM::InitStatePool,);
 
+	void StopFSM() {m_CurrentState = nullptr;}
+
 public:
 	template<typename T>
 	static T* CreateState(UObject* Outer, ABaseMonster* Owner, EAiStateType NextState)

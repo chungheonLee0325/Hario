@@ -4,10 +4,13 @@
 #include "BaseMonster.h"
 
 #include "AI/Base/BaseAiFSM.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 #include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
 #include "HarioOdyssey/PathMover/PathMover.h"
 #include "HarioOdyssey/PathMover/VerticalMover.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -20,6 +23,13 @@ ABaseMonster::ABaseMonster()
 
 	m_PathMover = CreateDefaultSubobject<UPathMover>(TEXT("PathMover"));
 	m_VerticalMover = CreateDefaultSubobject<UVerticalMover>(TEXT("VerticalMover"));
+
+	// Death Effect Load
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("/Script/Engine.ParticleSystem'/Game/StarterContent/Particles/P_Explosion1.P_Explosion1'"));
+	if (ParticleAsset.Succeeded())
+	{
+		DeathEffect = ParticleAsset.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -102,6 +112,69 @@ UBaseSkill* ABaseMonster::FindSkillByClass(TSubclassOf<UBaseSkill> SkillClass)
 		return *skill;
 	}
 	return nullptr;
+}
+
+void ABaseMonster::OnDie()
+{
+	Super::OnDie();
+
+	// 콜리전 전환
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// FSM 정지
+	m_AiFSM ->StopFSM();
+	// Skill 정지
+	m_CurrentSkill = nullptr;
+	StopAll();
+	m_VerticalMover->StopVerticalMovement();
+
+	LaunchOnDeath();
+
+	TWeakObjectPtr<ABaseMonster> WeakThis = this;
+
+	// Delay 후 폭발
+	GetWorld()->GetTimerManager().SetTimer(OnDieHandle, [WeakThis]()
+	{
+		ABaseMonster* StrongThis = WeakThis.Get();
+		// Death Effect
+		UGameplayStatics::SpawnEmitterAtLocation(StrongThis->GetWorld(), StrongThis->DeathEffect, StrongThis->GetActorLocation());
+		if (nullptr != StrongThis)
+		{
+			StrongThis->Destroy();
+		}
+	}, DestroyDelayTime, false);
+}
+
+void ABaseMonster::LaunchOnDeath()
+{
+	// 캐릭터 물리 설정
+	//GetCharacterMovement()->SetMovementMode(MOVE_None);
+	GetMesh()->SetSimulatePhysics(true);
+	//GetMesh()->SetEnableGravity(true);
+
+	int LaunchUpwardAngle = FMath::RandRange(LaunchUpwardAngleMin,LaunchUpwardAngleMax);
+	
+	// 랜덤한 수평 방향 계산
+	int RandomAngle = FMath::RandRange(0, 360);
+	FVector LaunchDirection(
+		FMath::Cos(FMath::DegreesToRadians(RandomAngle)),
+		FMath::Sin(FMath::DegreesToRadians(RandomAngle)),
+		FMath::Sin(FMath::DegreesToRadians(LaunchUpwardAngle))
+	);
+    
+	// 발사 속도 계산
+	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
+
+	// Launch와 동시에 회전력 설정
+	LaunchCharacter(LaunchVelocity, true, true);
+	GetMesh()->AddTorqueInDegrees(FVector(0, 0, 1000));
+	
+//	// 회전 모드 변경
+//	GetCharacterMovement()->bOrientRotationToMovement = false;
+//	bUseControllerRotationYaw = false;
+//
+//	// 캐릭터에 각속도 설정
+//	GetCharacterMovement()->RotationRate = FRotator(720.0f, 720.0f, 720.0f); // 회전 속도 설정
+//	GetCharacterMovement()->bIgnoreBaseRotation = true;
 }
 
 UBaseAiFSM* ABaseMonster::CreateFSM()

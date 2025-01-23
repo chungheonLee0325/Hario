@@ -65,8 +65,6 @@ public:
 	// 동전 획득 함수
 	void AddCoin(int32 CoinValue);
 	
-	static int32 m_AreaObjectID;
-
 	
 private:
 	//  카메라 컴포넌트

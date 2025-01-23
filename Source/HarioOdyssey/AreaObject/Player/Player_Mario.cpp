@@ -19,13 +19,14 @@
 
 
 
-int APlayer_Mario::m_AreaObjectID = 1;
 
 APlayer_Mario::APlayer_Mario()
 {
     PrimaryActorTick.bCanEverTick = true;
-   
 
+    // AreaObjectID Set
+    m_AreaObjectID = 1;
+    
     //카메라 붐 설정(캐릭터를 따라다니는 카메라)
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);

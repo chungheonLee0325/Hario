@@ -214,8 +214,16 @@ public:
 
 	UPROPERTY()
 	class UVerticalMover* m_VerticalMover;
-	
+	UPROPERTY()
+	FTimerHandle OnDieHandle;
+
+
 protected:
+	virtual void OnDie() override;
+
+	UFUNCTION(BlueprintCallable)
+	void LaunchOnDeath();
+	
 	virtual UBaseAiFSM* CreateFSM();
 	
 	// Skill System
@@ -257,6 +265,21 @@ protected:
 	
 	TQueue<UBaseSkill*> m_SkillQueue;
 
+	// Death Setting
+	UPROPERTY(EditAnywhere, Category = "Death Settings")
+	float DestroyDelayTime = 0.3f;
+	
+	UPROPERTY(EditAnywhere, Category = "Death Settings")
+	float LaunchSpeed = 1500.0f;
+    
+	UPROPERTY(EditAnywhere, Category = "Death Settings")
+	int LaunchUpwardAngleMin = 45;
+
+	UPROPERTY(EditAnywhere, Category = "Death Settings")
+	int LaunchUpwardAngleMax = 70;
+
+	UPROPERTY(EditAnywhere, Category = "Death Settings")
+	UParticleSystem* DeathEffect;
 private:
 	bool IsValidForMovement() const;
 

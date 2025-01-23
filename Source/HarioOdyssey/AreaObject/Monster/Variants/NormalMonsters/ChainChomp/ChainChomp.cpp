@@ -9,6 +9,7 @@
 #include "HarioOdyssey/AreaObject/Monster/AI/Derived/AiMonster/ChainChomp/AiChainChomp.h"
 #include "HarioOdyssey/Utility/SpawnUtilLib.h"
 #include "HarioOdyssey/AreaObject/Skill/Monster/ChainChompPullAndLaunchSkill.h"
+#include "HarioOdyssey/Objects/_Components/DestructComponent.h"
 
 
 // Sets default values
@@ -87,12 +88,13 @@ void AChainChomp::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 bool AChainChomp::CanBeCaptured_Implementation()
 {
-	return ICapturable::CanBeCaptured_Implementation();
+	OnCaptureStart_Implementation();
+	return true;
 }
 
 void AChainChomp::OnCaptureStart_Implementation()
 {
-	ICapturable::OnCaptureStart_Implementation();
+	UE_LOG(LogTemp,Warning,TEXT("OnCaptureStart_Implementation"));
 }
 
 void AChainChomp::OnCaptureEnd_Implementation()
@@ -103,5 +105,27 @@ void AChainChomp::OnCaptureEnd_Implementation()
 void AChainChomp::WhileCaptured_Implementation(ACharacter* CaptureOwner)
 {
 	ICapturable::WhileCaptured_Implementation(CaptureOwner);
+}
+
+void AChainChomp::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	Super::OnBodyBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+	
+	if (true == IsDestructDmgAble)
+	{
+		auto monster = Cast<ABaseMonster>(OtherActor);
+		if (monster != nullptr)
+		{
+			CalcDamage(1.0f, this, monster);
+		}
+		
+		auto dComp = OtherActor->FindComponentByClass<UDestructComponent>();
+		if (dComp != nullptr)
+		{
+			dComp->ApplyDestruction(GetActorLocation());
+		}
+	}
+	
 }
 

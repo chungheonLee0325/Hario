@@ -65,6 +65,7 @@ void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
 		{
 			// Pull 완료, Launch 시작
 			m_CurrentPhase = ESkillPhase::Casting;
+			m_ChainChomp->IsDestructDmgAble = true;
 			m_ChainChomp->MoveToLocationWithSpeed(m_TargetPos, LaunchSpeed, EMovementInterpolationType::EaseOutBounce);
 		}
 		break;
@@ -75,6 +76,7 @@ void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
 		{
 			// Launch 완료, Return 시작
 			m_CurrentPhase = ESkillPhase::PostCast;
+			m_ChainChomp->IsDestructDmgAble = false;
 			m_ChainChomp->LookAtLocation(m_OriginalPosition, RotateTime, EMovementInterpolationType::Linear);
 			m_ChainChomp->MoveToLocationWithSpeed(m_OriginalPosition, ReturnSpeed, EMovementInterpolationType::Linear);
 			//m_ChainChomp->ReturnComponentToOriginal(m_ChainChomp->ChainChompRoot, 2.f);

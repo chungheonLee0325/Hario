@@ -14,9 +14,6 @@ UChainComponent::UChainComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	RootScence = CreateDefaultSubobject<USceneComponent>("Root");
-	RootScence->SetupAttachment(this);
-	
-
 	
 	ChainLinks.SetNum(ChainNum);
 	for(int32 i = 0; i < ChainNum; i++)

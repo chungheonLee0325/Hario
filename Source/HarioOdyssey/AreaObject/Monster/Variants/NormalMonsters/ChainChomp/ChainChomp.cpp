@@ -38,6 +38,7 @@ AChainChomp::AChainChomp()
 
 	ChainComponent = CreateDefaultSubobject<UChainComponent>("Chains");
 	ChainComponent->SetupAttachment(ChainStartScene);
+	ChainComponent->RootScence->SetupAttachment(ChainComponent);
 	ChainComponent->AttachToComponent(ChainStartScene, FAttachmentTransformRules::KeepRelativeTransform);
 	
 	// 스킬 추가

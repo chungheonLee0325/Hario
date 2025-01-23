@@ -65,3 +65,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
 	float HPMax = 1.0f;
 };
+
+USTRUCT(BlueprintType)
+struct FSoundData:public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
+	int SoundID = 0;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
+	USoundBase *Sound = nullptr;
+};

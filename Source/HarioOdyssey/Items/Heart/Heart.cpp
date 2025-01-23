@@ -28,8 +28,12 @@ AHeart::AHeart()
 		{
 			ItemMesh->SetStaticMesh(HeartMeshAsset.Object);
 		}
-		ItemMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -30.0f));
-		ItemMesh->SetRelativeScale3D(FVector(0.2f));
+		ItemMesh->SetRelativeScale3D(FVector(0.4f));
+	}
+	if (CollectionSphere)
+	{
+		CollectionSphere->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
+		CollectionSphere->SetRelativeScale3D(FVector(5.5f));
 	}
 }
 

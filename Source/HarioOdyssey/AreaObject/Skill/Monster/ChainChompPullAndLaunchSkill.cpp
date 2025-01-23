@@ -45,7 +45,7 @@ void UChainChompPullAndLaunchSkill::OnCastStart(ABaseMonster* Caster, const AAct
 	m_TargetPos = m_ChainChomp->GetActorLocation() - Direction * PullBackDistance;
 
 	// 타겟 주시
-	m_ChainChomp->LookAtLocation(m_TargetPos, RotateTime);
+	m_ChainChomp->LookAtLocation(m_TargetPos, RotateTime * 0.5f);
 
 	// 뒤로 당기기 시작
 	m_ChainChomp->MoveToLocationWithSpeed(m_PullBackPosition, PullSpeed, EMovementInterpolationType::EaseOut);

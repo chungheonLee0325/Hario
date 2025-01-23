@@ -10,7 +10,7 @@
 UJumpAttack::UJumpAttack()
 {
 	SkillData.PrepareTime = 1.0f;
-	SkillData.CastTime = 1.0f;
+	SkillData.CastTime = 0.9f;
 	SkillData.PostCastTime = 0.1f;
 	SkillData.Cooldown = 0.0f;
 	SkillData.CastRange = 1200.f;
@@ -31,7 +31,7 @@ void UJumpAttack::OnPhaseChanged(ESkillPhase NewPhase)
 			auto direction = (m_Target->GetActorLocation() - m_Caster->GetActorLocation()).GetSafeNormal2D();
 			m_Caster->LookAtLocation(m_Caster->GetActorLocation() + direction, 0.5f);
 
-			RepeatCount = FMath::RandRange(1,5);
+			RepeatCount = FMath::RandRange(1,3);
 			Radian = 0;
 			Amplitue = 0.2f;
 			Rotation = FRotator(90.0f, 0.f, 0.f);
@@ -56,7 +56,7 @@ void UJumpAttack::OnPhaseChanged(ESkillPhase NewPhase)
 
 			// Launch
 			m_Caster->MoveToLocation(m_TargetPos, 0.8f);
-			m_Caster->m_VerticalMover->StartVerticalMovement(m_Caster->GetMesh(), 300.f, 0.5f, 0.3f);
+			m_Caster->m_VerticalMover->StartVerticalMovement(m_Caster->GetMesh(), 140.f, 0.5f, 0.3f);
 
 			break;
 		}

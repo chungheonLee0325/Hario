@@ -16,13 +16,13 @@ ABaseItem::ABaseItem()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// 컴포넌트 초기화
-	CollectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollectionSphere"));
-	RootComponent = CollectionSphere;
-	CollectionSphere->SetCollisionProfileName("Item");
-
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
-	ItemMesh->SetupAttachment(RootComponent);
+	RootComponent = ItemMesh;
 
+	CollectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollectionSphere"));
+	CollectionSphere->SetupAttachment(RootComponent);
+	CollectionSphere->SetCollisionProfileName("Item");
+	
 	// 멤버 변수 초기화
 	m_IsCollected = false;
 

@@ -65,6 +65,8 @@ void AChainChomp::BeginPlay()
 	                                    RootAnchorPosition + FVector(0, 0, 60));
 
 	ChainChompSphere->OnComponentBeginOverlap.AddDynamic(this, &AChainChomp::OnBodyBeginOverlap);
+
+	AddCondition(EConditionType::Invincible);
 }
 
 UBaseAiFSM* AChainChomp::CreateFSM()

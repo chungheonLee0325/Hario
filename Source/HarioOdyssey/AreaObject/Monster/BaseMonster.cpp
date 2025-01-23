@@ -147,9 +147,7 @@ void ABaseMonster::OnDie()
 void ABaseMonster::LaunchOnDeath()
 {
 	// 캐릭터 물리 설정
-	//GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetMesh()->SetSimulatePhysics(true);
-	//GetMesh()->SetEnableGravity(true);
 
 	int LaunchUpwardAngle = FMath::RandRange(LaunchUpwardAngleMin,LaunchUpwardAngleMax);
 	
@@ -167,14 +165,6 @@ void ABaseMonster::LaunchOnDeath()
 	// Launch와 동시에 회전력 설정
 	LaunchCharacter(LaunchVelocity, true, true);
 	GetMesh()->AddTorqueInDegrees(FVector(0, 0, 1000));
-	
-//	// 회전 모드 변경
-//	GetCharacterMovement()->bOrientRotationToMovement = false;
-//	bUseControllerRotationYaw = false;
-//
-//	// 캐릭터에 각속도 설정
-//	GetCharacterMovement()->RotationRate = FRotator(720.0f, 720.0f, 720.0f); // 회전 속도 설정
-//	GetCharacterMovement()->bIgnoreBaseRotation = true;
 }
 
 UBaseAiFSM* ABaseMonster::CreateFSM()

@@ -25,6 +25,15 @@ ACoin::ACoin()
 		}
 		ItemMesh->SetRelativeScale3D(FVector(0.3f));
 	}
+
+	//if (CollectionSound)
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> SoundAsset(TEXT("/Script/Engine.SoundWave'/Game/_Resource/Sound/Item/SFX_Mario_Coin.SFX_Mario_Coin'"));
+		if (SoundAsset.Succeeded())
+		{
+			CollectionSound = SoundAsset.Object;
+		}
+	}
 }
 
 // Called when the game starts or when spawned

@@ -4,6 +4,7 @@
 #include "TimerManager.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 
 // Sets default values
 AHatProjectile::AHatProjectile()
@@ -71,7 +72,7 @@ void AHatProjectile::Tick(float DeltaTime)
 }
 
 
-void AHatProjectile::InitializeHat(FVector Direction, AActor* NewOwner)
+void AHatProjectile::InitializeHat(FVector Direction, APlayer_Mario* NewOwner)
 {
 	//모자 초기 방향. 주인 설정
 	InitialDirection = Direction;

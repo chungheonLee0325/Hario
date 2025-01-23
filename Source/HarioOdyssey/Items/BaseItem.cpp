@@ -5,6 +5,7 @@
 
 #include "Components/SphereComponent.h"
 #include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
+#include "HarioOdyssey/Projectile/HatProjectile.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -17,6 +18,7 @@ ABaseItem::ABaseItem()
 	// 컴포넌트 초기화
 	CollectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollectionSphere"));
 	RootComponent = CollectionSphere;
+	CollectionSphere->SetCollisionProfileName("Item");
 
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	ItemMesh->SetupAttachment(RootComponent);
@@ -100,8 +102,14 @@ void ABaseItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 			OnCollected(Player);
 		}
 	}
-
-	// ToDo 모자랑 충돌처리
+	else if (AHatProjectile* Hat = Cast<AHatProjectile>(OtherActor))
+	{
+		APlayer_Mario* player = Hat->GetOwnerActor();
+		if (CanBeCollectedBy(player))
+		{
+			OnCollected(player);
+		}
+	}
 }
 
 

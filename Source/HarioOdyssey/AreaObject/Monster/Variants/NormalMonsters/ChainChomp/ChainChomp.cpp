@@ -19,15 +19,15 @@ AChainChomp::AChainChomp()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempCCBody(TEXT("/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/ChainChomp2/ChainChomp2.ChainChomp2'"));
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempCCBody(TEXT(
+		"/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/ChainChomp2/ChainChomp2.ChainChomp2'"));
 	if (tempCCBody.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(tempCCBody.Object);
 	}
 	GetMesh()->SetRelativeScale3D(FVector(0.3f));
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f,0.0f,40.0f),FRotator(0.0f,-90.0f,0.0f));
-	
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 40.0f), FRotator(0.0f, -90.0f, 0.0f));
+
 	ChainChompSphere = CreateDefaultSubobject<USphereComponent>("ChainChompSphere");
 	ChainChompSphere->SetupAttachment(GetMesh());
 	ChainChompSphere->SetRelativeScale3D(FVector(14.0f));
@@ -35,15 +35,15 @@ AChainChomp::AChainChomp()
 
 	ChainStartScene = CreateDefaultSubobject<USceneComponent>("ChainStartScene");
 	ChainStartScene->SetupAttachment(GetMesh());
-	ChainStartScene->SetRelativeLocationAndRotation(FVector(0.0f,-635.f,0.0f),FRotator(0.0f,-90.0f,0.0f));
+	ChainStartScene->SetRelativeLocationAndRotation(FVector(0.0f, -635.f, 0.0f), FRotator(0.0f, -90.0f, 0.0f));
 
 	ChainComponent = CreateDefaultSubobject<UChainComponent>("Chains");
 	ChainComponent->SetupAttachment(ChainStartScene);
 	ChainComponent->RootScence->SetupAttachment(ChainComponent);
 	ChainComponent->AttachToComponent(ChainStartScene, FAttachmentTransformRules::KeepRelativeTransform);
-	
+
 	// 스킬 추가
-	m_StateSkillClasses.Add(EAiStateType::Attack,UChainChompPullAndLaunchSkill::StaticClass());
+	m_StateSkillClasses.Add(EAiStateType::Attack, UChainChompPullAndLaunchSkill::StaticClass());
 
 	m_AiFSM = AChainChomp::CreateFSM();
 }
@@ -52,14 +52,17 @@ AChainChomp::AChainChomp()
 void AChainChomp::BeginPlay()
 {
 	Super::BeginPlay();
-	RootPosition = GetActorLocation();	
-	FVector SpawnLocation = RootPosition;
-	AActor* RootAnchor =USpawnUtilLib::SpawnActorOnGround(this,ARootAnchor::StaticClass(),SpawnLocation,FRotator::ZeroRotator);
+
+	RootPosition = GetActorLocation();
+
+	RootAnchor = USpawnUtilLib::SpawnActorOnGround(this, ARootAnchor::StaticClass(), RootPosition,
+	                                               FRotator::ZeroRotator);
 	if (RootAnchor != nullptr)
 	{
 		RootAnchorPosition = RootAnchor->GetActorLocation();
 	}
-	ChainComponent->UpdateChainPosition(ChainStartScene->GetComponentLocation(),RootAnchorPosition +FVector(0,0,60));
+	ChainComponent->UpdateChainPosition(ChainStartScene->GetComponentLocation(),
+	                                    RootAnchorPosition + FVector(0, 0, 60));
 
 	ChainChompSphere->OnComponentBeginOverlap.AddDynamic(this, &AChainChomp::OnBodyBeginOverlap);
 }
@@ -73,11 +76,19 @@ UBaseAiFSM* AChainChomp::CreateFSM()
 void AChainChomp::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	if (m_PathMover->IsMoving() || m_PathMover->IsRotating())
+
+	//if (m_PathMover->IsMoving() || m_PathMover->IsRotating())
 	{
-		ChainComponent->UpdateChainPosition(ChainStartScene->GetComponentLocation(),RootAnchorPosition +FVector(0,0,60));
+		ChainComponent->UpdateChainPosition(ChainStartScene->GetComponentLocation(),
+		                                    RootAnchorPosition + FVector(0, 0, 60));
 	}
+}
+
+void AChainChomp::OnDie()
+{
+	Super::OnDie();
+
+	RootAnchor->Destroy();
 }
 
 // Called to bind functionality to input
@@ -94,7 +105,7 @@ bool AChainChomp::CanBeCaptured_Implementation()
 
 void AChainChomp::OnCaptureStart_Implementation()
 {
-	UE_LOG(LogTemp,Warning,TEXT("OnCaptureStart_Implementation"));
+	UE_LOG(LogTemp, Warning, TEXT("OnCaptureStart_Implementation"));
 }
 
 void AChainChomp::OnCaptureEnd_Implementation()
@@ -108,10 +119,11 @@ void AChainChomp::WhileCaptured_Implementation(ACharacter* CaptureOwner)
 }
 
 void AChainChomp::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                     const FHitResult& SweepResult)
 {
 	Super::OnBodyBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-	
+
 	if (true == IsDestructDmgAble)
 	{
 		auto monster = Cast<ABaseMonster>(OtherActor);
@@ -119,13 +131,11 @@ void AChainChomp::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 		{
 			CalcDamage(1.0f, this, monster);
 		}
-		
+
 		auto dComp = OtherActor->FindComponentByClass<UDestructComponent>();
 		if (dComp != nullptr)
 		{
 			dComp->ApplyDestruction(GetActorLocation());
 		}
 	}
-	
 }
-

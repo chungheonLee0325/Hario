@@ -30,6 +30,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void OnDie() override;
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -60,6 +62,7 @@ public:
 	float GetAttackSpeed() const { return AttackSpeed; }
 	float GetReturnSpeed() const { return ReturnSpeed; }
 	float GetChainLength() const { return ChainLength; }
+
 	FVector GetRootPosition() const { return RootPosition; };
 	FVector GetRootAnchorPosition() const { return RootAnchorPosition; };
 
@@ -78,5 +81,8 @@ private:
 	FVector RootAnchorPosition = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
-	FVector RootPosition = FVector::ZeroVector;
+	FVector RootPosition;
+	
+	UPROPERTY()
+	AActor* RootAnchor;
 };

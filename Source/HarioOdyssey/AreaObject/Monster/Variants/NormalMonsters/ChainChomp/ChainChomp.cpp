@@ -10,6 +10,7 @@
 #include "HarioOdyssey/Utility/SpawnUtilLib.h"
 #include "HarioOdyssey/AreaObject/Skill/Monster/ChainChompPullAndLaunchSkill.h"
 #include "HarioOdyssey/Objects/_Components/DestructComponent.h"
+#include "HarioOdyssey/PathMover/VerticalMover.h"
 
 
 // Sets default values
@@ -138,6 +139,14 @@ void AChainChomp::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 		if (dComp != nullptr)
 		{
 			dComp->ApplyDestruction(GetActorLocation());
+
+			// 움직임 정지
+			StopAll();
+			m_VerticalMover->StopVerticalMovement();
+			// ToDo : 수정 예정 좀 이상함
+			FVector dir = -GetActorForwardVector();
+			MoveToLocation(dir * 15.f, 1, EMovementInterpolationType::Linear);
+			m_VerticalMover->StartVerticalMovement(GetMesh(), 200.f, 0.6f, 0.4f);
 		}
 	}
 }

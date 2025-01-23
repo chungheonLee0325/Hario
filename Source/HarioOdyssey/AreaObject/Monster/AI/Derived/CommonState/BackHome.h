@@ -19,18 +19,10 @@ public:
 	virtual void Enter() override;
 	virtual void Execute(float dt) override;
 	virtual void Exit() override;
-	void SetM_HomePosition(const FVector& M_HomePosition);
-	void SetM_RootObject(USceneComponent* M_RootComponent);
-	void SetM_MovementSpeed(float M_MovementSpeed);
 
 private:
-	// 복귀 위치 - Deploy Position or RootPosition
-	FVector m_HomePosition;
-	
-	// 이동시킬 오브젝트 -> 대부분 RootComponent
-UPROPERTY()
-	USceneComponent* m_RootObject;
-	
 	// 이동 속도
 	float m_MovementSpeed;
+	float BackHomeDuration;
+	float BackHomeElapsedTime;
 };

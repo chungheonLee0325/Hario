@@ -256,7 +256,11 @@ protected:
 
 	UPROPERTY()
 	FVector m_SpawnLocation;
-	
+
+public:
+	FVector GetM_SpawnLocation() const;
+
+protected:
 	UPROPERTY()
 	UBaseAiFSM* m_AiFSM;
 
@@ -267,7 +271,7 @@ protected:
 
 	// Death Setting
 	UPROPERTY(EditAnywhere, Category = "Death Settings")
-	float DestroyDelayTime = 0.3f;
+	float DestroyDelayTime = 0.4f;
 	
 	UPROPERTY(EditAnywhere, Category = "Death Settings")
 	float LaunchSpeed = 1500.0f;

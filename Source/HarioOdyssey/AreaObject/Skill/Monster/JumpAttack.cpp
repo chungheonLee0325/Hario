@@ -13,7 +13,7 @@ UJumpAttack::UJumpAttack()
 	SkillData.CastTime = 0.9f;
 	SkillData.PostCastTime = 0.1f;
 	SkillData.Cooldown = 0.0f;
-	SkillData.CastRange = 1200.f;
+	SkillData.CastRange = 1500.f;
 
 	JumpRange = 800.f;
 }

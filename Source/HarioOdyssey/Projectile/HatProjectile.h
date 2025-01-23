@@ -27,10 +27,10 @@ protected:
 
 private:
 	FVector InitialDirection; // 모자 방향
-	float Speed = 1000.0f; // 모자 속도
+	float Speed = 750.0f; // 모자 속도
 
 	//모자 비행 시간
-	float FlightTime = 2.0f; // 날아가는 시간
+	float FlightTime = 0.8f; // 날아가는 시간
 	float CurrentTime = 0.0f; // 현재 경과 시간
 
 	UPROPERTY()

@@ -8,31 +8,26 @@
 
 void UBackHome::InitState()
 {
+	BackHomeDuration = 2.0f;
 }
 
 void UBackHome::Enter()
 {
+	BackHomeElapsedTime = 0.f;
+	auto location = m_Owner->GetM_SpawnLocation();
+	m_Owner->LookAtLocation(location, 0.5f);
+	m_Owner->MoveToLocation(location, BackHomeDuration);
 }
 
 void UBackHome::Execute(float dt)
 {
+	BackHomeElapsedTime += dt;
+	if (BackHomeDuration <= BackHomeElapsedTime)
+	{
+		m_AiFSM->ChangeState(EAiStateType::Idle);
+	}
 }
 
 void UBackHome::Exit()
 {
-}
-
-void UBackHome::SetM_HomePosition(const FVector& M_HomePosition)
-{
-	m_HomePosition = M_HomePosition;
-}
-
-void UBackHome::SetM_RootObject(USceneComponent* M_RootComponent)
-{
-	m_RootObject = M_RootComponent;
-}
-
-void UBackHome::SetM_MovementSpeed(float M_MovementSpeed)
-{
-	m_MovementSpeed = M_MovementSpeed;
 }

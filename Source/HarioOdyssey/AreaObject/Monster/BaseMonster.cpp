@@ -118,16 +118,17 @@ void ABaseMonster::OnDie()
 {
 	Super::OnDie();
 
-	// 콜리전 전환
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	// FSM 정지
-	m_AiFSM ->StopFSM();
+	m_AiFSM -> StopFSM();
 	// Skill 정지
-	m_CurrentSkill = nullptr;
+	if (nullptr != m_CurrentSkill)	m_CurrentSkill->CancelCast();
+	// 움직임 정지
 	StopAll();
 	m_VerticalMover->StopVerticalMovement();
-
+	// 몬스터 발사!
 	LaunchOnDeath();
+	// 콜리전 전환
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	TWeakObjectPtr<ABaseMonster> WeakThis = this;
 
@@ -158,13 +159,14 @@ void ABaseMonster::LaunchOnDeath()
 		FMath::Sin(FMath::DegreesToRadians(RandomAngle)),
 		FMath::Sin(FMath::DegreesToRadians(LaunchUpwardAngle))
 	);
-    
 	// 발사 속도 계산
 	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
+	UE_LOG(LogTemp, Warning, TEXT("Movement Mode: %d"), (int)GetCharacterMovement()->MovementMode);
+	UE_LOG(LogTemp, Warning, TEXT("Launch Velocity: %s"), *LaunchVelocity.ToString());
 
 	// Launch와 동시에 회전력 설정
 	LaunchCharacter(LaunchVelocity, true, true);
-	GetMesh()->AddTorqueInDegrees(FVector(0, 0, 1000));
+	//GetMesh()->AddTorqueInDegrees(FVector(0, 0, 1000));
 }
 
 UBaseAiFSM* ABaseMonster::CreateFSM()
@@ -269,6 +271,11 @@ void ABaseMonster::OnRotationFinished()
 {
 }
 
+FVector ABaseMonster::GetM_SpawnLocation() const
+{
+	return m_SpawnLocation;
+}
+
 bool ABaseMonster::IsMoving() const
 {
 	return m_PathMover && m_PathMover->IsMoving();
@@ -366,7 +373,8 @@ void ABaseMonster::LookAtLocation(const FVector& Target, float Duration, EMoveme
 {
 	if (IsValidForMovement())
 	{
-		m_PathMover->LookAtLocationWithActor(Target, Duration, InterpType);
+		auto safeTarget = GetActorLocation()-(GetActorLocation()-Target).GetSafeNormal2D();
+		m_PathMover->LookAtLocationWithActor(safeTarget, Duration, InterpType);
 	}
 }
 
@@ -374,7 +382,8 @@ void ABaseMonster::LookAtLocationWithSpeed(const FVector& Target, float Speed, E
 {
 	if (IsValidForMovement())
 	{
-		m_PathMover->LookAtLocationWithActorSpeed(Target, Speed, InterpType);
+		auto safeTarget = GetActorLocation()-(GetActorLocation()-Target).GetSafeNormal2D();
+		m_PathMover->LookAtLocationWithActorSpeed(safeTarget, Speed, InterpType);
 	}
 }
 

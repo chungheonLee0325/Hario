@@ -54,7 +54,7 @@ APlayer_Mario::APlayer_Mario()
     // 기본값 설정
     bIsHatThrown = false;
     HatSpawnOffset = FVector(100.f, 0.f, 50.f);
-    MaxHatThrowDistance = 1000.f;
+    MaxHatThrowDistance = 300.f;
     HatThrowSpeed = 1200.f;
     HatRecallSpeed = 800.f;
 
@@ -258,7 +258,7 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
     	        TakeDamageMaterialInstance->StartBlinkEffect(GetMesh(), BlinkTimerHandle, InvincibleLocalTimerHandle);
     	    }
     	}
-
+        GetWorldTimerManager().SetTimer(InvincibleTimerHandle, this, &APlayer_Mario::RemoveInvincibility, 3.0f, false);
     	return ActualDamage;
    
 }

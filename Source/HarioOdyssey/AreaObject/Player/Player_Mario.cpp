@@ -14,6 +14,7 @@
 #include "HarioOdyssey/UI/HealthWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "HarioOdyssey/Contents/HarioGameMode.h"
 #include "HarioOdyssey/Utility/TakeDamageMaterial.h"
 
 
@@ -219,7 +220,23 @@ void APlayer_Mario::AddCoin(int32 CoinValue)
     	CoinCounterWidget->UpdateCoinCounter(CoinCount);
     }
 }
-    
+
+void APlayer_Mario::OnDie()
+{
+    Super::OnDie();
+
+    AController* controllerRef = GetController();
+
+    Destroy();
+    if (UWorld* world = GetWorld())
+    {
+        if (AHarioGameMode* gameMode = Cast<AHarioGameMode>(GetWorld()->GetAuthGameMode()))
+        {
+            gameMode->RestartPlayer(controllerRef);
+        }
+    }
+}
+
 //데미지 처리
 float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)

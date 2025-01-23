@@ -157,6 +157,8 @@ private:
 	//무적상태 해제
 	void IsActorHidden();
 
+	void OnDie() override;
+
 protected:
 	void RemoveInvincibilityTimer();
 };

@@ -143,7 +143,7 @@ void AChainChomp::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 			// 움직임 정지
 			StopAll();
 			m_VerticalMover->StopVerticalMovement();
-			// ToDo : 수정 예정 좀 이상함
+			
 			FVector dir = (GetActorLocation() - OtherActor->GetActorLocation()).GetSafeNormal2D();
 			MoveToLocation(GetActorLocation() + dir * 200.f, 1, EMovementInterpolationType::Linear);
 			m_VerticalMover->StartVerticalMovement(GetMesh(), 250.f, 0.7f, 0.3f);

@@ -223,7 +223,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void LaunchOnDeath();
-	
+	void LaunchOnDeathVer2();
+
 	virtual UBaseAiFSM* CreateFSM();
 	
 	// Skill System

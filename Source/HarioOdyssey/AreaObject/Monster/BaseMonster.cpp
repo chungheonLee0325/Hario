@@ -25,7 +25,8 @@ ABaseMonster::ABaseMonster()
 	m_VerticalMover = CreateDefaultSubobject<UVerticalMover>(TEXT("VerticalMover"));
 
 	// Death Effect Load
-	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("/Script/Engine.ParticleSystem'/Game/StarterContent/Particles/P_Explosion1.P_Explosion1'"));
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(
+		TEXT("/Script/Engine.ParticleSystem'/Game/_Resource/FX/Realistic_Starter_VFX_Pack_Vol2/Particles/Destruction/P_Destruction_Electric.P_Destruction_Electric'"));
 	if (ParticleAsset.Succeeded())
 	{
 		DeathEffect = ParticleAsset.Object;
@@ -119,14 +120,14 @@ void ABaseMonster::OnDie()
 	Super::OnDie();
 
 	// FSM 정지
-	m_AiFSM -> StopFSM();
+	m_AiFSM->StopFSM();
 	// Skill 정지
-	if (nullptr != m_CurrentSkill)	m_CurrentSkill->CancelCast();
+	if (nullptr != m_CurrentSkill) m_CurrentSkill->CancelCast();
 	// 움직임 정지
 	StopAll();
 	m_VerticalMover->StopVerticalMovement();
 	// 몬스터 발사!
-	LaunchOnDeath();
+	LaunchOnDeathVer2();
 	// 콜리전 전환
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
@@ -137,7 +138,8 @@ void ABaseMonster::OnDie()
 	{
 		ABaseMonster* StrongThis = WeakThis.Get();
 		// Death Effect
-		UGameplayStatics::SpawnEmitterAtLocation(StrongThis->GetWorld(), StrongThis->DeathEffect, StrongThis->GetActorLocation());
+		UGameplayStatics::SpawnEmitterAtLocation(StrongThis->GetWorld(), StrongThis->DeathEffect,
+		                                         StrongThis->GetActorLocation());
 		if (nullptr != StrongThis)
 		{
 			StrongThis->Destroy();
@@ -146,6 +148,16 @@ void ABaseMonster::OnDie()
 }
 
 void ABaseMonster::LaunchOnDeath()
+{
+	m_VerticalMover->StartVerticalMovement(GetMesh(), 400, DestroyDelayTime, 2);
+
+	auto point = FMath::RandPointInCircle(1);
+	FVector position = GetActorLocation() + FVector(point.X, point.Y, 0.0f) * 600.0f;
+	MoveToLocation(position, DestroyDelayTime);
+}
+
+// Launch Ver
+void ABaseMonster::LaunchOnDeathVer2()
 {
 	// 캐릭터 물리 설정
 	GetMesh()->SetSimulatePhysics(true);
@@ -168,6 +180,7 @@ void ABaseMonster::LaunchOnDeath()
 	LaunchCharacter(LaunchVelocity, true, true);
 	//GetMesh()->AddTorqueInDegrees(FVector(0, 0, 1000));
 }
+
 
 UBaseAiFSM* ABaseMonster::CreateFSM()
 {
@@ -307,9 +320,10 @@ void ABaseMonster::UpdateCurrentSkill(UBaseSkill* NewSkill)
 	{
 		return;
 	}
-	
+
 	m_CurrentSkill = NewSkill;
 }
+
 void ABaseMonster::ClearCurrentSkill()
 {
 	m_CurrentSkill = nullptr;
@@ -343,7 +357,7 @@ UBaseSkill* ABaseMonster::DeQueueSkill()
 {
 	UBaseSkill* Skill = nullptr;
 	m_SkillQueue.Dequeue(Skill);
-	
+
 	return Skill;
 }
 
@@ -373,7 +387,7 @@ void ABaseMonster::LookAtLocation(const FVector& Target, float Duration, EMoveme
 {
 	if (IsValidForMovement())
 	{
-		auto safeTarget = GetActorLocation()-(GetActorLocation()-Target).GetSafeNormal2D();
+		auto safeTarget = GetActorLocation() - (GetActorLocation() - Target).GetSafeNormal2D();
 		m_PathMover->LookAtLocationWithActor(safeTarget, Duration, InterpType);
 	}
 }
@@ -382,7 +396,7 @@ void ABaseMonster::LookAtLocationWithSpeed(const FVector& Target, float Speed, E
 {
 	if (IsValidForMovement())
 	{
-		auto safeTarget = GetActorLocation()-(GetActorLocation()-Target).GetSafeNormal2D();
+		auto safeTarget = GetActorLocation() - (GetActorLocation() - Target).GetSafeNormal2D();
 		m_PathMover->LookAtLocationWithActorSpeed(safeTarget, Speed, InterpType);
 	}
 }

@@ -18,12 +18,19 @@ public:
 
 	// 모자 초기화 함수
 	void InitializeHat(FVector Direction, APlayer_Mario* NewOwner);
+	bool bSpinning;				// 회전 상태 여부
+
+	// UFUNCTION()
+	// void OnHatReturned(AActor* DestroyedActor);
+	
 
 	APlayer_Mario* GetOwnerActor() const { return OwnerActor; }
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
+	
 
 private:
 	FVector InitialDirection; // 모자 방향
@@ -38,13 +45,22 @@ private:
 
 	bool bReturning; // 모자가 돌아오는 상태인지 여부
 
+
+
+
+	
 	// 루트
 	UPROPERTY(VisibleAnywhere)
 	class UBoxComponent* BoxComp;
-
-	//모자 메시 컴포넌트
+	
+	// 메시 컴포넌트
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* HatMesh;
 
+	//회전
+	float OrbitRadius;       // 회전 궤도 반지름
+	float OrbitSpeed;        // 회전 속도
+	float CurrentAngle;      // 현재 회전 각도
+	
 	FVector StartLocation; // 모자의 시작 위치
 };

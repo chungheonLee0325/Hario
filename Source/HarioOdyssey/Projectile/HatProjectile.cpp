@@ -21,6 +21,12 @@ AHatProjectile::AHatProjectile()
 
 	//초기 방향 설정
 	InitialDirection = FVector::ZeroVector;
+
+	//회전
+	OrbitRadius = 200.0f;    // 회전 반지름 초기값
+	OrbitSpeed = 360.0f / 2.0f;     // 1초에 180도 회전
+	CurrentAngle = 0.0f;     // 시작 각도
+	bSpinning = false;		// 기본적으로 회전 상태가 아님
 }
 
 // Called when the game starts or when spawned
@@ -36,39 +42,118 @@ void AHatProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
-	if (!bReturning)
+	if (bSpinning) // 회전 상태
 	{
-		// 시간 업데이트
+		UE_LOG(LogTemp, Warning, TEXT("모자 스핀 성공"),CurrentAngle);
+		CurrentAngle += OrbitSpeed * DeltaTime; // 각도 업데이트
+		if (CurrentAngle >= 360.0f)
+		{
+			CurrentAngle -= 360.0f;
+		}
+
+		// 플레이어 주변 회전
+		FVector Offset = FVector(
+			FMath::Cos(FMath::DegreesToRadians(CurrentAngle)) * OrbitRadius,
+			FMath::Sin(FMath::DegreesToRadians(CurrentAngle)) * OrbitRadius,
+			0.0f
+		);
+
+		if (!OwnerActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("HatInstance가 이미 존재함"));
+			return;
+		}
+
+		// 회전 지속 시간 검사
+		CurrentTime += DeltaTime;
+		if (CurrentTime >= 2.0f) // 2초가 지나면 회전 종료
+		{
+			bSpinning = false;
+			UE_LOG(LogTemp, Warning, TEXT("모자 회전 종료"));
+		}
+		
+		FVector CenterLocation = OwnerActor->GetActorLocation(); // 소유자 위치 기준으로 회전
+		SetActorLocation(CenterLocation + Offset);
+
+		if (FVector::Dist(OwnerActor->GetActorLocation(), GetActorLocation()) <= 10.0f)
+		{
+			if (APlayer_Mario* Player = Cast<APlayer_Mario>(OwnerActor))
+			{
+				Player->OnHatReturned(this);
+			}
+			Destroy();
+		}
+	}
+	else if (!bReturning) // 던져지는 상태
+	{
 		CurrentTime += DeltaTime;
 
-		// 모자가 전방으로 이동
+		// 전방 이동
 		FVector NewLocation = GetActorLocation() + (InitialDirection * Speed * DeltaTime);
 		SetActorLocation(NewLocation);
 
-		// 날아가는 시간이 끝나면 돌아오기 시작
 		if (CurrentTime >= FlightTime)
 		{
 			bReturning = true;
 		}
 	}
-	else
+	else if (bReturning) // 돌아오는 상태
 	{
 		if (OwnerActor)
 		{
-			// 모자가 돌아오기
 			FVector DirectionToOwner = (OwnerActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 			FVector NewLocation = GetActorLocation() + (DirectionToOwner * Speed * DeltaTime);
 			SetActorLocation(NewLocation);
 
-
-			// 원래 위치로 돌아오면 삭제
 			if (FVector::Dist(OwnerActor->GetActorLocation(), GetActorLocation()) <= 10.0f)
 			{
+				if (APlayer_Mario* Player = Cast<APlayer_Mario>(OwnerActor))
+				{
+					Player->OnHatReturned(this);
+				}
 				Destroy();
 			}
 		}
 	}
+	// if (!bReturning)
+	// {
+	// 	// 시간 업데이트
+	// 	CurrentTime += DeltaTime;
+	//
+	// 	// 모자가 전방으로 이동
+	// 	FVector NewLocation = GetActorLocation() + (InitialDirection * Speed * DeltaTime);
+	// 	SetActorLocation(NewLocation);
+	//
+	// 	// 날아가는 시간이 끝나면 돌아오기 시작
+	// 	if (CurrentTime >= FlightTime)
+	// 	{
+	// 		bReturning = true;
+	// 	}
+	// }
+	// else
+	// {
+	// 	if (OwnerActor)
+	// 	{
+	// 		// 모자가 돌아오기
+	// 		FVector DirectionToOwner = (OwnerActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	// 		FVector NewLocation = GetActorLocation() + (DirectionToOwner * Speed * DeltaTime);
+	// 		SetActorLocation(NewLocation);
+	//
+	//
+	// 		// 원래 위치로 돌아오면 삭제
+	// 		if (FVector::Dist(OwnerActor->GetActorLocation(), GetActorLocation()) <= 10.0f)
+	// 		{
+	// 			// 소유자에게 돌아오면 파괴
+	// 			 if (APlayer_Mario* Player = Cast<APlayer_Mario>(OwnerActor))
+	// 			{
+	// 				Player->OnHatReturned(this);
+	// 			 }
+	// 			
+	// 			Destroy();
+	// 		
+	// 		}
+	// 	}
+	// }
 }
 
 
@@ -93,3 +178,5 @@ void AHatProjectile::InitializeHat(FVector Direction, APlayer_Mario* NewOwner)
 	// StartLocation = GetActorLocation();
 	// OwnerActor = GetOwner();
 }
+
+

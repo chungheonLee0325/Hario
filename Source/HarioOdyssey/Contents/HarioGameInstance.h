@@ -7,7 +7,6 @@
 #include "HarioOdyssey/ResourceManager/HarioGameType.h"
 #include "HarioGameInstance.generated.h"
 
-class USoundManager;
 /**
  * 
  */
@@ -27,6 +26,6 @@ public:
 	TMap<int, USoundBase*> SoundDataMap;
 
 protected:
-	void Init() override;
+	virtual void Init() override;
 	
 };

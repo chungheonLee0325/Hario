@@ -1,9 +1,8 @@
 #include "ChainChompPullAndLaunchSkill.h"
 #include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
 #include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
-#include "HarioOdyssey/Contents/HarioGameInstance.h"
+#include "HarioOdyssey/Contents/HarioGameMode.h"
 #include "HarioOdyssey/PathMover/VerticalMover.h"
-#include "HarioOdyssey/Sound/SoundManager.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UChainChompPullAndLaunchSkill::UChainChompPullAndLaunchSkill()
@@ -32,7 +31,7 @@ void UChainChompPullAndLaunchSkill::OnCastStart(ABaseMonster* Caster, const AAct
 
 	if (!m_ChainChomp || !m_Target) return;
 
-	Cast<UHarioGameInstance>(GetWorld()->GetGameInstance())->SoundManager->PlayPositionalSound(10010,m_ChainChomp->GetActorLocation());
+	Cast<AHarioGameMode>(GetWorld()->GetAuthGameMode())->PlayPositionalSound(10010,m_ChainChomp->GetActorLocation());
 	
 	m_CurrentPhase = ESkillPhase::Prepare;
 	m_OriginalPosition = m_ChainChomp->GetRootPosition();

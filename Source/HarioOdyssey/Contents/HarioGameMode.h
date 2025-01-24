@@ -16,12 +16,35 @@ UCLASS()
 class HARIOODYSSEY_API AHarioGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
 public:
+	AHarioGameMode();
+
 	const FOnPlayerDiedSignature& GetOnPlayerDied() const { return OnPlayerDied; }
 
 	//플레이어의 폰을 스폰 시도.
 	virtual void RestartPlayer(AController* NewPlayer) override;
+
+	UFUNCTION()
+	void PlayGlobalSound(int SoundID);
+
+	UFUNCTION()
+	void PlayPositionalSound(int SoundID, FVector Position);
+
+	// BGM 재생 함수
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void PlayBGM(int SoundID, bool bLoop = true);
+
+	// BGM 정지 함수
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void StopBGM();
+
+	// BGM 볼륨 조절 함수
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void SetBGMVolume(float Volume);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SoundManager")
+	TMap<int, USoundBase*> SoundDataMap;
 
 protected:
 	virtual void BeginPlay() override;
@@ -29,8 +52,18 @@ protected:
 	//플레이어 캐릭터가 죽으면 호출.
 	UFUNCTION()
 	virtual void PlayerDied(ACharacter* Character);
+	void PlayBGM(int SoundID);
 
 	//델리게이트를 바인딩할 시그니처.
 	UPROPERTY()
 	FOnPlayerDiedSignature OnPlayerDied;
+
+private:
+	// 오디오 컴포넌트
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	UAudioComponent* AudioComponent;
+
+	// 현재 재생 중인 BGM
+	UPROPERTY()
+	USoundBase* CurrentBGM;
 };

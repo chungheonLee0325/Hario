@@ -4,22 +4,23 @@
 #include "HarioGameInstance.h"
 
 #include "GameplayTagsManager.h"
+#include "HarioGameMode.h"
 #include "K2Node_GetDataTableRow.h"
-#include "HarioOdyssey/Sound/SoundManager.h"
 
 void UHarioGameInstance::Init()
 {
 	Super::Init();
 
 	// AreaObject Data
-	UDataTable* AreaObjectTable = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/_BluePrints/Common/Data/db_AreaObject.db_AreaObject'"));
+	UDataTable* AreaObjectTable = LoadObject<UDataTable>(
+		nullptr, TEXT("/Script/Engine.DataTable'/Game/_BluePrints/Common/Data/db_AreaObject.db_AreaObject'"));
 	if (nullptr != AreaObjectTable)
 	{
 		TArray<FName> RowNames = AreaObjectTable->GetRowNames();
 
 		for (const FName& RowName : RowNames)
 		{
-			FAreaObjectData* Row = AreaObjectTable->FindRow<FAreaObjectData>(RowName, TEXT("") );
+			FAreaObjectData* Row = AreaObjectTable->FindRow<FAreaObjectData>(RowName, TEXT(""));
 			if (nullptr != Row)
 			{
 				dt_AreaObject.Add(Row->AreaObjectID, *Row);
@@ -27,20 +28,19 @@ void UHarioGameInstance::Init()
 		}
 	}
 
-	SoundManager = NewObject<USoundManager>(this);
-	
 	// Sound Data
-	UDataTable* SoundTable = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/_BluePrints/Common/Data/db_Sound.db_Sound'"));
+	UDataTable* SoundTable = LoadObject<UDataTable>(
+		nullptr, TEXT("/Script/Engine.DataTable'/Game/_BluePrints/Common/Data/db_Sound.db_Sound'"));
 	if (nullptr != SoundTable)
 	{
 		TArray<FName> RowNames = SoundTable->GetRowNames();
 
 		for (const FName& RowName : RowNames)
 		{
-			FSoundData* Row = SoundTable->FindRow<FSoundData>(RowName, TEXT("") );
+			FSoundData* Row = SoundTable->FindRow<FSoundData>(RowName, TEXT(""));
 			if (nullptr != Row)
 			{
-				SoundManager->SoundDataMap.Add(Row->SoundID, Row->Sound);
+				SoundDataMap.Add(Row->SoundID, Row->Sound);
 			}
 		}
 	}
@@ -50,7 +50,7 @@ FAreaObjectData* UHarioGameInstance::GetDataAreaObject(const int AreaObjectID)
 {
 	if (FAreaObjectData* data = dt_AreaObject.Find(AreaObjectID))
 	{
-			return data;
+		return data;
 	}
 
 	return nullptr;

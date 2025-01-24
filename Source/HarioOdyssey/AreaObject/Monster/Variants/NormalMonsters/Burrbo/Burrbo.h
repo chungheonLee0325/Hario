@@ -42,5 +42,5 @@ private:
 	float ReturnSpeed = 600.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
-	float DetectRange = 800.0f;
+	float DetectRange = 1500.0f;
 };

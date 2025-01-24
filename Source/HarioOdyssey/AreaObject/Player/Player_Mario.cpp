@@ -11,6 +11,7 @@
 #include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "HarioOdyssey/Contents/HarioGameMode.h"
 #include "HarioOdyssey/Utility/TakeDamageMaterial.h"
 
 
@@ -19,8 +20,10 @@
 APlayer_Mario::APlayer_Mario()
 {
     PrimaryActorTick.bCanEverTick = true;
-   
 
+    // AreaObjectID Set
+    m_AreaObjectID = 1;
+    
     //카메라 붐 설정(캐릭터를 따라다니는 카메라)
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);
@@ -49,6 +52,10 @@ APlayer_Mario::APlayer_Mario()
 
     WornHatMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WornHatMesh"));
     WornHatMesh->SetupAttachment(GetMesh(), "HeadSocket");
+    HatSpawnOffset = FVector(100.f, 0.f, 50.f);
+    MaxHatThrowDistance = 300.f;
+    HatThrowSpeed = 1200.f;
+    HatRecallSpeed = 800.f;
 
 }
 
@@ -280,7 +287,23 @@ void APlayer_Mario::AddCoin(int32 CoinValue)
     	CoinCounterWidget->UpdateCoinCounter(CoinCount);
     }
 }
-    
+
+void APlayer_Mario::OnDie()
+{
+    Super::OnDie();
+
+    AController* controllerRef = GetController();
+
+    Destroy();
+    if (UWorld* world = GetWorld())
+    {
+        if (AHarioGameMode* gameMode = Cast<AHarioGameMode>(GetWorld()->GetAuthGameMode()))
+        {
+            gameMode->RestartPlayer(controllerRef);
+        }
+    }
+}
+
 //데미지 처리
 float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)
@@ -307,10 +330,8 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
     	        TakeDamageMaterialInstance->StartBlinkEffect(GetMesh(), BlinkTimerHandle, InvincibleLocalTimerHandle,BlinkDuration);
     	    }
     	}
-
         GetWorldTimerManager().SetTimer(InvincibleTimerHandle, this, &APlayer_Mario::RemoveInvincibility, 3.0f, false);
     	return ActualDamage;
-   
 }
 
     

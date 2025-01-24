@@ -140,7 +140,10 @@ void UBaseSkill::OnCastEnd()
 void UBaseSkill::CancelCast()
 {
     if (!m_Caster) return;
-    
+    if (OnSkillComplete.IsBound() == true)
+    {
+        OnSkillComplete.Unbind();
+    }
     if (m_CurrentPhase != ESkillPhase::Ready)
     {
         m_Caster->ClearCurrentSkill();

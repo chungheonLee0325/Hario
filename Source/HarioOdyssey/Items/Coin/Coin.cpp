@@ -4,6 +4,7 @@
 #include "Coin.h"
 
 
+#include "Components/SphereComponent.h"
 #include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 
 // Sets default values
@@ -24,6 +25,19 @@ ACoin::ACoin()
 			ItemMesh->SetStaticMesh(CoinMeshAsset.Object);
 		}
 		ItemMesh->SetRelativeScale3D(FVector(0.3f));
+	}
+	if (CollectionSphere)
+	{
+		CollectionSphere->SetRelativeScale3D(FVector(3.7f));
+	}
+
+	//if (CollectionSound)
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> SoundAsset(TEXT("/Script/Engine.SoundWave'/Game/_Resource/Sound/Item/SFX_Mario_Coin.SFX_Mario_Coin'"));
+		if (SoundAsset.Succeeded())
+		{
+			CollectionSound = SoundAsset.Object;
+		}
 	}
 }
 

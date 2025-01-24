@@ -23,7 +23,7 @@ protected:
 	
 
 private:
-	int RepeatCount = 3;
+	int RepeatCount = 2;
 	float Radian = 0.0f;
 	float Amplitue = 0.3f;
 	FRotator Rotation = FRotator(0.0f, 0.f,60.f);

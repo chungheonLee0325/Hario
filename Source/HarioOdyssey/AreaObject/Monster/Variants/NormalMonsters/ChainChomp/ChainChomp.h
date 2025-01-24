@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HarioOdyssey/AreaObject/Monster/BaseMonster.h"
-#include "HarioOdyssey/Combat/Capturable.h"
+#include "HarioOdyssey/Capture/Capturable.h"
 #include "ChainChomp.generated.h"
 
 class UChainComponent;
@@ -30,6 +30,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void OnDie() override;
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -41,17 +43,26 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UChainComponent* ChainComponent;
-	
-	virtual bool CanBeCaptured_Implementation() override;
-	virtual void OnCaptureStart_Implementation() override;
-	virtual void OnCaptureEnd_Implementation() override;
-	virtual void WhileCaptured_Implementation(ACharacter* CaptureOwner) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsDestructDmgAble = false;
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanBeCaptured_Implementation() override;
+	UFUNCTION(BlueprintCallable)
+	virtual void OnCaptureStart_Implementation() override;
+	UFUNCTION(BlueprintCallable)
+	virtual void OnCaptureEnd_Implementation() override;
+	UFUNCTION(BlueprintCallable)
+	virtual void WhileCaptured_Implementation(ACharacter* CaptureOwner) override;
+	virtual void OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
 	// Getter 함수들
 	float GetAttackSpeed() const { return AttackSpeed; }
 	float GetReturnSpeed() const { return ReturnSpeed; }
 	float GetChainLength() const { return ChainLength; }
+
 	FVector GetRootPosition() const { return RootPosition; };
 	FVector GetRootAnchorPosition() const { return RootAnchorPosition; };
 
@@ -70,5 +81,8 @@ private:
 	FVector RootAnchorPosition = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
-	FVector RootPosition = FVector::ZeroVector;
+	FVector RootPosition;
+	
+	UPROPERTY()
+	AActor* RootAnchor;
 };

@@ -4,10 +4,13 @@
 #include "BaseMonster.h"
 
 #include "AI/Base/BaseAiFSM.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "HarioOdyssey/AreaObject/Player/Player_Mario.h"
 #include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
 #include "HarioOdyssey/PathMover/PathMover.h"
 #include "HarioOdyssey/PathMover/VerticalMover.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -20,6 +23,14 @@ ABaseMonster::ABaseMonster()
 
 	m_PathMover = CreateDefaultSubobject<UPathMover>(TEXT("PathMover"));
 	m_VerticalMover = CreateDefaultSubobject<UVerticalMover>(TEXT("VerticalMover"));
+
+	// Death Effect Load
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(
+		TEXT("/Script/Engine.ParticleSystem'/Game/_Resource/FX/Realistic_Starter_VFX_Pack_Vol2/Particles/Destruction/P_Destruction_Electric.P_Destruction_Electric'"));
+	if (ParticleAsset.Succeeded())
+	{
+		DeathEffect = ParticleAsset.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -103,6 +114,73 @@ UBaseSkill* ABaseMonster::FindSkillByClass(TSubclassOf<UBaseSkill> SkillClass)
 	}
 	return nullptr;
 }
+
+void ABaseMonster::OnDie()
+{
+	Super::OnDie();
+
+	// FSM 정지
+	m_AiFSM->StopFSM();
+	// Skill 정지
+	if (nullptr != m_CurrentSkill) m_CurrentSkill->CancelCast();
+	// 움직임 정지
+	StopAll();
+	m_VerticalMover->StopVerticalMovement();
+	// 몬스터 발사!
+	LaunchOnDeathVer2();
+	// 콜리전 전환
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	TWeakObjectPtr<ABaseMonster> WeakThis = this;
+
+	// Delay 후 폭발
+	GetWorld()->GetTimerManager().SetTimer(OnDieHandle, [WeakThis]()
+	{
+		ABaseMonster* StrongThis = WeakThis.Get();
+		// Death Effect
+		UGameplayStatics::SpawnEmitterAtLocation(StrongThis->GetWorld(), StrongThis->DeathEffect,
+		                                         StrongThis->GetActorLocation());
+		if (nullptr != StrongThis)
+		{
+			StrongThis->Destroy();
+		}
+	}, DestroyDelayTime, false);
+}
+
+void ABaseMonster::LaunchOnDeath()
+{
+	m_VerticalMover->StartVerticalMovement(GetMesh(), 400, DestroyDelayTime, 2);
+
+	auto point = FMath::RandPointInCircle(1);
+	FVector position = GetActorLocation() + FVector(point.X, point.Y, 0.0f) * 600.0f;
+	MoveToLocation(position, DestroyDelayTime);
+}
+
+// Launch Ver
+void ABaseMonster::LaunchOnDeathVer2()
+{
+	// 캐릭터 물리 설정
+	GetMesh()->SetSimulatePhysics(true);
+
+	int LaunchUpwardAngle = FMath::RandRange(LaunchUpwardAngleMin,LaunchUpwardAngleMax);
+	
+	// 랜덤한 수평 방향 계산
+	int RandomAngle = FMath::RandRange(0, 360);
+	FVector LaunchDirection(
+		FMath::Cos(FMath::DegreesToRadians(RandomAngle)),
+		FMath::Sin(FMath::DegreesToRadians(RandomAngle)),
+		FMath::Sin(FMath::DegreesToRadians(LaunchUpwardAngle))
+	);
+	// 발사 속도 계산
+	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
+	UE_LOG(LogTemp, Warning, TEXT("Movement Mode: %d"), (int)GetCharacterMovement()->MovementMode);
+	UE_LOG(LogTemp, Warning, TEXT("Launch Velocity: %s"), *LaunchVelocity.ToString());
+
+	// Launch와 동시에 회전력 설정
+	LaunchCharacter(LaunchVelocity, true, true);
+	//GetMesh()->AddTorqueInDegrees(FVector(0, 0, 1000));
+}
+
 
 UBaseAiFSM* ABaseMonster::CreateFSM()
 {
@@ -206,6 +284,11 @@ void ABaseMonster::OnRotationFinished()
 {
 }
 
+FVector ABaseMonster::GetM_SpawnLocation() const
+{
+	return m_SpawnLocation;
+}
+
 bool ABaseMonster::IsMoving() const
 {
 	return m_PathMover && m_PathMover->IsMoving();
@@ -237,9 +320,10 @@ void ABaseMonster::UpdateCurrentSkill(UBaseSkill* NewSkill)
 	{
 		return;
 	}
-	
+
 	m_CurrentSkill = NewSkill;
 }
+
 void ABaseMonster::ClearCurrentSkill()
 {
 	m_CurrentSkill = nullptr;
@@ -273,7 +357,7 @@ UBaseSkill* ABaseMonster::DeQueueSkill()
 {
 	UBaseSkill* Skill = nullptr;
 	m_SkillQueue.Dequeue(Skill);
-	
+
 	return Skill;
 }
 
@@ -303,7 +387,8 @@ void ABaseMonster::LookAtLocation(const FVector& Target, float Duration, EMoveme
 {
 	if (IsValidForMovement())
 	{
-		m_PathMover->LookAtLocationWithActor(Target, Duration, InterpType);
+		auto safeTarget = GetActorLocation() - (GetActorLocation() - Target).GetSafeNormal2D();
+		m_PathMover->LookAtLocationWithActor(safeTarget, Duration, InterpType);
 	}
 }
 
@@ -311,7 +396,8 @@ void ABaseMonster::LookAtLocationWithSpeed(const FVector& Target, float Speed, E
 {
 	if (IsValidForMovement())
 	{
-		m_PathMover->LookAtLocationWithActorSpeed(Target, Speed, InterpType);
+		auto safeTarget = GetActorLocation() - (GetActorLocation() - Target).GetSafeNormal2D();
+		m_PathMover->LookAtLocationWithActorSpeed(safeTarget, Speed, InterpType);
 	}
 }
 

@@ -157,7 +157,7 @@ void AHatProjectile::Tick(float DeltaTime)
 }
 
 
-void AHatProjectile::InitializeHat(FVector Direction, AActor* NewOwner)
+void AHatProjectile::InitializeHat(FVector Direction, APlayer_Mario* NewOwner)
 {
 	//모자 초기 방향. 주인 설정
 	InitialDirection = Direction;

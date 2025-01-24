@@ -66,7 +66,6 @@ public:
 	// 동전 획득 함수
 	void AddCoin(int32 CoinValue);
 
-
 	// 모자 인스턴스
 	UPROPERTY()
 	AHatProjectile* HatInstance;
@@ -74,7 +73,6 @@ public:
 	//모자 회정 상태
 	bool bSpinning;
 
-	
 	
 private:
 	//  카메라 컴포넌트
@@ -165,6 +163,8 @@ private:
 
 	//무적상태 해제
 	void IsActorHidden();
+
+	void OnDie() override;
 
 protected:
 	void RemoveInvincibilityTimer();

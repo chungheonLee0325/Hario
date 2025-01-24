@@ -27,17 +27,16 @@ void UTakeDamageMaterial::InitializeAndApplyDynamicMaterial(USkeletalMeshCompone
     }
 }
 
-void UTakeDamageMaterial::StartBlinkEffect(USkeletalMeshComponent* Mesh, FTimerHandle& BlinkTimerHandle, FTimerHandle& InvincibleLocalTimerHandle)
+void UTakeDamageMaterial::StartBlinkEffect(USkeletalMeshComponent* Mesh, FTimerHandle& BlinkTimerHandle, FTimerHandle& InvincibleLocalTimerHandle,float BlinkDuration)
 {
-    // TWeakObjectPtr의 유효성 확인
-    if (!DynamicMaterialInstance.IsValid())  
+    //[CASE2]
+    if (!DynamicMaterialInstance.IsValid())
     {
         InitializeAndApplyDynamicMaterial(Mesh);
     }
 
-    if (DynamicMaterialInstance.IsValid())  // 유효성 확인
+    if (DynamicMaterialInstance.IsValid())
     {
-        // 깜빡임 효과 시작 (0.1초마다 투명도 토글)
         Mesh->GetWorld()->GetTimerManager().SetTimer(BlinkTimerHandle, [this]()
         {
             static bool bIsVisible = true;
@@ -46,20 +45,51 @@ void UTakeDamageMaterial::StartBlinkEffect(USkeletalMeshComponent* Mesh, FTimerH
             DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), NewOpacity);
         }, 0.1f, true);
 
-
-        
-       
-        // 2초 후 무적 해제 및 깜빡임 멈춤
-        Mesh->GetWorld()->GetTimerManager().SetTimer(InvincibleLocalTimerHandle, [this, Mesh,&BlinkTimerHandle]()
+        Mesh->GetWorld()->GetTimerManager().SetTimer(InvincibleLocalTimerHandle, [this, Mesh, &BlinkTimerHandle]()
         {
-            ensure(Mesh != nullptr && Mesh->GetWorld() != nullptr); //디버그 확인용
+            ensure(Mesh != nullptr && Mesh->GetWorld() != nullptr);
             Mesh->GetWorld()->GetTimerManager().ClearTimer(BlinkTimerHandle);
-            if (DynamicMaterialInstance.IsValid())  // 유효성 확인
+
+            if (DynamicMaterialInstance.IsValid())
             {
-                // Opacity를 1.0으로 복원
-                DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), 1.0f);
+                DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), 1.0f); // 원래 상태 복원
             }
             UE_LOG(LogTemp, Warning, TEXT("무적 해제 및 깜빡임 효과 종료"));
-        }, 2.0f, false);
+        }, BlinkDuration, false); 
     }
 }
+
+    //[CASE1]
+    // TWeakObjectPtr의 유효성 확인
+    // if (!DynamicMaterialInstance.IsValid())  
+    // {
+    //     InitializeAndApplyDynamicMaterial(Mesh);
+    // }
+    //
+    // if (DynamicMaterialInstance.IsValid())  // 유효성 확인
+    // {
+    //     // 깜빡임 효과 시작 (0.1초마다 투명도 토글)
+    //     Mesh->GetWorld()->GetTimerManager().SetTimer(BlinkTimerHandle, [this]()
+    //     {
+    //         static bool bIsVisible = true;
+    //         bIsVisible = !bIsVisible;
+    //         float NewOpacity = bIsVisible ? 1.0f : 0.2f;
+    //         DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), NewOpacity);
+    //     }, 0.1f, true);
+    //
+    //}, 2.0f, false);
+          //    // }
+    //     
+    //    
+    //     // 2초 후 무적 해제 및 깜빡임 멈춤
+    //     Mesh->GetWorld()->GetTimerManager().SetTimer(InvincibleLocalTimerHandle, [this, Mesh,&BlinkTimerHandle]()
+    //     {
+    //         ensure(Mesh != nullptr && Mesh->GetWorld() != nullptr); //디버그 확인용
+    //         Mesh->GetWorld()->GetTimerManager().ClearTimer(BlinkTimerHandle);
+    //         if (DynamicMaterialInstance.IsValid())  // 유효성 확인
+    //         {
+    //             // Opacity를 1.0으로 복원
+    //             DynamicMaterialInstance->SetScalarParameterValue(FName("Opacity"), 1.0f);
+    //         }
+    //         UE_LOG(LogTemp, Warning, TEXT("무적 해제 및 깜빡임 효과 종료"));
+    //     

@@ -25,7 +25,13 @@ class HARIOODYSSEY_API APlayer_Mario : public AAreaObject
 public:
 	// 기본 생성자
 	APlayer_Mario();
+	
+	// 모자 던지기와 받기 함수
+	void OnThrowHat();
+	void OnHatReturned(AActor* DestroyedActor);
+	void OnSpinHat(); //모자 회전
 
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -44,17 +50,12 @@ protected:
 	void OnStartJump();
 	void OnStopJump();
 	
-	// 모자 던지기와 받기 함수
-	void OnThrowHat();
-
+	
 
 
 	
 	//무적상태
 	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-						   bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
-						   const FHitResult& Hit) override;
 	void RemoveInvincibility();
 	
 
@@ -64,9 +65,16 @@ protected:
 public:
 	// 동전 획득 함수
 	void AddCoin(int32 CoinValue);
-	
-	static int32 m_AreaObjectID;
 
+
+	// 모자 인스턴스
+	UPROPERTY()
+	AHatProjectile* HatInstance;
+
+	//모자 회정 상태
+	bool bSpinning;
+
+	
 	
 private:
 	//  카메라 컴포넌트
@@ -79,15 +87,16 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComponent;
 
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hat", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* WornHatMesh;
+	
 	/*모자 [Case3]*/
 	// 모자 클래스 레퍼런스
 	UPROPERTY(EditAnywhere, Category = "Hat")
 	TSubclassOf<AHatProjectile> HatClass;
 
-	// 모자 인스턴스
-	UPROPERTY()
-	AHatProjectile* HatInstance;
-
+	
 	// 모자 투척 여부
 	bool bIsHatThrown;
 
@@ -118,12 +127,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Hat", meta=(AllowPrivateAccess="true"))
 	USceneComponent* HatAttachPoint;
 
-	// 모자 던졌는지 여부
-	//bool bIsHatThrown = false;
-
 	// 모자 던졌을 때, 돌아오기 및 재부착을 위한 타이머 핸들
 	FTimerHandle HatReturnTimerHandle;
 	FTimerHandle HatReattachTimerHandle;
+
+
+
 	
 	//점프 상태
 	bool bIsJumping = false;

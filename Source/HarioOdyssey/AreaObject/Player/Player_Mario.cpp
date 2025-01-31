@@ -117,6 +117,7 @@ void APlayer_Mario::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
     //모자 던지기,받기 입력
     PlayerInputComponent->BindAction("OnThrowHat", IE_Pressed, this, &APlayer_Mario::OnThrowHat);
+
     PlayerInputComponent->BindAction("OnSpinHat", IE_Pressed, this, &APlayer_Mario::OnSpinHat);
 }
 
@@ -305,6 +306,7 @@ void APlayer_Mario::OnDie()
 }
 
 //데미지 처리
+
 float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)
 {
@@ -317,20 +319,30 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
     	// 무적 상태 적용
     	if (AddCondition(EConditionType::Invincible))
     	{
-    	    //UE_LOG(LogTemp, Warning, TEXT("무적상태 진입"));
-    	    // 화면에 메시지 출력
-    	    if (GEngine)
-    	    {
-    	        GEngine->AddOnScreenDebugMessage(-1,5.0f,FColor::Yellow,TEXT("무적상태 진입!"));
-    	    }
+    	    UE_LOG(LogTemp, Warning, TEXT("무적상태 on"));
+    	    
     	    TakeDamageMaterialHandler();  
     	    if (TakeDamageMaterialInstance)
     	    {
-    	        float BlinkDuration = 2.0f; 
-    	        TakeDamageMaterialInstance->StartBlinkEffect(GetMesh(), BlinkTimerHandle, InvincibleLocalTimerHandle,BlinkDuration);
+    	     
+    	        
+    	        TArray<UPrimitiveComponent*> Components;
+    	        Components.Add(GetMesh());
+    	        if (WornHatMesh)
+    	        {
+    	        UE_LOG(LogTemp, Log, TEXT("WornHatMesh 발견: %s"), *WornHatMesh->GetName());
+    	        UE_LOG(LogTemp, Log, TEXT("WornHatMesh의 머티리얼 슬롯 수: %d"), WornHatMesh->GetNumMaterials());
+    	            if (WornHatMesh->GetNumMaterials() == 0)
+    	            {
+    	                UE_LOG(LogTemp, Error, TEXT("WornHatMesh에 머티리얼이 없습니다! 기본 머티리얼을 할당하세요."));
+    	            }
+    	            Components.Add(WornHatMesh); // UStaticMeshComponent도 UPrimitiveComponent로 암묵적 캐스팅 가능
+    	        }
+    	        float BlinkDuration = 3.0f; // 깜빡임 지속 시간
+    	        TakeDamageMaterialInstance->StartBlinkEffect(Components, BlinkTimerHandle, InvincibleLocalTimerHandle, BlinkDuration);
     	    }
     	}
-        GetWorldTimerManager().SetTimer(InvincibleTimerHandle, this, &APlayer_Mario::RemoveInvincibility, 3.0f, false);
+        //GetWorldTimerManager().SetTimer(InvincibleTimerHandle, this, &APlayer_Mario::RemoveInvincibility, 3.0f, false);
     	return ActualDamage;
 }
 

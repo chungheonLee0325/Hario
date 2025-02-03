@@ -5,6 +5,7 @@
 
 #include "RootAnchor.h"
 #include "ChainComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Derived/AiMonster/ChainChomp/AiChainChomp.h"
 #include "HarioOdyssey/AreaObject/Skill/Monster/ChainChompLaunch.h"
@@ -21,6 +22,8 @@ AChainChomp::AChainChomp()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	GetCapsuleComponent()->SetCapsuleRadius(90.f);
+	GetCapsuleComponent()->SetCapsuleHalfHeight(90.f);
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempCCBody(TEXT(
 		"/Script/Engine.SkeletalMesh'/Game/_Resource/Monster/ChainChomp/ChainChomp2/ChainChomp2.ChainChomp2'"));

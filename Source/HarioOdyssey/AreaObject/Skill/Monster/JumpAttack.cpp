@@ -57,7 +57,7 @@ void UJumpAttack::OnPhaseChanged(ESkillPhase NewPhase)
 
 			// Launch
 			m_Caster->MoveToLocation(m_TargetPos, 0.8f);
-			m_Caster->m_VerticalMover->StartVerticalMovement(m_Caster->GetMesh(), 140.f, 0.5f, 0.3f);
+			m_Caster->m_VerticalMover->StartVerticalMovement(m_Caster->GetMesh(), 100.f, 0.5f, 0.3f);
 
 			break;
 		}

@@ -10,9 +10,9 @@
 UChainChompPull::UChainChompPull()
 {
 	// ToDo : Skill Param으로 넘겨받기
-	SkillData.PrepareTime = 1.0f;
+	SkillData.PrepareTime = 0.8f;
 	SkillData.CastTime = 1.5f;
-	SkillData.PostCastTime = 0.81f;
+	SkillData.PostCastTime = 1.f;
 	SkillData.Cooldown = 0.0f;
 	SkillData.CastRange = 1500.f;
 
@@ -69,7 +69,7 @@ void UChainChompPull::OnPhaseChanged(ESkillPhase NewPhase)
 		{
 			if (!m_ChainChomp || !m_Target) return;
 			// ToDo 마테리얼 변경
-			m_ChainChomp->StartVibration(10.f,0.8f,0.04f);
+			m_ChainChomp->StartVibration(15.f,1.f,0.03f);
 			break;
 		}
 	}

@@ -16,6 +16,7 @@ void UBackHome::Enter()
 {
 	BackHomeElapsedTime = 0.f;
 	auto location = m_Owner->GetM_SpawnLocation();
+	location.Z = m_Owner->GetActorLocation().Z;
 	float t = FVector::Dist2D(location, m_Owner->GetActorLocation());
 	UE_LOG(LogTemp, Warning, TEXT("UBackHome::Enter distance : %f"), t);
 
@@ -61,22 +62,11 @@ void UBackHome::PerformJumpSequence()
 	// 약한 참조로 this 캡처
 	TWeakObjectPtr<UBackHome> WeakThis = this;
 
-	// 첫 번째 점프
-	GetWorld()->GetTimerManager().SetTimer(FirstJumpHandle, [WeakThis]()
-	{
-		if (auto* StrongThis = WeakThis.Get())
-		{
-			if (StrongThis->m_Owner->m_VerticalMover != nullptr)
-			{
-				StrongThis->m_Owner->m_VerticalMover->StartVerticalMovement(
-					StrongThis->m_Owner->GetMesh(),
-					StrongThis->JumpHeight,
-					StrongThis->BackHomeDuration * 0.35,
-					StrongThis->BackHomeDuration * 0.15
-				);
-			}
-		}
-	}, 0.001, false);
+	m_Owner->m_VerticalMover->StartVerticalMovement(
+					m_Owner->GetMesh(),
+					JumpHeight,
+					BackHomeDuration * 0.35,
+					BackHomeDuration * 0.15);
 
 	// 두 번째 점프와 회전
 	GetWorld()->GetTimerManager().SetTimer(SecondJumpHandle, [WeakThis]()
@@ -103,5 +93,5 @@ void UBackHome::PerformJumpSequence()
 				}
 			}
 		}
-	}, BackHomeDuration / 2, false);
+	}, BackHomeDuration / 2 + 0.01f, false);
 }

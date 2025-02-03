@@ -335,7 +335,7 @@ float APlayer_Mario::TakeDamage(float Damage, const FDamageEvent& DamageEvent, A
     	        TakeDamageMaterialInstance->StartBlinkEffect(Components, BlinkTimerHandle, InvincibleLocalTimerHandle, BlinkDuration);
     	    }
     	}
-        //GetWorldTimerManager().SetTimer(InvincibleTimerHandle, this, &APlayer_Mario::RemoveInvincibility, 3.0f, false);
+        GetWorldTimerManager().SetTimer(InvincibleTimerHandle, this, &APlayer_Mario::RemoveInvincibility, 3.0f, false);
     	return ActualDamage;
 }
 

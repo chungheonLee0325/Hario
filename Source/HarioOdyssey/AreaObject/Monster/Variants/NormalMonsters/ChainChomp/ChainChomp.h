@@ -82,7 +82,14 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
 	FVector RootPosition;
-	
+
+	UPROPERTY(EditAnywhere, Category = "Monster Settings")
+	TArray<UMaterialInterface*> GhostTrailMaterials;
+
+public:
+	TArray<UMaterialInterface*> GetGhostTrailMaterials() const;
+
+private:
 	UPROPERTY()
 	AActor* RootAnchor;
 };

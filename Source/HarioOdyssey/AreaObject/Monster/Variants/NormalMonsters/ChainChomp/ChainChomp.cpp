@@ -40,9 +40,34 @@ AChainChomp::AChainChomp()
 
 	ChainComponent = CreateDefaultSubobject<UChainComponent>("Chains");
 	ChainComponent->SetupAttachment(ChainStartScene);
-	ChainComponent->RootScence->SetupAttachment(ChainComponent);
-	ChainComponent->AttachToComponent(ChainStartScene, FAttachmentTransformRules::KeepRelativeTransform);
+	//ChainComponent->AttachToComponent(ChainStartScene, FAttachmentTransformRules::KeepRelativeTransform);
+	ChainComponent->RootScene->SetupAttachment(ChainComponent);
+	ChainComponent->InitAttach();
 
+	// 잔상용 투명 마테리얼 셋팅
+	{
+	    ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial(TEXT("/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_T_wanwan_body.mat_T_wanwan_body'"));
+		if (tempMaterial.Succeeded())
+		{
+			GhostTrailMaterials.Add(tempMaterial.Object);
+		}
+		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial2(TEXT("/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_ET_wanwan_body.mat_ET_wanwan_body'"));
+		if (tempMaterial2.Succeeded())
+		{
+			GhostTrailMaterials.Add(tempMaterial2.Object);
+		}
+		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial3(TEXT("/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_T_wanwan_eye.mat_T_wanwan_eye'"));
+		if (tempMaterial3.Succeeded())
+		{
+			GhostTrailMaterials.Add(tempMaterial3.Object);
+		}
+		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial4(TEXT("/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_ET_wanwan_eye.mat_ET_wanwan_eye'"));
+		if (tempMaterial4.Succeeded())
+		{
+			GhostTrailMaterials.Add(tempMaterial4.Object);
+		}
+	}
+	
 	// 스킬 추가
 	m_StateSkillClasses.Add(EAiStateType::Attack, UChainChompPullAndLaunchSkill::StaticClass());
 
@@ -149,4 +174,9 @@ void AChainChomp::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 			m_VerticalMover->StartVerticalMovement(GetMesh(), 250.f, 0.7f, 0.3f);
 		}
 	}
+}
+
+TArray<UMaterialInterface*> AChainChomp::GetGhostTrailMaterials() const
+{
+	return GhostTrailMaterials;
 }

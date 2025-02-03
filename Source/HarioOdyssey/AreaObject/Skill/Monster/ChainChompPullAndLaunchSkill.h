@@ -78,7 +78,7 @@ UPROPERTY(EditAnywhere)
 
     const float FirstJumpDelay = 0.3f;
     const float SecondJumpDelay = 1.05f;
-    const float JumpHeight = 200.f;
+    const float JumpHeight = 100.f;
     const float JumpDuration = 0.4f;
     const float LandingDuration = 0.3f;
 }; 

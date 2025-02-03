@@ -3,6 +3,7 @@
 #include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 #include "HarioOdyssey/Contents/HarioGameMode.h"
 #include "HarioOdyssey/PathMover/VerticalMover.h"
+#include "HarioOdyssey/Utility/GhostTrail.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UChainChompPullAndLaunchSkill::UChainChompPullAndLaunchSkill()
@@ -31,8 +32,8 @@ void UChainChompPullAndLaunchSkill::OnCastStart(ABaseMonster* Caster, const AAct
 
 	if (!m_ChainChomp || !m_Target) return;
 
-	Cast<AHarioGameMode>(GetWorld()->GetAuthGameMode())->PlayPositionalSound(10010,m_ChainChomp->GetActorLocation());
-	
+	Cast<AHarioGameMode>(GetWorld()->GetAuthGameMode())->PlayPositionalSound(10010, m_ChainChomp->GetActorLocation());
+
 	m_CurrentPhase = ESkillPhase::Prepare;
 	m_OriginalPosition = m_ChainChomp->GetRootPosition();
 
@@ -59,61 +60,89 @@ void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
 	switch (m_CurrentPhase)
 	{
 	case ESkillPhase::Prepare:
-		// ToDo IsMoving 보다는 이벤트로 처리
-		if (!m_ChainChomp->IsMoving())
 		{
-			// Pull 완료, Launch 시작
-			m_CurrentPhase = ESkillPhase::Casting;
-			m_ChainChomp->IsDestructDmgAble = true;
-			m_ChainChomp->MoveToLocationWithSpeed(m_TargetPos, LaunchSpeed, EMovementInterpolationType::EaseOutBounce);
+			// ToDo IsMoving 보다는 이벤트로 처리
+			if (!m_ChainChomp->IsMoving())
+			{
+				// Pull 완료, Launch 시작
+				m_CurrentPhase = ESkillPhase::Casting;
+				m_ChainChomp->IsDestructDmgAble = true;
+				m_ChainChomp->MoveToLocationWithSpeed(m_TargetPos, LaunchSpeed,
+				                                      EMovementInterpolationType::EaseOutBounce);
+			}
+
+			// 약한 참조로 this 캡처
+			TWeakObjectPtr<UChainChompPullAndLaunchSkill> WeakThis = this;
+			GetWorld()->GetTimerManager().SetTimer(FirstJumpHandle, [WeakThis]()
+			{
+				if (auto* StrongThis = WeakThis.Get())
+				{
+					FTransform SpawnTransform = StrongThis->m_ChainChomp->GetMesh()->GetComponentTransform();
+
+					AGhostTrail* GhostTrail = StrongThis->GetWorld()->SpawnActor<AGhostTrail>(
+						AGhostTrail::StaticClass(),
+						SpawnTransform
+					);
+
+					if (GhostTrail)
+					{
+						GhostTrail->InitByMaterials(StrongThis->m_ChainChomp->GetMesh(), StrongThis->m_ChainChomp->GetGhostTrailMaterials());
+					}
+				}
+			}, 0.01f, true);
+
+			break;
 		}
-		break;
 
 	case ESkillPhase::Casting:
-		// ToDo IsMoving 보다는 이벤트로 처리
-		if (!m_ChainChomp->IsMoving())
 		{
-			// Launch 완료, Return 시작
-			m_CurrentPhase = ESkillPhase::PostCast;
-			m_ChainChomp->IsDestructDmgAble = false;
-			m_ChainChomp->LookAtLocation(m_OriginalPosition, RotateTime, EMovementInterpolationType::Linear);
-			m_ChainChomp->MoveToLocationWithSpeed(m_OriginalPosition, ReturnSpeed, EMovementInterpolationType::Linear);
-			//m_ChainChomp->ReturnComponentToOriginal(m_ChainChomp->ChainChompRoot, 2.f);
+			// ToDo IsMoving 보다는 이벤트로 처리
+			if (!m_ChainChomp->IsMoving())
+			{
+				GetWorld()->GetTimerManager().ClearTimer(FirstJumpHandle);
+				// Launch 완료, Return 시작
+				m_CurrentPhase = ESkillPhase::PostCast;
+				m_ChainChomp->IsDestructDmgAble = false;
+				m_ChainChomp->LookAtLocation(m_OriginalPosition, RotateTime, EMovementInterpolationType::Linear);
+				m_ChainChomp->MoveToLocationWithSpeed(m_OriginalPosition, ReturnSpeed,
+				                                      EMovementInterpolationType::Linear);
+				// 점프 시퀀스 시작
+				PerformJumpSequence();
 
-			// 점프 시퀀스 시작
-			PerformJumpSequence();
-			
-			// FTimerHandle TimerHandle;
-			// TWeakObjectPtr<UChainChompPullAndLaunchSkill> WeakThis = this;
-			// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [WeakThis]()
-			// {
-			// 	UChainChompPullAndLaunchSkill* StrongThis = WeakThis.Get();
-			// 	StrongThis->m_ChainChomp->m_VerticalMover->StartVerticalMovement(StrongThis->m_ChainChomp->GetMesh(), 200.f, 0.4f, 0.3f);
-			// }, 0.3f, false);
-			// FTimerHandle TimerHandle2;
-			// GetWorld()->GetTimerManager().SetTimer(TimerHandle2, [this]()
-			// {
-			// 	m_ChainChomp->m_VerticalMover->StartVerticalMovement(m_ChainChomp->GetMesh(), 200.f, 0.4f, 0.3f);
-			// 	m_ChainChomp->LookAtLocation(m_Target->GetActorLocation(), RotateTime, EMovementInterpolationType::Linear);
-			// }, 1.05f, false);
+				// FTimerHandle TimerHandle;
+				// TWeakObjectPtr<UChainChompPullAndLaunchSkill> WeakThis = this;
+				// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [WeakThis]()
+				// {
+				// 	UChainChompPullAndLaunchSkill* StrongThis = WeakThis.Get();
+				// 	StrongThis->m_ChainChomp->m_VerticalMover->StartVerticalMovement(StrongThis->m_ChainChomp->GetMesh(), 200.f, 0.4f, 0.3f);
+				// }, 0.3f, false);
+				// FTimerHandle TimerHandle2;
+				// GetWorld()->GetTimerManager().SetTimer(TimerHandle2, [this]()
+				// {
+				// 	m_ChainChomp->m_VerticalMover->StartVerticalMovement(m_ChainChomp->GetMesh(), 200.f, 0.4f, 0.3f);
+				// 	m_ChainChomp->LookAtLocation(m_Target->GetActorLocation(), RotateTime, EMovementInterpolationType::Linear);
+				// }, 1.05f, false);
+			}
+			break;
 		}
-		break;
-
 	case ESkillPhase::PostCast:
-		// ToDo IsMoving 보다는 이벤트로 처리
-		if (!m_ChainChomp->IsMoving())
 		{
-			FVector targetPos = FVector(m_Target->GetActorLocation().X, m_Target->GetActorLocation().Y,
-			                            m_ChainChomp->GetActorLocation().Z);
-			m_ChainChomp->LookAtLocation(targetPos, RotateTime * 0.5, EMovementInterpolationType::Linear);
+			// ToDo IsMoving 보다는 이벤트로 처리
+			if (!m_ChainChomp->IsMoving())
+			{
+				FVector targetPos = FVector(m_Target->GetActorLocation().X, m_Target->GetActorLocation().Y,
+				                            m_ChainChomp->GetActorLocation().Z);
+				m_ChainChomp->LookAtLocation(targetPos, RotateTime * 0.5, EMovementInterpolationType::Linear);
 
 
-			// Return 완료, 스킬 종료
-			OnCastEnd();
+				// Return 완료, 스킬 종료
+				OnCastEnd();
+			}
+			break;
 		}
-		break;
 	}
 }
+
 void UChainChompPullAndLaunchSkill::PerformJumpSequence()
 {
 	// 약한 참조로 this 캡처
@@ -127,9 +156,9 @@ void UChainChompPullAndLaunchSkill::PerformJumpSequence()
 			if (IsValid(Skill->m_ChainChomp) && Skill->m_ChainChomp->m_VerticalMover)
 			{
 				Skill->m_ChainChomp->m_VerticalMover->StartVerticalMovement(
-					Skill->m_ChainChomp->GetMesh(), 
-					Skill->JumpHeight, 
-					Skill->JumpDuration, 
+					Skill->m_ChainChomp->GetMesh(),
+					Skill->JumpHeight,
+					Skill->JumpDuration,
 					Skill->LandingDuration
 				);
 			}
@@ -145,9 +174,9 @@ void UChainChompPullAndLaunchSkill::PerformJumpSequence()
 			{
 				// 점프 실행
 				Skill->m_ChainChomp->m_VerticalMover->StartVerticalMovement(
-					Skill->m_ChainChomp->GetMesh(), 
-					Skill->JumpHeight, 
-					Skill->JumpDuration, 
+					Skill->m_ChainChomp->GetMesh(),
+					Skill->JumpHeight,
+					Skill->JumpDuration,
 					Skill->LandingDuration
 				);
 
@@ -155,8 +184,8 @@ void UChainChompPullAndLaunchSkill::PerformJumpSequence()
 				if (IsValid(Skill->m_Target))
 				{
 					Skill->m_ChainChomp->LookAtLocation(
-						Skill->m_Target->GetActorLocation(), 
-						Skill->RotateTime, 
+						Skill->m_Target->GetActorLocation(),
+						Skill->RotateTime,
 						EMovementInterpolationType::Linear
 					);
 				}
@@ -164,6 +193,7 @@ void UChainChompPullAndLaunchSkill::PerformJumpSequence()
 		}
 	}, SecondJumpDelay, false);
 }
+
 void UChainChompPullAndLaunchSkill::OnCastEnd()
 {
 	//Super::OnCastEnd(Caster, Target);

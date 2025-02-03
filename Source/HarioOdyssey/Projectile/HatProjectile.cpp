@@ -83,7 +83,7 @@ void AHatProjectile::Tick(float DeltaTime)
         SetActorLocation(NewLocation);
 
         FRotator Rotation = GetActorRotation();
-        Rotation.Yaw += OrbitSpeed * DeltaTime * 4;
+        Rotation.Yaw += OrbitSpeed * DeltaTime * 10;
         SetActorRotation(Rotation);
 
         CurrentTime += DeltaTime;

@@ -19,10 +19,17 @@ public:
 	virtual void Enter() override;
 	virtual void Execute(float dt) override;
 	virtual void Exit() override;
+	void PerformJumpSequence();
 
 private:
 	// 이동 속도
 	float m_MovementSpeed;
 	float BackHomeDuration;
 	float BackHomeElapsedTime;
+	FTimerHandle FirstJumpHandle;
+	FTimerHandle SecondJumpHandle;
+	float JumpHeight = 150.f;
+	float FirstJumpDelay;
+	float SecondJumpDelay;
+	float RotateTime;
 };

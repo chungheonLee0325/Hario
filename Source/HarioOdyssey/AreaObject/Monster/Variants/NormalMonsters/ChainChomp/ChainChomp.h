@@ -46,6 +46,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsDestructDmgAble = false;
+	
+	FTimerHandle VibrationTimerHandle;
+
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanBeCaptured_Implementation() override;
@@ -58,6 +61,13 @@ public:
 	virtual void OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
+	// Utility 함수 - 추후 Effect Manager로 분화 가능
+	UFUNCTION(BlueprintCallable)
+	void StartVibration(float Intensity, float Duration, float Interval);
+
+	UFUNCTION(BlueprintCallable)
+	void StopVibration();
+
 	// Getter 함수들
 	float GetAttackSpeed() const { return AttackSpeed; }
 	float GetReturnSpeed() const { return ReturnSpeed; }
@@ -65,6 +75,7 @@ public:
 
 	FVector GetRootPosition() const { return RootPosition; };
 	FVector GetRootAnchorPosition() const { return RootAnchorPosition; };
+	TArray<UMaterialInterface*> GetGhostTrailMaterials() const;
 
 private:
 	// 몬스터의 기본 속성들
@@ -86,10 +97,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Monster Settings")
 	TArray<UMaterialInterface*> GhostTrailMaterials;
 
-public:
-	TArray<UMaterialInterface*> GetGhostTrailMaterials() const;
+	float VibrationIntensity = 10.0f;
+	float VibrationDuration = 0.5f;
+	float VibrationInterval = 0.01f;
 
-private:
 	UPROPERTY()
 	AActor* RootAnchor;
 };

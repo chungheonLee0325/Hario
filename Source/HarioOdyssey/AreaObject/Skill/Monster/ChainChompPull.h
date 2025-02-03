@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HarioOdyssey/AreaObject/Skill/Base/BaseSkill.h"
-#include "ChainChompLaunch.generated.h"
+#include "ChainChompPull.generated.h"
 
 class AHarioGameMode;
 class AChainChomp;
@@ -12,17 +12,12 @@ class AChainChomp;
  * 
  */
 UCLASS()
-class HARIOODYSSEY_API UChainChompLaunch : public UBaseSkill
+class HARIOODYSSEY_API UChainChompPull : public UBaseSkill
 {
 	GENERATED_BODY()
 
 public:
-	UChainChompLaunch();
-
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void BlockByObject();
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void ClearTimer1();
+	UChainChompPull();
 
 protected:
 	virtual void OnPhaseChanged(ESkillPhase NewPhase) override;
@@ -35,12 +30,18 @@ private:
 	AChainChomp* m_ChainChomp;
 	UPROPERTY()
 	AHarioGameMode* m_GameMode;
+
 	UPROPERTY()
-	FTimerHandle Handle1;
+	FVector m_OriginalPosition;
+	UPROPERTY()
+	FVector m_PullBackPosition;
+
+	UPROPERTY(EditAnywhere, Category = "Skill Setting")
+	float PullBackDistance;
 
 	UPROPERTY(EditAnywhere, Category = "Skill Setting")
 	float RotateTime;
 
 	UPROPERTY(EditAnywhere, Category = "Skill Setting")
-	float LaunchTime;
+	float PullTime;
 };

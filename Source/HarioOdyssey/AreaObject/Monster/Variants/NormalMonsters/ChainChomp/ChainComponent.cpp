@@ -20,8 +20,8 @@ UChainComponent::UChainComponent()
 	{
 		FString CompName = FString::Printf(TEXT("ChainLink_%d"), i);
 		ChainLinks[i] = CreateDefaultSubobject<UStaticMeshComponent>(*CompName);
-		//ChainLinks[i]->SetupAttachment(RootScence);
 		ChainLinks[i]->SetRelativeScale3D(FVector(0.9f));
+		//ChainLinks[i]->SetupAttachment(RootScence);
 	}
 	
 	// 체인 링크 메시 초기화

@@ -96,6 +96,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	bool IsInRange(const ABaseMonster* Caster, const AActor* Target) const;
 
+	// Setters
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void Set_TargetPos(const FVector& M_LaunchPosition);
 protected:
 	// 기존 속성들
 	UPROPERTY(EditAnywhere, Category = "Skill Data")
@@ -119,6 +122,9 @@ protected:
 	UPROPERTY()
 	FVector m_TargetPos;
 
+	UPROPERTY()
+	TSubclassOf<UBaseSkill> m_NextSkillClass;
+	
 	UPROPERTY()
 	UBaseSkill* m_NextSkill;
 

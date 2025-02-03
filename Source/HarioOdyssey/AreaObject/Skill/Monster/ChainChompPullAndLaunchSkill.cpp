@@ -66,6 +66,7 @@ void UChainChompPullAndLaunchSkill::OnCastTick(float DeltaTime)
 			{
 				// Pull 완료, Launch 시작
 				m_CurrentPhase = ESkillPhase::Casting;
+				
 				m_ChainChomp->IsDestructDmgAble = true;
 				m_ChainChomp->MoveToLocationWithSpeed(m_TargetPos, LaunchSpeed,
 				                                      EMovementInterpolationType::EaseOutBounce);

@@ -56,16 +56,16 @@ void UAiChainChomp::InitStatePool()
 	Attack->SetM_AttackSpeed(ChainChompOwner->GetAttackSpeed());
 	Attack->SetM_ChainLength(ChainChompOwner->GetChainLength());
 	Attack->SetM_AnchorPosition(m_OriginalPosition);
-	Attack->SetNextState(EAiStateType::Idle);
+	Attack->SetNextState(EAiStateType::Return);
 	AddState(EAiStateType::Attack, Attack);
 
-	//// BackHome 상태 설정
-	//auto BackHome = CreateState<UBackHome>(this, m_Owner, EAiStateType::Return);
+	// BackHome 상태 설정
+	auto BackHome = CreateState<UBackHome>(this, m_Owner, EAiStateType::Return);
 	//BackHome->SetM_HomePosition(m_OriginalPosition);
 	//BackHome->SetM_RootObject(ChainChompOwner->ChainChompRoot);
 	//BackHome->SetM_MovementSpeed(ChainChompOwner->GetReturnSpeed());
-	//BackHome->SetNextState(EAiStateType::Idle);
-	//AddState(EAiStateType::Return, BackHome);
+	BackHome->SetNextState(EAiStateType::Idle);
+	AddState(EAiStateType::Return, BackHome);
 
 	ChangeState(EAiStateType::Idle);
 }

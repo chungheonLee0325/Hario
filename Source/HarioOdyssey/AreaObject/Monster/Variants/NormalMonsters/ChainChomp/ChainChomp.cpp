@@ -7,6 +7,8 @@
 #include "ChainComponent.h"
 #include "Components/SphereComponent.h"
 #include "HarioOdyssey/AreaObject/Monster/AI/Derived/AiMonster/ChainChomp/AiChainChomp.h"
+#include "HarioOdyssey/AreaObject/Skill/Monster/ChainChompLaunch.h"
+#include "HarioOdyssey/AreaObject/Skill/Monster/ChainChompPull.h"
 #include "HarioOdyssey/Utility/SpawnUtilLib.h"
 #include "HarioOdyssey/AreaObject/Skill/Monster/ChainChompPullAndLaunchSkill.h"
 #include "HarioOdyssey/Objects/_Components/DestructComponent.h"
@@ -46,30 +48,37 @@ AChainChomp::AChainChomp()
 
 	// 잔상용 투명 마테리얼 셋팅
 	{
-	    ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial(TEXT("/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_T_wanwan_body.mat_T_wanwan_body'"));
+		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial(TEXT(
+			"/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_T_wanwan_body.mat_T_wanwan_body'"));
 		if (tempMaterial.Succeeded())
 		{
 			GhostTrailMaterials.Add(tempMaterial.Object);
 		}
-		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial2(TEXT("/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_ET_wanwan_body.mat_ET_wanwan_body'"));
+		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial2(TEXT(
+			"/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_ET_wanwan_body.mat_ET_wanwan_body'"));
 		if (tempMaterial2.Succeeded())
 		{
 			GhostTrailMaterials.Add(tempMaterial2.Object);
 		}
-		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial3(TEXT("/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_T_wanwan_eye.mat_T_wanwan_eye'"));
+		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial3(TEXT(
+			"/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_T_wanwan_eye.mat_T_wanwan_eye'"));
 		if (tempMaterial3.Succeeded())
 		{
 			GhostTrailMaterials.Add(tempMaterial3.Object);
 		}
-		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial4(TEXT("/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_ET_wanwan_eye.mat_ET_wanwan_eye'"));
+		ConstructorHelpers::FObjectFinder<UMaterial> tempMaterial4(TEXT(
+			"/Script/Engine.Material'/Game/_Resource/Monster/ChainChomp/ChainChomp2/mat_ET_wanwan_eye.mat_ET_wanwan_eye'"));
 		if (tempMaterial4.Succeeded())
 		{
 			GhostTrailMaterials.Add(tempMaterial4.Object);
 		}
 	}
-	
+
 	// 스킬 추가
-	m_StateSkillClasses.Add(EAiStateType::Attack, UChainChompPullAndLaunchSkill::StaticClass());
+	//m_StateSkillClasses.Add(EAiStateType::Attack, UChainChompPullAndLaunchSkill::StaticClass());
+	m_StateSkillClasses.Add(EAiStateType::Attack, UChainChompPull::StaticClass());
+	m_SkillClasses.Add(UChainChompLaunch::StaticClass());
+	m_SkillClasses.Add(UChainChompPull::StaticClass());
 
 	m_AiFSM = AChainChomp::CreateFSM();
 }
@@ -168,13 +177,62 @@ void AChainChomp::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 			// 움직임 정지
 			StopAll();
 			m_VerticalMover->StopVerticalMovement();
-			
+
 			FVector dir = (GetActorLocation() - OtherActor->GetActorLocation()).GetSafeNormal2D();
 			MoveToLocation(GetActorLocation() + dir * 200.f, 1, EMovementInterpolationType::Linear);
-			m_VerticalMover->StartVerticalMovement(GetMesh(), 250.f, 0.7f, 0.3f);
+			m_VerticalMover->StartVerticalMovement(GetMesh(), 250.f, 0.5f, 0.2f);
+
+			Cast<UChainChompLaunch>(m_CurrentSkill)->BlockByObject();
 		}
 	}
 }
+
+void AChainChomp::StartVibration(float Intensity, float Duration, float Interval)
+{
+	// 진동 강도와 지속 시간 설정
+	VibrationIntensity = Intensity;
+	VibrationDuration = Duration;
+	VibrationInterval = Interval;
+
+	// 타이머 시작 (Interval 초 간격으로 진동 적용)
+	TWeakObjectPtr<AChainChomp> WeakThis = this;
+	GetWorld()->GetTimerManager().SetTimer(VibrationTimerHandle, [WeakThis]()
+	{
+		if (auto* StrongThis = WeakThis.Get())
+		{
+			// 현재 위치 가져오기
+			FVector CurrentLocation = StrongThis->GetActorLocation();
+
+			// 랜덤한 방향으로 진동 적용
+			FVector RandomOffset = FVector(
+				FMath::FRandRange(-StrongThis->VibrationIntensity, StrongThis->VibrationIntensity),
+				FMath::FRandRange(-StrongThis->VibrationIntensity, StrongThis->VibrationIntensity),
+				FMath::FRandRange(-StrongThis->VibrationIntensity, StrongThis->VibrationIntensity)
+			);
+
+			// 새로운 위치 설정
+			FVector NewLocation = CurrentLocation + RandomOffset;
+			StrongThis->SetActorLocation(NewLocation);
+
+			// 지속 시간 감소
+			StrongThis->VibrationDuration -= StrongThis->VibrationInterval;
+
+			// 지속 시간이 끝나면 진동 중지
+			if (StrongThis->VibrationDuration <= 0.0f)
+			{
+				StrongThis->StopVibration();
+			}
+		}
+	}, Interval, true);
+}
+
+void AChainChomp::StopVibration()
+{
+	// 타이머 중지
+	GetWorld()->GetTimerManager().ClearTimer(VibrationTimerHandle);
+}
+
+
 
 TArray<UMaterialInterface*> AChainChomp::GetGhostTrailMaterials() const
 {

@@ -9,6 +9,7 @@
 
 UJumpAttack::UJumpAttack()
 {
+	// ToDo : Skill Param으로 넘겨받기
 	SkillData.PrepareTime = 1.0f;
 	SkillData.CastTime = 0.9f;
 	SkillData.PostCastTime = 0.1f;

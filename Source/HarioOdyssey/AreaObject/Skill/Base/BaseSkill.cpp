@@ -193,6 +193,11 @@ bool UBaseSkill::IsInRange(const ABaseMonster* Caster, const AActor* Target) con
     return DistanceSquared <= RangeSquared;
 }
 
+void UBaseSkill::Set_TargetPos(const FVector& M_LaunchPosition)
+{
+    m_TargetPos = M_LaunchPosition;
+}
+
 void UBaseSkill::UpdatePhase(ESkillPhase NewPhase)
 {
     m_CurrentPhase = NewPhase;

@@ -56,6 +56,6 @@ private:
     
 	EMoveState CurrentMoveState;
     
-	float CalculateVerticalOffset(float CurrentTime);
+	float CalculateVerticalOffset(float CurrentTime) const;
 	void UpdateMovement(float DeltaTime);
 };

@@ -25,10 +25,12 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
+	void InitAttach();
+	
 	void UpdateChainPosition(FVector Start, FVector End);
 	
 	UPROPERTY(EditAnywhere, Category = "Chain Settings")
-	USceneComponent* RootScence;
+	USceneComponent* RootScene;
 
 private:
 	// 설정값들

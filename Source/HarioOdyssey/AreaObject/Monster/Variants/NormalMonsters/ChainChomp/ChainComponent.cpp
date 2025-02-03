@@ -13,14 +13,14 @@ UChainComponent::UChainComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	RootScence = CreateDefaultSubobject<USceneComponent>("Root");
+	RootScene = CreateDefaultSubobject<USceneComponent>("Root");
 	
 	ChainLinks.SetNum(ChainNum);
 	for(int32 i = 0; i < ChainNum; i++)
 	{
 		FString CompName = FString::Printf(TEXT("ChainLink_%d"), i);
 		ChainLinks[i] = CreateDefaultSubobject<UStaticMeshComponent>(*CompName);
-		ChainLinks[i]->SetupAttachment(RootScence);
+		//ChainLinks[i]->SetupAttachment(RootScence);
 		ChainLinks[i]->SetRelativeScale3D(FVector(0.9f));
 	}
 	
@@ -53,6 +53,14 @@ void UChainComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UChainComponent::InitAttach()
+{
+	for(int32 i = 0; i < ChainNum; i++)
+	{
+		ChainLinks[i]->SetupAttachment(RootScene);
+	}
 }
 
 void UChainComponent::UpdateChainPosition(FVector Start, FVector End)

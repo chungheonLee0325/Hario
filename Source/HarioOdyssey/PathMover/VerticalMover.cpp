@@ -48,7 +48,7 @@ void UVerticalMover::StopVerticalMovement()
     CurrentMoveState = EMoveState::Stopped;
 }
 
-float UVerticalMover::CalculateVerticalOffset(float Time)
+float UVerticalMover::CalculateVerticalOffset(float Time) const
 {
     float Progress = 0.0f;
     float CurrentOffset = 0.0f;

@@ -282,6 +282,16 @@ void APlayer_Mario::AddCoin(int32 CoinValue)
     }
 }
 
+void APlayer_Mario::AddRegionCoin(int32 CoinValue)
+{
+    RegionCoinCount += CoinValue;
+    // UI Coin 업데이트 
+    if (CoinCounterWidget)
+    {
+        CoinCounterWidget->UpdateRegionCoinCounter(RegionCoinCount);
+    }
+}
+
 void APlayer_Mario::OnDie()
 {
     Super::OnDie();

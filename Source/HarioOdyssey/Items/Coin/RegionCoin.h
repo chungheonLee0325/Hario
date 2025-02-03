@@ -3,18 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "HarioOdyssey/Items/BaseItem.h"
-#include "Coin.generated.h"
+#include "RegionCoin.generated.h"
 
 UCLASS()
-class HARIOODYSSEY_API ACoin : public ABaseItem
+class HARIOODYSSEY_API ARegionCoin : public ABaseItem
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	ACoin();
+	ARegionCoin();
 
 	virtual void Tick(float DeltaTime) override;
 

@@ -65,6 +65,7 @@ protected:
 public:
 	// 동전 획득 함수
 	void AddCoin(int32 CoinValue);
+	void AddRegionCoin(int32 CoinValue);
 
 	// 모자 인스턴스
 	UPROPERTY()
@@ -141,6 +142,9 @@ private:
 
 	// 동전 카운트
 	int32 CoinCount = 0;
+
+	// 지역 동전 카운트
+	int32 RegionCoinCount = 0;
 	
 	// 카메라의 초기 위치, 회전 저장
 	FTransform CameraInitialTransform;

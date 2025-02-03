@@ -197,7 +197,7 @@ void APlayer_Mario::OnStopJump()
 }
 
 //모자 던지기 및 돌아오는 함수
-void APlayer_Mario::OnThrowHat()
+void APlayer_Mario::OnThrowHat() //직선이동
 {
     // 모자가 이미 던져졌다면 새로운 모자를 생성하지 않음
     if (bIsHatThrown || HatInstance != nullptr)
@@ -219,62 +219,55 @@ void APlayer_Mario::OnThrowHat()
         {
             bIsHatThrown = true;
             // 모자에 필요한 초기 설정 전달 (예: 속도, 방향)
-            HatInstance->InitializeHat(GetActorForwardVector(), this);
+            HatInstance->InitializeHat(GetActorForwardVector(), this, false);
+            
+            // 모자 던질 때 골뱅이 효과 활성화
+            //HatInstance->bExpanding = true;
+            
             HatInstance->OnDestroyed.AddDynamic(this, &APlayer_Mario::OnHatReturned);
-
+            
             WornHatMesh->SetVisibility(false);
            //UE_LOG(LogTemp, Warning, TEXT("모자 생성 성공"));
         }
     }
     
 }
+void APlayer_Mario::OnSpinHat() // 나선형 이동
+{
+    if (bIsHatThrown || HatInstance != nullptr) return;
+
+    if (HatClass)
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+
+        FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 5.0f;
+        FRotator SpawnRotation = GetActorRotation();
+
+        HatInstance = GetWorld()->SpawnActor<AHatProjectile>(HatClass, SpawnLocation, SpawnRotation, SpawnParams);
+        if (HatInstance)
+        {
+            bIsHatThrown = true;
+            HatInstance->InitializeHat(GetActorForwardVector(), this, true); // true = 나선형 던지기
+            HatInstance->OnDestroyed.AddDynamic(this, &APlayer_Mario::OnHatReturned);
+            WornHatMesh->SetVisibility(false);
+        }
+    }
+}
 void APlayer_Mario::OnHatReturned(AActor* DestroyedActor)
 {
-    // 모자가 플레이어로 돌아오거나 파괴되었을 때 호출
     bIsHatThrown = false;
-    if (HatInstance== DestroyedActor)
+
+    if (HatInstance == DestroyedActor)
     {
         HatInstance = nullptr;
-        // HatInstance->SetActorLocation(GetActorLocation());
-        // HatInstance->SetActorHiddenInGame(true); // 모자를 숨겨 대기 상태로 전환
-
         WornHatMesh->SetVisibility(true);
+        UE_LOG(LogTemp, Warning, TEXT("모자가 돌아왔습니다."));
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("HatClass가 DestroyedActor와 일치하지 않음"));
+        UE_LOG(LogTemp, Error, TEXT("HatInstance가 DestroyedActor와 일치하지 않음"));
     }
-}
-void APlayer_Mario::OnSpinHat()
-{
-    
-    if (nullptr != HatInstance) // 이미 존재하는 모자에 대해
-    {
-        UE_LOG(LogTemp, Warning, TEXT("HatInstance가 이미 존재함"));
-        return;
-       
-    }
-    
-    // 모자의 시작 위치와 방향
-    FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 5.0f; // play 이후 수정할지 확인
-    FRotator SpawnRotation = GetActorRotation();
-
-    // HatProjectile 생성
-    HatInstance = GetWorld()->SpawnActor<AHatProjectile>(HatClass, SpawnLocation, SpawnRotation);
-    if (HatInstance)
-    {
-        HatInstance->bSpinning = true;
-
-        
-        bIsHatThrown = true;
-        // 모자에 필요한 초기 설정 전달 (예: 속도, 방향)
-        HatInstance->InitializeHat(GetActorForwardVector(), this);
-        HatInstance->OnDestroyed.AddDynamic(this, &APlayer_Mario::OnHatReturned);
-
-        WornHatMesh->SetVisibility(false);
-        UE_LOG(LogTemp, Warning, TEXT("모자 스핀  성공"));
-    }
-  
 }
 
 

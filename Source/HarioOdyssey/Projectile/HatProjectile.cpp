@@ -9,174 +9,141 @@
 // Sets default values
 AHatProjectile::AHatProjectile()
 {
-	// Set this actor to call Tick() every frame
-	PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = true;
 
-	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
-	SetRootComponent(BoxComp);
+    BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
+    SetRootComponent(BoxComp);
 
-	//모자 메시 컴포넌트 초기화
-	HatMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hat"));
-	HatMesh->SetupAttachment(BoxComp);
+    HatMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hat"));
+    HatMesh->SetupAttachment(BoxComp);
 
-	//초기 방향 설정
-	InitialDirection = FVector::ZeroVector;
-
-	//회전
-	OrbitRadius = 200.0f;    // 회전 반지름 초기값
-	OrbitSpeed = 360.0f / 2.0f;     // 1초에 180도 회전
-	CurrentAngle = 0.0f;     // 시작 각도
-	bSpinning = false;		// 기본적으로 회전 상태가 아님
+    InitialDirection = FVector::ZeroVector;
+    
+    bSpinning = false;
+    bExpanding = false;
+    OrbitRadius = 50.0f;
+    OrbitSpeed = 360.0f / 1.0f;
+    MaxOrbitRadius = 300.0f;
+    SpiralSpeed = 100.0f;
+    CurrentAngle = 0.0f;
+    ExpansionTime = 2.0f;
+    CurrentTime = 0.0f;
+    bReturning = false;
+    bIsThrownStraight = false;
 }
 
 // Called when the game starts or when spawned
 void AHatProjectile::BeginPlay()
 {
-	Super::BeginPlay();
-
-	//시작 위치 
-	StartLocation = GetActorLocation();
+    Super::BeginPlay();
+    StartLocation = GetActorLocation();
+    UE_LOG(LogTemp, Warning, TEXT("모자 생성 완료, 초기 위치: %s"), *StartLocation.ToString());
 }
 
+// Called every frame
 void AHatProjectile::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
-	if (bSpinning) // 회전 상태
-	{
-		UE_LOG(LogTemp, Warning, TEXT("모자 스핀 성공"),CurrentAngle);
-		CurrentAngle += OrbitSpeed * DeltaTime; // 각도 업데이트
-		if (CurrentAngle >= 360.0f)
-		{
-			CurrentAngle -= 360.0f;
-		}
+    if (bExpanding) // 🔹 R 키: 나선형 궤적
+    {
+        CurrentAngle += OrbitSpeed * DeltaTime;
+        if (CurrentAngle >= 360.0f) CurrentAngle -= 360.0f;
 
-		// 플레이어 주변 회전
-		FVector Offset = FVector(
-			FMath::Cos(FMath::DegreesToRadians(CurrentAngle)) * OrbitRadius,
-			FMath::Sin(FMath::DegreesToRadians(CurrentAngle)) * OrbitRadius,
-			0.0f
-		);
+        float GrowthFactor = FMath::Clamp(CurrentTime / ExpansionTime, 0.0f, 1.0f);
+        OrbitRadius = FMath::Lerp(50.0f, MaxOrbitRadius, GrowthFactor);
 
-		if (!OwnerActor)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("HatInstance가 이미 존재함"));
-			return;
-		}
+        FVector Offset = FVector(
+            FMath::Cos(FMath::DegreesToRadians(CurrentAngle)) * OrbitRadius,
+            FMath::Sin(FMath::DegreesToRadians(CurrentAngle)) * OrbitRadius,
+            0.0f
+        );
 
-		// 회전 지속 시간 검사
-		CurrentTime += DeltaTime;
-		if (CurrentTime >= 2.0f) // 2초가 지나면 회전 종료
-		{
-			bSpinning = false;
-			UE_LOG(LogTemp, Warning, TEXT("모자 회전 종료"));
-		}
-		
-		FVector CenterLocation = OwnerActor->GetActorLocation(); // 소유자 위치 기준으로 회전
-		SetActorLocation(CenterLocation + Offset);
+        if (OwnerActor)
+        {
+            FVector CenterLocation = OwnerActor->GetActorLocation();
+            SetActorLocation(CenterLocation + Offset);
+        }
 
-		if (FVector::Dist(OwnerActor->GetActorLocation(), GetActorLocation()) <= 10.0f)
-		{
-			if (APlayer_Mario* Player = Cast<APlayer_Mario>(OwnerActor))
-			{
-				Player->OnHatReturned(this);
-			}
-			Destroy();
-		}
-	}
-	else if (!bReturning) // 던져지는 상태
-	{
-		CurrentTime += DeltaTime;
+        FRotator Rotation = GetActorRotation();
+        Rotation.Yaw += OrbitSpeed * DeltaTime * 3;
+        SetActorRotation(Rotation);
 
-		// 전방 이동
-		FVector NewLocation = GetActorLocation() + (InitialDirection * Speed * DeltaTime);
-		SetActorLocation(NewLocation);
+        CurrentTime += DeltaTime;
+        if (CurrentTime >= ExpansionTime)
+        {
+            bExpanding = false;
+            bReturning = true;
+            UE_LOG(LogTemp, Warning, TEXT("모자 나선 이동 종료, 돌아오기 시작"));
+        }
+    }
+    else if (bIsThrownStraight) // 🔹 E 키: 직선 이동
+    {
+        FVector NewLocation = GetActorLocation() + (InitialDirection * Speed * DeltaTime);
+        SetActorLocation(NewLocation);
 
-		if (CurrentTime >= FlightTime)
-		{
-			bReturning = true;
-		}
-	}
-	else if (bReturning) // 돌아오는 상태
-	{
-		if (OwnerActor)
-		{
-			FVector DirectionToOwner = (OwnerActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-			FVector NewLocation = GetActorLocation() + (DirectionToOwner * Speed * DeltaTime);
-			SetActorLocation(NewLocation);
+        FRotator Rotation = GetActorRotation();
+        Rotation.Yaw += OrbitSpeed * DeltaTime * 4;
+        SetActorRotation(Rotation);
 
-			if (FVector::Dist(OwnerActor->GetActorLocation(), GetActorLocation()) <= 10.0f)
-			{
-				if (APlayer_Mario* Player = Cast<APlayer_Mario>(OwnerActor))
-				{
-					Player->OnHatReturned(this);
-				}
-				Destroy();
-			}
-		}
-	}
-	// if (!bReturning)
-	// {
-	// 	// 시간 업데이트
-	// 	CurrentTime += DeltaTime;
-	//
-	// 	// 모자가 전방으로 이동
-	// 	FVector NewLocation = GetActorLocation() + (InitialDirection * Speed * DeltaTime);
-	// 	SetActorLocation(NewLocation);
-	//
-	// 	// 날아가는 시간이 끝나면 돌아오기 시작
-	// 	if (CurrentTime >= FlightTime)
-	// 	{
-	// 		bReturning = true;
-	// 	}
-	// }
-	// else
-	// {
-	// 	if (OwnerActor)
-	// 	{
-	// 		// 모자가 돌아오기
-	// 		FVector DirectionToOwner = (OwnerActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-	// 		FVector NewLocation = GetActorLocation() + (DirectionToOwner * Speed * DeltaTime);
-	// 		SetActorLocation(NewLocation);
-	//
-	//
-	// 		// 원래 위치로 돌아오면 삭제
-	// 		if (FVector::Dist(OwnerActor->GetActorLocation(), GetActorLocation()) <= 10.0f)
-	// 		{
-	// 			// 소유자에게 돌아오면 파괴
-	// 			 if (APlayer_Mario* Player = Cast<APlayer_Mario>(OwnerActor))
-	// 			{
-	// 				Player->OnHatReturned(this);
-	// 			 }
-	// 			
-	// 			Destroy();
-	// 		
-	// 		}
-	// 	}
-	// }
+        CurrentTime += DeltaTime;
+        UE_LOG(LogTemp, Warning, TEXT("모자 직선 이동 중... 현재 위치: %s"), *NewLocation.ToString());
+
+        if (CurrentTime >= FlightTime || FVector::Dist(StartLocation, GetActorLocation()) >= 500.0f)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("모자 직선 이동 종료, 돌아오기 시작"));
+            bReturning = true;  
+            bIsThrownStraight = false;  // ✅ 직선 이동을 멈추고 되돌아오는 상태로 전환
+        }
+    }
+    else if (bReturning) // 🔹 되돌아오는 상태
+    {
+        if (OwnerActor)
+        {
+            FVector DirectionToOwner = (OwnerActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+            FVector NewLocation = GetActorLocation() + (DirectionToOwner * Speed * 2.0f * DeltaTime); // ✅ 되돌아올 때 속도 증가
+            SetActorLocation(NewLocation);
+
+            UE_LOG(LogTemp, Warning, TEXT("모자가 되돌아오는 중... 방향: %s, 현재 위치: %s"), *DirectionToOwner.ToString(), *NewLocation.ToString());
+
+            if (FVector::Dist(OwnerActor->GetActorLocation(), GetActorLocation()) <= 50.0f)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("모자가 플레이어에게 돌아옴"));
+                if (APlayer_Mario* Player = Cast<APlayer_Mario>(OwnerActor))
+                {
+                    Player->OnHatReturned(this);
+                }
+                Destroy();
+            }
+        }
+    }
 }
 
-
-void AHatProjectile::InitializeHat(FVector Direction, APlayer_Mario* NewOwner)
+// 모자 던질 때 초기화
+void AHatProjectile::InitializeHat(FVector Direction, APlayer_Mario* NewOwner, bool bIsSpinThrow)
 {
-	//모자 초기 방향. 주인 설정
-	InitialDirection = Direction;
-	OwnerActor = NewOwner; // 클래스 멤버 변수에 할당
-	;
-	// 모자 발사 전에 물리 시뮬레이션을 활성화
-	HatMesh->SetSimulatePhysics(true);
+    InitialDirection = Direction;
+    OwnerActor = NewOwner;
+    HatMesh->SetSimulatePhysics(true);
 
-	//모자 발사
-	FVector Velocity = Direction * 1000.f;
-	HatMesh->AddImpulse(Velocity, NAME_None, true);
+    FVector Velocity = Direction * 1000.f;
+    HatMesh->AddImpulse(Velocity, NAME_None, true);
 
-	//초기화 상태
-	CurrentTime = 0.0f;
-	bReturning = false;
-	StartLocation = GetActorLocation();
+    CurrentTime = 0.0f;
+    bReturning = false;
+    StartLocation = GetActorLocation();
 
-	// StartLocation = GetActorLocation();
-	// OwnerActor = GetOwner();
+    if (bIsSpinThrow) // 🔹 R 키일 때 나선형 적용
+    {
+        bExpanding = true;
+        bIsThrownStraight = false;
+    }
+    else // 🔹 E 키일 때 직선 이동
+    {
+        bExpanding = false;
+        bIsThrownStraight = true;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("모자 던짐 - bIsSpinThrow: %s"), bIsSpinThrow ? TEXT("true") : TEXT("false"));
 }
-
 

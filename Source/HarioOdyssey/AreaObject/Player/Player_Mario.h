@@ -68,6 +68,8 @@ public:
 	UFUNCTION()
 	virtual void OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_Die();
 	
 	// 동전 획득 함수
 	void AddCoin(int32 CoinValue);
@@ -80,6 +82,7 @@ public:
 
 	//모자 회정 상태
 	bool bSpinning;
+	
 
 	
 private:
@@ -184,6 +187,8 @@ private:
 	void IsActorHidden();
 
 	void OnDie() override;
+
+
 
 protected:
 	void RemoveInvincibilityTimer();

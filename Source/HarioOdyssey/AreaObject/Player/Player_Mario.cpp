@@ -334,16 +334,18 @@ void APlayer_Mario::OnDie()
 {
     Super::OnDie();
 
-    AController* controllerRef = GetController();
+    //AController* controllerRef = GetController();
 
+    BP_Die();
     Destroy();
-    if (UWorld* world = GetWorld())
-    {
-        if (AHarioGameMode* gameMode = Cast<AHarioGameMode>(GetWorld()->GetAuthGameMode()))
-        {
-            gameMode->RestartPlayer(controllerRef);
-        }
-    }
+    
+    //if (UWorld* world = GetWorld())
+    //{
+    //    if (AHarioGameMode* gameMode = Cast<AHarioGameMode>(GetWorld()->GetAuthGameMode()))
+    //    {
+    //        gameMode->RestartPlayer(controllerRef);
+    //    }
+    //}
 }
 
 //데미지 처리

@@ -127,7 +127,7 @@ void ABaseMonster::OnDie()
 	StopAll();
 	m_VerticalMover->StopVerticalMovement();
 	// 몬스터 발사!
-	LaunchOnDeathVer2();
+	LaunchOnDeath();
 	// 콜리전 전환
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 

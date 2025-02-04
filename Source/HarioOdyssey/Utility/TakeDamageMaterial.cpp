@@ -106,6 +106,7 @@ void UTakeDamageMaterial::StartBlinkEffect(TArray<UPrimitiveComponent*> Componen
                     {
                         if (DynamicMaterial.IsValid())
                         {
+                            DynamicMaterial->BlendMode = EBlendMode::BLEND_Translucent;
                             DynamicMaterial->SetScalarParameterValue(FName("Opacity"), NewOpacity);
                         }
                     }

@@ -10,8 +10,8 @@
 UChainChompPull::UChainChompPull()
 {
 	// ToDo : Skill Param으로 넘겨받기
-	SkillData.PrepareTime = 0.8f;
-	SkillData.CastTime = 1.5f;
+	SkillData.PrepareTime = 0.6f;
+	SkillData.CastTime = 1.3f;
 	SkillData.PostCastTime = 1.f;
 	SkillData.Cooldown = 0.0f;
 	SkillData.CastRange = 1500.f;

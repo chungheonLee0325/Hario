@@ -2,6 +2,8 @@
 #include "Player_Mario.h"
 
 #include "MarioController.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "HarioOdyssey/Projectile/HatProjectile.h"
@@ -11,10 +13,10 @@
 #include "HarioOdyssey/AreaObject/Monster/Variants/NormalMonsters/ChainChomp/ChainChomp.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Components/CapsuleComponent.h"
 #include "HarioOdyssey/Contents/HarioGameMode.h"
 #include "HarioOdyssey/Utility/TakeDamageMaterial.h"
-
-
+#include "Particles/ParticleSystemComponent.h"
 
 
 APlayer_Mario::APlayer_Mario()
@@ -62,6 +64,8 @@ APlayer_Mario::APlayer_Mario()
 void APlayer_Mario::BeginPlay()
 {
     Super::BeginPlay();
+
+    GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayer_Mario::OnBodyBeginOverlap);
     
     // MarioController에서 UI 생성 호출
    if ( auto controller = UGameplayStatics::GetPlayerController(this, 0))
@@ -292,6 +296,40 @@ void APlayer_Mario::AddRegionCoin(int32 CoinValue)
     }
 }
 
+void APlayer_Mario::AddStarEffect(float LifeTime)
+{
+    // LifeTime 동안 무적 적용
+    if (true == HasCondition(EConditionType::Invincible))
+    {
+        RemoveCondition(EConditionType::Invincible);
+        GetWorld()->GetTimerManager().ClearTimer(InvincibleTimerHandle);
+
+        // ToDo : 마테리얼 Handle 제거
+    }
+    AddCondition(EConditionType::Invincible);
+
+    // LifeTime 동안 충돌시 대상 die + 대상 무적 제거
+    IsStarEffecting = true;
+
+    // 이펙트 추가, Sound 추가
+    StarEffectsParticleComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(StarEffectsParticle, GetMesh(),EName::Actor,FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f),EAttachLocation::SnapToTarget,false);
+    Cast<AHarioGameMode>(GetWorld()->GetAuthGameMode())->SwitchBGMTemporary(101,12.f);
+    
+    TWeakObjectPtr<APlayer_Mario> WeakThis = this;
+    GetWorld()->GetTimerManager().SetTimer(InvincibleTimerHandle, [WeakThis]()
+    {
+        if (auto* StrongThis = WeakThis.Get())
+        {
+            StrongThis->RemoveCondition(EConditionType::Invincible);
+            StrongThis->IsStarEffecting = false;
+            if (StrongThis->StarEffectsParticleComponent != nullptr)
+            {
+                StrongThis->StarEffectsParticleComponent->DestroyComponent();
+            }
+        }
+    }, LifeTime, false);
+}
+
 void APlayer_Mario::OnDie()
 {
     Super::OnDie();
@@ -364,6 +402,23 @@ void APlayer_Mario::TakeDamageMaterialHandler()
     {
     	TakeDamageMaterialInstance = NewObject<UTakeDamageMaterial>();
     }
+}
+
+void APlayer_Mario::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (false == IsStarEffecting)
+    {
+        return;
+    }
+
+    auto monster = Cast<ABaseMonster>(OtherActor);
+    if (monster == nullptr)
+    {
+        return;
+    }
+    monster->RemoveCondition(EConditionType::Invincible);
+    CalcDamage(10.f, this, monster);
 }
 
 

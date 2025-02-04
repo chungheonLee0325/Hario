@@ -5,6 +5,8 @@
 #include "HarioOdyssey/AreaObject/Base/AreaObject.h"
 #include "Player_Mario.generated.h"
 
+class UNiagaraSystem;
+class UNiagaraComponent;
 class UCoinCounterWidget;
 class UHealthWidget;
 class UTakeDamageMaterial;
@@ -63,9 +65,14 @@ protected:
 	void TakeDamageMaterialHandler();
 	
 public:
+	UFUNCTION()
+	virtual void OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
 	// 동전 획득 함수
 	void AddCoin(int32 CoinValue);
 	void AddRegionCoin(int32 CoinValue);
+	void AddStarEffect(float LifeTime);
 
 	// 모자 인스턴스
 	UPROPERTY()
@@ -145,6 +152,8 @@ private:
 
 	// 지역 동전 카운트
 	int32 RegionCoinCount = 0;
+
+	bool IsStarEffecting = false;
 	
 	// 카메라의 초기 위치, 회전 저장
 	FTransform CameraInitialTransform;
@@ -164,6 +173,12 @@ private:
 	//무적상태 - 깜빡임
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterialInstance;
+
+	UPROPERTY(Blueprintable, EditDefaultsOnly)
+	UNiagaraSystem* StarEffectsParticle;
+
+	UPROPERTY(EditDefaultsOnly)
+	UNiagaraComponent * StarEffectsParticleComponent;
 
 	//무적상태 해제
 	void IsActorHidden();

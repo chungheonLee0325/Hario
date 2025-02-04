@@ -35,9 +35,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	void PlayBGM(int SoundID, bool bLoop = true);
 
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void PlayBGMBySoundBase(USoundBase* SoundBase, bool bLoop = true);
+
 	// BGM 정지 함수
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	void StopBGM();
+
+	// BGM 잠시 변경 재생 함수
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void SwitchBGMTemporary(int SoundID, float LifeTime);
 
 	// BGM 볼륨 조절 함수
 	UFUNCTION(BlueprintCallable, Category = "Audio")
@@ -66,4 +73,10 @@ private:
 	// 현재 재생 중인 BGM
 	UPROPERTY()
 	USoundBase* CurrentBGM;
+
+	UPROPERTY()
+	USoundBase* PreviousBGM;
+
+	UPROPERTY()
+	FTimerHandle SwitchBGMHandle;
 };

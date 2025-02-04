@@ -82,6 +82,21 @@ void AHarioGameMode::PlayBGM(int SoundID, bool bLoop)
 	}
 }
 
+void AHarioGameMode::PlayBGMBySoundBase(USoundBase* SoundBase, bool bLoop)
+{
+	// 이전 BGM 정지
+	StopBGM();
+
+	// 새로운 BGM 설정
+	if (SoundBase)
+	{
+		CurrentBGM = SoundBase;
+		AudioComponent->SetSound(CurrentBGM);
+		AudioComponent->bAlwaysPlay = bLoop;
+		AudioComponent->Play();
+	}
+}
+
 void AHarioGameMode::StopBGM()
 {
 	// 현재 재생 중인 BGM 정지
@@ -90,6 +105,21 @@ void AHarioGameMode::StopBGM()
 		AudioComponent->Stop();
 		CurrentBGM = nullptr;
 	}
+}
+
+void AHarioGameMode::SwitchBGMTemporary(int SoundID, float LifeTime)
+{
+	PreviousBGM = CurrentBGM;
+	PlayBGM(SoundID, false);
+
+	TWeakObjectPtr<AHarioGameMode> WeakThis = this;
+	GetWorld()->GetTimerManager().SetTimer(SwitchBGMHandle, [WeakThis]()
+	{
+		if (auto StrongThis = WeakThis.Get())
+		{
+			StrongThis->PlayBGMBySoundBase(StrongThis->PreviousBGM, true);
+		}
+	}, LifeTime, false);
 }
 
 void AHarioGameMode::SetBGMVolume(float Volume)

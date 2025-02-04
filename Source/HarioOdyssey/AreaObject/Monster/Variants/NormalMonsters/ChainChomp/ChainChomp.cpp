@@ -173,7 +173,7 @@ void AChainChomp::OnBodyBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 		}
 
 		auto dComp = OtherActor->FindComponentByClass<UDestructComponent>();
-		if (dComp != nullptr)
+		if (dComp != nullptr && m_CurrentSkill != nullptr)
 		{
 			dComp->ApplyDestruction(GetActorLocation());
 
